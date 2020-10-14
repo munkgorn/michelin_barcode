@@ -1,0 +1,33 @@
+
+.select2-container--default .select2-selection--single .select2-selection__arrow,
+.select2-container--default .select2-selection--single  {
+  height:25px;
+}
+
+table .trhover {
+  background:#eee;
+}
+
+.animateload {
+  animation: loading 1s infinite;
+}
+@keyframes loading {
+  from {
+    color:#fff;
+  }
+
+  to {
+    color:red;
+  }
+}
+
+
+[type="checkbox"].form-control { 
+  width:15px !important;
+  height:15px !important;
+}
+
+
+.left-sidenav-menu li ul {
+  padding: 0 0 0 15px;
+}
