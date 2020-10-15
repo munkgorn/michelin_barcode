@@ -1,8 +1,8 @@
 <div class="page-wrapper">
 	<div class="card">
 		<div class="card-header">
-			<h4 class="card-title">List Purchase</h4>
-			<p class="text-muted mb-0">Find list Purchase</p>
+			<h4 class="card-title">New Barcode Ordering</h4>
+			<p class="text-muted mb-0">Purchase group barcode.</p>
 		</div>
 		<!--end card-header-->
 		<div class="card-body bootstrap-select-1">
@@ -10,9 +10,9 @@
 				<input type="hidden" name="route" value="purchase">
 				<div class="row">
 					<div class="col-2">
-						<label class="mb-3">Find Group</label>
+						<label class="mb-3">Find start group</label>
 						<div class="input-group">
-							<select name="start_group" class="form-control">
+							<select name="start_group" class="form-control select2start">
 								<?php foreach ($result_group as $val) { ?>
 								<option value="<?php echo $val['group_code']; ?>" <?php echo ($start_group==$val['group_code']?'selected':''); ?>>
 									<?php echo $val['group_code']; ?>
@@ -22,9 +22,9 @@
 						</div>
 					</div>
 					<div class="col-2">
-						<label class="mb-3">To Group</label>
+						<label class="mb-3">to group</label>
 						<div class="input-group">
-							<select name="end_group" class="form-control" >
+							<select name="end_group" class="form-control select2end">
 								<?php foreach ($result_group as $key => $val) { ?>
 								<option value="<?php echo $val['group_code']; ?>" <?php echo ($end_group==$val['group_code']?'selected':''); ?>>
 									<?php echo $val['group_code']; ?>
@@ -36,7 +36,7 @@
 					<div class="col-6">
 						<label class="mb-3">&nbsp;</label>
 						<div class="input-group">
-							<button type="submit" class="btn btn-primary">Search</button>
+							<button type="submit" class="btn btn-outline-primary"><i class="fas fa-search"></i> Search</button>
 						</div>
 					</div>
 				</div>
@@ -45,17 +45,17 @@
 	</div>
 	<?php if(!empty($start_group)){ ?>
 	<div class="card">
+	<form action="<?php echo $action; ?>" method="POST">
 		<div class="card-header">
-			<span class="float-left">
-				<!-- <a href="<?php echo route('barcode/add'); ?>" class="btn btn-danger">Add Barcode</a> -->
-				<h3>Today : <?php echo date('Y-m-d'); ?></h3>
-			</span>
-			<span class="float-right">
-				<!-- <a href="<?php echo route('barcode/PPDOrder&start_group='.$start_group.'&end_group='.$end_group); ?>" class="btn btn-danger">Export PDF</a> -->
-				<a href="<?php echo route('barcode/export_excel_range_barcode&start_group='.$start_group.'&end_group='.$end_group); ?>" class="btn btn-danger mr-2">Export Excel</a>
-				<!-- <a href="#" class="btn btn-warning" id="import_excel">Import Excel</a> --> <!-- User required menual input -->
-				
-			</span>
+			<div class="row">
+				<div class="col-12"><h4>Today : <?php echo date('Y-m-d'); ?></h4></div>
+				<div class="col-6">
+					<a href="<?php echo route('barcode/export_excel_range_barcode&start_group='.$start_group.'&end_group='.$end_group); ?>" class="btn btn-outline-success"><i class="fas fa-file-excel"></i> Export Excel</a>
+				</div>
+				<div class="col-6 text-right">
+					<button type="submit" class="btn btn-outline-primary"><i class="fas fa-check-double"></i> Save</button>
+				</div>
+			</div>
 		</div>
 		<!--end card-header-->
 		<div class="card-body">
@@ -64,7 +64,7 @@
 					<b>Update success</b>
 				</div>
 			<?php } ?>
-			<form action="<?php echo $action; ?>" method="POST">
+			
 				<input type="hidden" name="start_group" value="<?php echo $start_group; ?>">
 				<input type="hidden" name="end_group" value="<?php echo $end_group; ?>">
 				<div class="row">
@@ -81,26 +81,26 @@
 										<th rowspan="2">Status</th>
 									</tr>
 									<tr>
-										<th>Start</th>
-										<th>End</th>
-										<th>Qty</th>
-										<th>Start<br>(First NB from oldest order)</th>
-										<th>End<br>(Last NB from lastest order)</th>
-										<th>Start</th>
-										<th>End</th>
-										<th>Range</th>
+										<th class="text-center">Start</th>
+										<th class="text-center">End</th>
+										<th class="text-center">Qty</th>
+										<th class="text-center">Start<br>(First NB from oldest order)</th>
+										<th class="text-center">End<br>(Last NB from lastest order)</th>
+										<th class="text-center">Start</th>
+										<th class="text-center">End</th>
+										<th class="text-center">Range</th>
 									</tr>
 								</thead>
 								<tbody>
 									<?php foreach($getMapping as $key => $val){ ?>
 									<tr>
-										<td><?php echo $val['group_code']; ?></td>
-										<td><label for="" class="start"><?php echo sprintf('%06d', $val['barcode_start']); ?></label></td>
-										<td><label for="" class="end"><?php echo sprintf('%06d', $val['barcode_end']); ?></label></td>
-										<td>
+										<td class="text-center"><?php echo $val['group_code']; ?></td>
+										<td class="text-center"><label for="" class="start"><?php echo sprintf('%06d', $val['barcode_start']); ?></label></td>
+										<td class="text-center"><label for="" class="end"><?php echo sprintf('%06d', $val['barcode_end']); ?></label></td>
+										<td class="text-center">
 											<input 
 												type="text" 
-												class="form-control qty_group" 
+												class="form-control qty_group <?php echo $val['status_id']==0&&$val['remaining_qty']>0?'is-invalid':'';?>" 
 												placeholder="QTY." 
 												start="<?php echo $val['barcode_start'];?>"
 												end="<?php echo $val['barcode_end'];?>" 
@@ -109,21 +109,21 @@
 												<?php echo $val['status_id']==0&&$val['remaining_qty']>0 ? 'disabled="disabled"' : '';?>
 											>
 										</td>
-										<td><?php echo $val['barcode_start_year'];?></td>
-										<td><?php echo $val['barcode_end_year'];?></td>
-										<td>
+										<td class="text-center"><?php echo $val['barcode_start_year'];?></td>
+										<td class="text-center"><?php echo $val['barcode_end_year'];?></td>
+										<td class="text-center">
 											<?php echo $val['default_start'];?>
 											<!-- <input type="text" class="form-control default_start" id_group="<?php echo $val['id_group'];?>" value="<?php echo $val['default_start'];?>"> -->
 										</td>
-										<td>
+										<td class="text-center">
 											<?php echo $val['default_end'];?>
 											<!-- <input type="text" class="form-control default_end" id_group="<?php echo $val['id_group'];?>" value="<?php echo $val['default_end'];?>"> -->
 										</td>
-										<td>
+										<td class="text-center">
 											<?php echo number_format($val['default_range'], 0);?>
 											<!-- <input type="text" class="form-control default_range" id_group="<?php echo $val['id_group'];?>" value="<?php echo $val['default_range'];?>"> -->
 										</td>
-										<td><?php echo $val['status'];?></td>
+										<td class="text-center"><?php echo $val['status'];?></td>
 									</tr>
 									<?php } ?>
 								</tbody>
@@ -133,12 +133,12 @@
 				</div>
 				<div class="row">
 					<div class="col-12 text-right">
-						<input type="submit" class="btn btn-primary" value="Save">
+						
 					</div>
 				</div>
-			</form>
 		</div>
 		<!--end card-body-->
+	</form>
 	</div>
 	<!--end card-->
 	<?php } ?>
@@ -161,7 +161,9 @@ $(document).ready(function(){
 });
 </script>
 <script>
-
+	$('.select2start, .select2end').select2({
+		placeholder: "Select group barcode"
+	});
 	$(document).on('click','#import_excel',function(e){
 		$('#import_file').trigger('click');
 	});

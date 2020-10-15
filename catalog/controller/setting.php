@@ -1,5 +1,13 @@
 <?php 
 	class SettingController extends Controller {
+		public function __construct() {
+			if ($this->hasSession('id_user')==false) {
+				$this->rmSession('id_user');
+				$this->rmSession('username');
+				$this->setSession('error', 'Please Login');
+				$this->redirect('home');
+			} 
+		}
 	    public function index() {
 	    	$data = array();
 	    	$data['title'] = "Setting";

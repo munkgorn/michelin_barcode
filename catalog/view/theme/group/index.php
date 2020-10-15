@@ -1,8 +1,8 @@
 <div class="page-wrapper">
 	<div class="card">
 		<div class="card-header">
-			<h4 class="card-title">List barcode</h4>
-			<p class="text-muted mb-0">Find list barcode</p>
+			<h4 class="card-title">Barcode Reception</h4>
+			<p class="text-muted mb-0">Group barcode purchased status.</p>
 		</div>
 		<!--end card-header-->
 		<div class="card-body bootstrap-select-1">
@@ -10,7 +10,7 @@
 				<input type="hidden" name="route" value="group">
 				<div class="row">
 					<div class="col-3">
-						<label class="mb-3">Order date</label>
+						<label class="mb-3">Purchase date</label>
 						<div class="input-group">
 							<input type="text" class="form-control datepicker" 
 							id="date" 
@@ -22,9 +22,10 @@
 						</div>
 					</div>
 					<div class="col-3">
-						<label class="mb-3">Group Prefix</label>
-						<select name="group" class="form-control">
-							<option value="" >-- Search group prefix --</option>
+						<label class="mb-3">Group barcode</label>
+						<select name="group" class="form-control select2prefix">
+							<option></option>
+							<!-- <option value="" >-- Search group prefix --</option> -->
                             <?php foreach ($groups as $group) : ?>
                             <option value="<?php echo $group;?>" <?php echo $filter_group==$group?'selected':'';?>><?php echo $group;?></option>
                             <?php endforeach; ?> 
@@ -32,8 +33,9 @@
 					</div>
 					<div class="col-3">
 						<label class="mb-3">Status</label>
-						<select name="status" class="form-control">
-							<option value="-1" >-- Search status --</option>
+						<select name="status" class="form-control select2status">
+							<option></option>
+							<!-- <option value="-1" >-- Search status --</option> -->
 							<option value="0" <?php echo $filter_status==="0"?'selected':'';?>>Waiting</option>
 							<option value="1" <?php echo $filter_status==="1"?'selected':'';?>>Received</option>
 						</select>
@@ -41,7 +43,7 @@
 					<div class="col-3">
 						<label class="mb-3">&nbsp;</label>
 						<div class="input-group">
-							<button type="submit" class="btn btn-primary">Search</button>
+							<button type="submit" class="btn btn-outline-primary"><i class="fas fa-search"></i> Search</button>
                             <a href="<?php echo $link_clear;?>" class="btn btn-outline-secondary ml-2">Clear</a>
 						</div>
 					</div>
@@ -55,11 +57,11 @@
 		<div class="card-header">
             <div class="row">
                 <div class="col-sm-6">
-                    <button type="submit" class="btn btn-outline-primary btn-sm">Waiting -> Received</button>
+					<a href="<?php echo route('barcode/export_excel_range_barcode&date='.$filter_date); ?>" class="btn btn-success">Export Excel</a>
+                    <!-- <a href="<?php echo route('purchase'); ?>" class="btn btn-danger">Add Barcode</a> -->
                 </div>
                 <div class="col-sm-6 text-right">
-                    <a href="<?php echo route('barcode/export_excel_range_barcode&date='.$filter_date); ?>" class="btn btn-success btn-sm">Export Excel</a>
-                    <a href="<?php echo route('purchase'); ?>" class="btn btn-danger btn-sm">Add Barcode</a>
+					<button type="submit" class="btn btn-outline-primary"><i class="fas fa-check-double"></i> Waiting <i class="fas fa-chevron-right"></i> Receive</button>
                 </div>
             </div>
 		</div>
@@ -69,7 +71,14 @@
 				<table class="table table-bordered" id="makeEditable">
 					<thead>
 						<tr>
-							<th class="text-center" width="5%"><input type="checkbox" id="checkall" /></th>
+							<th class="text-center" width="5%">
+								<div class="checkbox">
+									<div class="custom-control custom-checkbox">
+										<input type="checkbox" class="custom-control-input" id="checkall" data-parsley-multiple="groups" data-parsley-mincheck="2" />
+										<label class="custom-control-label" for=""></label>
+									</div>
+								</div>
+							</th>
 							<th class="text-center" width="12%">Group prefix</th>
 							<th class="text-center" width="12%">Start</th>
 							<th class="text-center" width="12%">End</th>
@@ -77,14 +86,21 @@
 							<th class="text-center" width="15%">Status</th>
 							<th>Purchase date</th>
 							<th>Create by</th>
-							<th width="10%"></th>
+							<th width="5%">Remove</th>
 						</tr>
 					</thead>
 					<tbody>
                     <?php if (count($lists)>0) : ?>
 						<?php foreach($lists as $val){ ?>
 						<tr>
-							<th class="text-center"><input type="checkbox" class="cb" name="checkbox[]" value="<?php echo $val['id_group'];?>" <?php echo $val['barcode_use']==1?'disabled="disabled"':'';?> /></th>
+							<th class="text-center">
+								<div class="checkbox">
+									<div class="custom-control custom-checkbox">
+										<input type="checkbox" class="custom-control-input check cb" name="checkbox[]" data-parsley-multiple="groups" data-parsley-mincheck="2" value="<?php echo $val['id_group'];?>" <?php echo $val['barcode_use']==1?'disabled="disabled"':'';?> />
+										<label class="custom-control-label" for=""></label>
+									</div>
+								</div>
+							</th>
 							<td class="text-center"><?php echo $val['group_code']; ?></td>
 							<td class="text-center"><?php echo $val['start']-$val['remaining_qty']; ?></td>
 							<td class="text-center"><?php echo $val['start']-1; ?></td>
@@ -93,13 +109,13 @@
 								<?php if($val['barcode_use']==1) : ?>
 								<span class="text-primary">Received</span>
 								<?php else: ?>
-								<a href="<?php echo $link_changestatus."&id=$val[id_group]";?>" class="btn btn-outline-primary btn-sm">Waiting -> Received</a>
+								<a href="<?php echo $link_changestatus."&id=$val[id_group]";?>" class="btn btn-outline-info btn-sm">Waiting <i class="fas fa-chevron-right"></i> Receive</a>
 								<?php endif; ?>
 							</td>
 							<td><?php echo $val['date_added']; ?></td>
 							<td><?php echo $val['username']; ?></td>
 							<td class="text-center">
-                                <a href="<?php echo $val['barcode_use']==0?$link_del.'&id='.$val['id_group']:'#';?>" class="btn btn-danger btn-sm <?php echo $val['barcode_use']==1?'disabled':'';?>" onclick="return confirm('Are you sure delete this purchase group?')">Remove</a>
+                                <a href="<?php echo $val['barcode_use']==0?$link_del.'&id='.$val['id_group']:'#';?>" class="btn btn-danger btn-sm <?php echo $val['barcode_use']==1?'disabled':'';?>" onclick="return confirm('Are you sure delete this purchase group?')"><i class="fas fa-trash-alt"></i></a>
                             </td>
 						</tr>
 						<?php } ?>
@@ -145,6 +161,15 @@ $(document).ready(function(){
 </script>
 <script>
 $(document).ready(function () {
+	$('.select2prefix').select2({
+		placeholder: 'Search group barcode',
+		allowClear: true
+	});
+	$('.select2status').select2({
+		placeholder: 'Search status purchased',
+		allowClear: true
+	});
+
 	<?php if (!empty($textalert)): ?>
 		//alert("<?php echo $textalert;?>");
 		$('#modal_textalert').modal('show');

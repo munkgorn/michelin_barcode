@@ -1,16 +1,19 @@
 <div class="container">
 	<div class="row vh-100 d-flex justify-content-center">
 		<div class="col-12 align-self-center">
+		
 			<div class="row">
 				<div class="col-lg-5 mx-auto">
 					<div class="card">
 						<div class="card-body p-0 auth-header-box">
+						<?php echo !empty($success) ? '<div class="alert alert-success border-0" role="alert">'.$success.'</div>' : '';?>
+						<?php echo !empty($error) ? '<div class="alert alert-danger border-0" role="alert">'.$error.'</div>' : '';?>
 							<div class="text-center p-3">
 								<a href="index.html" class="logo logo-admin">
-									<img src="assets/images/logo-sm.png" height="50" alt="logo" class="auth-logo">
+									<img src="assets/image/logomichelin.png" height="50" alt="logo" class="auth-logo">
 								</a>
-								<h4 class="mt-3 mb-1 font-weight-semibold text-white font-18">Let's Get Started Dastyle</h4>
-								<p class="text-muted mb-0">Sign in to continue to Dastyle.</p>
+								<!-- <h4 class="mt-3 mb-1 font-weight-semibold text-white font-18">Let's Get Started Dastyle</h4> -->
+								<p class="text-muted mb-0">Sign in to michelin barcode system.</p>
 							</div>
 						</div>
 						<div class="card-body">
@@ -26,14 +29,14 @@
 										<div class="form-group">
 											<label for="username">Username</label>
 											<div class="input-group mb-3">
-												<input type="text" class="form-control" name="username" id="username" placeholder="Enter username">
+												<input type="text" class="form-control" name="username" id="username" placeholder="Enter username" required autocomplete="off" autofocus="on">
 											</div>
 										</div>
 										<!--end form-group-->
 										<div class="form-group">
 											<label for="userpassword">Password</label>
 											<div class="input-group mb-3">
-												<input type="password" class="form-control" name="password" id="userpassword" placeholder="Enter password">
+												<input type="password" class="form-control" name="password" id="userpassword" placeholder="Enter password" required>
 											</div>
 										</div>
 										<!--end form-group-->

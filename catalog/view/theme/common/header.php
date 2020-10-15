@@ -18,6 +18,8 @@
 		<link href="assets/css/metisMenu.min.css" rel="stylesheet" type="text/css">
 		<link href="assets/plugins/daterangepicker/daterangepicker.css" rel="stylesheet" type="text/css">
 		<link href="assets/plugins/select2/select2.min.css" rel="stylesheet" type="text/css">
+		<link href="assets/plugins/sweet-alert2/sweetalert2.min.css" rel="stylesheet" type="text/css">
+		<link href="assets/plugins/animate/animate.css" rel="stylesheet" type="text/css">
 		<link href="assets/css/app.min.css" rel="stylesheet" type="text/css">
 
 		<link rel="stylesheet" href="assets/fontawesome-free-5.15.0-web/css/all.min.css" />
@@ -35,6 +37,7 @@
 		<script src="assets/js/moment.js"></script>
 		<script src="assets/plugins/daterangepicker/daterangepicker.js"></script>
 		<script src="assets/plugins/select2/select2.min.js"></script>
+		<script src="assets/plugins/sweet-alert2/sweetalert2.min.js"></script>
 
 		<!-- <script src="assets/pages/jquery.forms-advanced.js"></script> -->
 		
@@ -83,7 +86,7 @@
 								</a>
 							</li>
 							<li>
-								<a href="<?php echo route('group/index'); ?>" class="<?php echo $_GET['route']=='group'?'active':'';?>">
+								<a href="<?php echo route('group'); ?>" class="<?php echo $_GET['route']=='group'?'active':'';?>">
 									<i class="ti-control-record"></i>Barcode Reception
 								</a>
 							</li>
@@ -147,7 +150,7 @@
 					</li>
 					<hr class="hr-dashed hr-menu">
 					<li>
-						<a href="<?php echo route('home/logout'); ?>" onclick="return confirm('Are you sure logout?');">
+						<a type="button" id="sa-logout" href="#">
 							<i data-feather="power" class="align-self-center menu-icon"></i>
 							<span>Logout</span>
 						</a>
@@ -158,3 +161,21 @@
 		</div>
 		<!-- end left-sidenav-->
 	<?php } ?>
+
+	<script>
+		$("#sa-logout").click(function(){
+			Swal.fire({
+			title: 'Do you want to logout?',
+			showDenyButton: true,
+			showCancelButton: true,
+			confirmButtonText: `Logout`,
+			denyButtonText: `No`,
+			}).then((result) => {
+			if (result.value) {
+				window.location.href ="<?php echo route('home/logout');?>"
+			} else if (result.dismiss == 'cancel') {
+				console.log('cancel');
+			}
+			})
+		});
+	</script>

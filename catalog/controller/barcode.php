@@ -1,6 +1,14 @@
 <?php 
 	require_once DOCUMENT_ROOT.'/system/lib/simplexlsx-master/src/SimpleXLSX.php';
 	class BarcodeController extends Controller {
+		public function __construct() {
+			if ($this->hasSession('id_user')==false) {
+				$this->rmSession('id_user');
+				$this->rmSession('username');
+				$this->setSession('error', 'Please Login');
+				$this->redirect('home');
+			} 
+		}
 	    public function index() {
 	    	$data = array();
 	    
@@ -9,25 +17,63 @@
 				'assets/home.css'
 			);
 			$data['style'] 	= $style;
+
+
+			$barcode = $this->model('barcode');
+
+			// default data
 			$data['date'] = (get('date')?get('date'):'');
 			$data_select = array(
 				'date' => $data['date']
 			);
-			$barcode = $this->model('barcode');
 			$data['getImportBarcode'] = $barcode->getBarcode();
 			$data['getBarcode'] = $barcode->getBarcode($data_select);
 			$data['nums_row']	= $barcode->getNumsBarcode($data_select);
+
+
 			$data['action'] = route('barcode/listGroup');
 			$data['action_import'] = route('barcode/importUseBarcode');
 			$data['export_excel'] = route('barcode/export_excel&date='.$data['date']);
+			$data['action_addmenual'] = route('barcode/addmenual&date='.$data['date']);
+			$data['action_import_excel'] = route('barcode');
+
+			
+			$data['groups'] = $barcode->getGroupInBarcode($data['date']);
 
 			// modal
 			$data['textalert'] = $this->hasSession('textalert') ? $this->getSession('textalert') : false;
 			$data['confirm_remove_barcode'] = route('barcode/confirm_remove'.(get('date')?'&date='.get('date'):''));
 			
-			$data['action_import_excel'] = route('barcode');
+			$data['success'] = $this->hasSession('success') ? $this->getSession('success') : ''; $this->rmSession('success');
+			$data['error'] = $this->hasSession('error') ? $this->getSession('error') : ''; $this->rmSession('error');
 
 			$this->view('barcode/list',$data);
+		}
+		public function addmenual() {
+			$group = $this->model('group');
+			$barcode = $this->model('barcode');
+
+			$prefix = post('barcode_prefix');
+			$start = $prefix.sprintf('%05d', post('barcode_code_start'));
+			$end = $prefix.sprintf('%05d', post('barcode_code_end'));
+			if ($end>$start) {
+				$range = array();
+				for ($i=$start; $i<=$end; $i++) {
+					$range[] = $i;	
+					
+				}
+			} else {
+				$this->setSession('error', 'End Barcode is heighter more than Start Barcode');
+				$this->redirect('barcode&date='.get('date'));
+			}
+
+			$result = $barcode->updateBarcodeUse($range);
+			if ($result) {
+				$this->setSession('success', 'Success add range barcode is used <b>'.$start.' - '.$end.'</b>');
+			} else {
+				$this->setSession('error', 'Cannot add range barcode');
+			}
+			$this->redirect('barcode&date='.get('date'));
 		}
 		public function unconfirmImportBarcode() {
 			$this->rmSession('barcodealert');
@@ -42,67 +88,76 @@
 				$barcode = $this->model('barcode');
 				$id_group = post("id_group");
 
+				$check = post('checkbox');
+				$checked = array();
+				foreach ($check as $idg => $value) {
+					$checked[] = $idg;
+				}
+
 				$freegroup = $this->jsonFreeGroup(false);
 				$jsonfreegroup = json_decode($freegroup, true);
 				$freegroup = json_decode($jsonfreegroup[0], true);
 				$i=0;
+
 				foreach ($id_group as $key => $value) {
-					if (!empty($value)) {
-						$insert = array(
-							'date_wk' => post('date_wk'),
-							'id_user' => $this->getSession('id_user'),
-							'id_group' => $value,
-							'id_product' => $key
-						);
-						$updateWkMapping[] = $barcode->updateWkMapping($insert)['result'];
-					} else {
-						$size = $this->model('size');
-						$association = $this->model('association');
-						$group = $this->model('group');
-						$product = $size->getProduct($key);
-						$date_lastweek = $association->getDateLastWeek();
-
-						$last_week = ($date_lastweek!=false) ? $association->getGroupLastWeek($product['size_product_code'], $date_lastweek) : '';
-						$remaining_qty = !empty($last_week) ? $association->getRemainingByGroup($last_week) : 0;
-
-						$relation_group = $association->getRelationshipBySize($product['size_product_code']);
-
-						$propose = '';
-						$propose_remaining_qty = '';
-						$message = '';
-
-						if ($remaining_qty>=$product['sum_product']) {
-							$propose = $last_week;
-							$propose_remaining_qty = $remaining_qty;
-							$message = 'Last Weeek' ;
-						} else if (!empty($relation_group)) {
-							$qty = $association->getRemainingByGroup($relation_group);
-							if ($propose_remaining_qty>=$product['sum_product']) {
-								$propose = $relation_group;
-								$propose_remaining_qty = $qty;
-								$message = 'Relationship';
-							}
-						} else {
-							$propose = (int)$freegroup[$i];
-							$i++;
-						}
-
-						// $id_group = $group->findIdGroup($propose);
-
-						if (!empty($id_group)) {
+					if (in_array($key, $checked)) {
+						if (!empty($value)) {
 							$insert = array(
 								'date_wk' => post('date_wk'),
 								'id_user' => $this->getSession('id_user'),
-								'id_group' => $propose, // ! this group code 
-								'id_product' => $product['id_product']
+								'id_group' => $value,
+								'id_product' => $key
 							);
 							$updateWkMapping[] = $barcode->updateWkMapping($insert)['result'];
+						} else {
+							$size = $this->model('size');
+							$association = $this->model('association');
+							$group = $this->model('group');
+							$product = $size->getProduct($key);
+							$date_lastweek = $association->getDateLastWeek();
+	
+							$last_week = ($date_lastweek!=false) ? $association->getGroupLastWeek($product['size_product_code'], $date_lastweek) : '';
+							$remaining_qty = !empty($last_week) ? $association->getRemainingByGroup($last_week) : 0;
+	
+							$relation_group = $association->getRelationshipBySize($product['size_product_code']);
+	
+							$propose = '';
+							$propose_remaining_qty = '';
+							$message = '';
+	
+							if ($remaining_qty>=$product['sum_product']) {
+								$propose = $last_week;
+								$propose_remaining_qty = $remaining_qty;
+								$message = 'Last Weeek' ;
+							} else if (!empty($relation_group)) {
+								$qty = $association->getRemainingByGroup($relation_group);
+								if ($propose_remaining_qty>=$product['sum_product']) {
+									$propose = $relation_group;
+									$propose_remaining_qty = $qty;
+									$message = 'Relationship';
+								}
+							} else {
+								$propose = (int)$freegroup[$i];
+								$i++;
+							}
+	
+							// $id_group = $group->findIdGroup($propose);
+	
+							if (!empty($id_group)) {
+								$insert = array(
+									'date_wk' => post('date_wk'),
+									'id_user' => $this->getSession('id_user'),
+									'id_group' => $propose, // ! this group code 
+									'id_product' => $product['id_product']
+								);
+								$updateWkMapping[] = $barcode->updateWkMapping($insert)['result'];
+							}
+							
+							
 						}
-						
-						
 					}
 				}
-				// $this->redirect('barcode/association&date_wk='.post('date_wk'));
+				$this->redirect('barcode/association&date_wk='.post('date_wk'));
 			}
 			
 	    	// $barcode = $this->model('barcode');
@@ -635,6 +690,7 @@
 					}
 				}
 
+				$this->generateJsonFreeGroup();
 	    	}
 		}
 	    public function listGroup() {

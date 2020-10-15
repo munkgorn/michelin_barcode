@@ -7,7 +7,10 @@
 	    	$style = array(
 	    		'assets/home.css'
 	    	);
-	    	$data['style'] 	= $style;
+			$data['style'] 	= $style;
+			
+			$data['success'] = $this->hasSession('success') ? $this->getSession('success') : ''; $this->rmSession('success');
+			$data['error'] = $this->hasSession('error') ? $this->getSession('error') : ''; $this->rmSession('error');
  	    	$this->view('home',$data); 
 	    }
 	    public function login(){
@@ -25,14 +28,15 @@
 	    		$this->setSession('username',$result_login['username']);
 	    		$this->redirect('dashboard');
 	    	}else{
-	    		$this->redirect('home&result=fail'); 
+				$this->setSession('error', 'Username or password is wrong');
+	    		$this->redirect('home'); 
 	    	}
 		}
 		
 		public function logout() {
 			$this->rmSession('id_user');
 			$this->rmSession('username');
-			$this->redirect('home/login');
+			$this->redirect('home');
 		}
 	}
 ?>

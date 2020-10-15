@@ -389,7 +389,7 @@
 						'id_user'		=> $id_user,
 						// 'date_wk'		=> $date_wk,
 						'date_added'	=> $data_now,
-						'barcode_use'	=> null,
+						// 'barcode_use'	=> null,
 						'start'			=> $start,
 						'end'			=> 0,
 						'default_start'	=> $config_barcode['start'],
@@ -662,6 +662,13 @@
 			return $result;
 		}
 
+		public function getGroupInBarcode($date="") {
+			$this->where('date_added', $date.'%', 'LIKE');
+			$this->group_by('barcode_prefix');
+			$this->select('barcode_prefix as `group`');
+			$query = $this->get('barcode');
+			return $query->rows;
+		}
 		
 
 

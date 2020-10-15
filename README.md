@@ -1,4 +1,3 @@
-# michelin_barcode
+# Michelin Barcode Project
 
 Project Michelin Barcode
-

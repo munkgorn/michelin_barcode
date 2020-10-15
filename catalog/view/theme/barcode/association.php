@@ -1,8 +1,8 @@
 <div class="page-wrapper">
 	<div class="card">
 		<div class="card-header">
-			<h4 class="card-title">List barcode</h4>
-			<p class="text-muted mb-0">Find list barcode</p>
+			<h4 class="card-title">Barcode Association</h4>
+			<p class="text-muted mb-0">Relationship size with group barcode.</p>
 		</div>
 		<!--end card-header-->
 		<div class="card-body bootstrap-select-1">
@@ -12,42 +12,36 @@
 						<input type="hidden" name="route" value="barcode/association">
 						<div class="row">
 							<div class="col-6">
-								<label class="mb-3">Find by genarater date</label>
-								<div class="input-group">
-									<select name="date_wk" id="date_wk" class="form-control select2">
-										<option value="">-</option>
-										<?php foreach($listDateWK as $val){ ?>
-										<option value="<?php echo $val['date_wk']; ?>" <?php echo ($val['date_wk']==$date_wk?'selected':''); ?>>
-											<?php echo $val['date_wk']; ?>
-										</option>
-										<?php } ?>
-									</select>
-								</div>
+								<label class="">Import Date</label>
+								<select name="date_wk" id="date_wk" class="form-control select2">
+									<option value="">-</option>
+									<?php foreach ($listDateWK as $val) {?>
+									<option value="<?php echo $val['date_wk']; ?>" <?php echo ($val['date_wk'] == $date_wk ? 'selected' : ''); ?>>
+										<?php echo $val['date_wk']; ?>
+									</option>
+									<?php }?>
+								</select>
 							</div>
 							<div class="col-6">
+								<label class="">&nbsp;</label>
 								<div class="input-group">
-									<label class="mb-3">&nbsp;</label>
-									<div class="input-group">
-										<button class="btn btn-primary" type="submit">Find</button>
-									</div>
+									<button class="btn btn-outline-primary" type="submit"><i class="fas fa-search"></i> Search</button>
 								</div>
 							</div>
 						</div>
 					</form>
 				</div>
 				<div class="col-6">
-					<form action="<?php echo $action_import;?>" id="form-import-xlsx" method="POST" enctype="multipart/form-data">
+					<form action="<?php echo $action_import; ?>" id="form-import-xlsx" method="POST" enctype="multipart/form-data">
 						<div class="row">
-							<div class="col-6">
-								<label class="mb-3">Upload file</label>
+							<div class="col-12">
+								<label class="mb-3">Import excel file association</label>
 								<div class="input-group">
-									<input type="file" name="excel_input" id="excel_input">
-								</div>
-							</div>
-							<div class="col-6">
-								<label class="mb-3">&nbsp;</label>
-								<div class="input-group">
-									<button type="submit" class="btn btn-warning">Import</button>
+									<div class="custom-file">
+										<input type="file" name="excel_input" class="custom-file-input" id="inputFileImport" required />
+										<label class="custom-file-label" for="inputFileImport">Choose file (.xlsx)</label>
+									</div>
+									<div class="input-group-append"><button class="btn btn-outline-primary" type="submit"><i class="fas fa-file-excel"></i> Import</button></div>
 								</div>
 							</div>
 						</div>
@@ -56,111 +50,76 @@
 			</div>
 		</div>
 	</div>
-	<?php if(!empty($date_wk)){ ?>
+	<?php if (!empty($date_wk)) {?>
 	<div class="card">
+		<form action="<?php echo $action_validate; ?>" method="POST">
 		<div class="card-header">
-			<span class="float-left">
-				<h4 class="card-title">Result</h4>
-			</span>
-			<span class="float-right">
-				<a href="<?php echo $export_excel; ?>" class="btn btn-danger btn-sm">Export Excel</a>
-				<button type="button" 
-				class="btn btn-outline-primary btn-sm" 
-				data-toggle="modal" 
-				data-target="#exampleModalCenter">+ Add size</button>
-			</span>
+			<div class="row">
+				<div class="col-6">
+					<a type="button" href="<?php echo $export_excel; ?>" class="btn btn-outline-success "><i class="fas fa-file-excel"></i> Export Excel</a>
+					<button type="button" class="btn btn-outline-info " data-toggle="modal" data-target="#ModalSize"><i class="fas fa-plus-circle"></i> Add Menual Size</button>
+				</div>
+				<div class="col-6 text-right">
+					<button type="submit"  class="btn btn-outline-primary "><i class="fas fa-check-double"></i> Validate Check</button>
+				</div>
+			</div>
 		</div>
 		<!--end card-header-->
 		<div class="card-body">
-			<form action="<?php echo $action_validate;?>" method="POST">
-				<input type="hidden" name="date_wk" value="<?php echo $date_wk;?>" />
-				<div class="row">
-					<div class="col-12 mb-3">
-						<div class="text-right">
-							<button type="submit"  class="btn btn-primary">Validate</button>
-						</div>
-					</div>
-					<div class="col-6">
-						<div class="table-responsive">
-							<table class="table table-bordered " id="makeEditable">
-								<thead>
-									<tr>
-										<th witdh="10%"><input type="checkbox" class="form-control" id="check_all" /></th>
-										<th width="20%" class="text-center">Size</th>
-										<th width="20%" class="text-center">Sum prod.</th>
-										<th >Last wk mapping</th>
-										<th width="25%" class="text-center">Remaining Qty</th>
-									</tr>
-								</thead>
-								<tbody>
-									<?php foreach ($list as $key => $val) { ?>
-									<tr>
-										<td witdh="10%"><input type="checkbox" class="form-control check" name="checkbox[]" /></td>
-										<td class="text-center"><?php echo $val['size']; ?></td>
-										<td class="text-center"><?php echo number_format($val['sum_prod'],0); ?></td>
-										<td>
-											<span class="last_wk" row="<?php echo $key;?>">
-											<?php echo $val['last_wk0'];?>
-											</span>
-										</td>
-										<td>
-											<?php echo !empty($val['remaining_qty']) ? $val['remaining_qty'] : (!empty($val['last_wk0']) ? 0 : '');?>
-										<?php /* if (!empty($val['last_wk0'])) { ?>
-											<?php if (!empty($val['group_code'])&&$val['group_code']==$val['last_wk0']): ?>
-												<?php echo number_format($val['group_code_remaining_qty'], 0); ?>
-											<?php elseif (!empty($val['group_code'])&&$val['group_code']!=$val['last_wk0']): ?>
-												<?php echo number_format($val['remaining_qty'], 0); ?>
-											<?php elseif($val['sum_prod']>=$val['remaining_qty']) : ?>
-												<span class="text-danger"><?php echo !empty($val['remaining_qty']) ? number_format($val['remaining_qty'],0) : ''; ?></span>
-											<?php else : ?>
-												<?php echo !empty($val['remaining_qty']) ? number_format($val['remaining_qty'],0) : '';?>
-											<?php endif; ?>
-										<?php } else { ?>
-											<?php if (!empty($val['group_code_remaining_qty'])):?>
-											<?php echo number_format($val['group_code_remaining_qty'],0); ?>
-											<?php endif; ?>
-										<?php }  */ ?>
-										</td>
-									</tr>
-									<?php } ?>
-								</tbody>
-							</table>
-						</div>
-					</div>
-					<div class="col-6">
-						<div class="table-responsive">
-							<table class="table table-bordered" id="makeEditableRight">
-								<thead>
-									<tr>
-										<th style="width:150px;">Propose Wk0</th>
-										<th style="width:150px;">Remaining Qty</th>
-										<td>Message</td>
-										<th style="width:150px;">Validated Wk0</th>
-									</tr>
-								</thead>
-								<tbody>
-									<?php foreach ($list as $key => $val) { ?>
-									<tr>
-										<td>
-										<span class="propose" row="<?php echo $key;?>"><?php echo $val['propose'];?></span>
-										</td>
-										<td><?php echo $val['propose_remaining_qty'];?></td>
-										<td><?php echo $val['message'];?></td>
-										<td class="p-0">
-											<input type="text" name="id_group[<?php echo $val['id_product'];?>]" class="form-control form-control-sm txt_group" value="<?php echo $val['save'];?>" style="height:43px;border-radius:0;" />
-										</td>
-									</tr>
-									<?php } ?>
-								</tbody>
-							</table>
-						</div>
+			<input type="hidden" name="date_wk" value="<?php echo $date_wk; ?>" />
+			<div class="row">
+				<div class="col-12">
+					<div class="table-responsive">
+						<table class="table table-bordered table-hover" id="makeEditable">
+							<thead>
+								<tr>
+									<th witdh="5%" class="text-center">
+										<div class="custom-control custom-checkbox">
+											<input type="checkbox" class="custom-control-input" id="check_all" data-parsley-multiple="groups" data-parsley-mincheck="2">
+											<label class="custom-control-label" for="check_all"></label>
+										</div>
+									</th>
+									<th width="10%" class="text-center">Size Product</th>
+									<th width="10%" class="text-center">Sum Product</th>
+									<th width="10%" >Last Wk Mapping</th>
+									<th width="10%" class="text-center">Last Wk Remaining Qty</th>
+									<th width="10%" class="text-center">Propose Wk0</th>
+									<th width="10%" class="text-center">Propose Wk0 Remaining Qty</th>
+									<th width="10%" class="text-center">Propose Wk0 Message</th>
+									<th class="text-center">Validate Wk0</th>
+								</tr>
+							</thead>
+							<tbody>
+								<?php foreach ($list as $key => $val) {?>
+								<tr>
+									<td witdh="5%" class="text-center">
+										<div class="custom-control custom-checkbox">
+											<input type="checkbox" class="custom-control-input cb" name="checkbox[<?php echo $val['id_product'];?>]" id="listcheck<?php echo $key;?>" data-parsley-multiple="groups" data-parsley-mincheck="2" value="1" <?php echo !empty($val['save']) ? 'checked':''; ?>>
+											<label class="custom-control-label" for="listcheck<?php echo $key;?>"></label>
+										</div>
+									</td>
+									<td class="text-center"><?php echo $val['size']; ?></td>
+									<td class="text-center"><?php echo number_format($val['sum_prod'], 0); ?></td>
+									<td><span class="last_wk" row="<?php echo $key; ?>"><?php echo $val['last_wk0']; ?></span></td>
+									<td><?php echo !empty($val['remaining_qty']) ? $val['remaining_qty'] : (!empty($val['last_wk0']) ? 0 : ''); ?></td>
+									<td class="text-center"><span class="propose" row="<?php echo $key; ?>"><?php echo $val['propose']; ?></span></td>
+									<td class="text-center"><?php echo $val['propose_remaining_qty']; ?></td>
+									<td class="text-center"><?php echo $val['message']; ?></td>
+									<td class="p-0">
+										<input type="text" name="id_group[<?php echo $val['id_product']; ?>]" data-key="<?php echo $val['id_product'];?>" class="form-control form-control-sm txt_group" value="<?php echo $val['save']; ?>" style="height:43px;border-radius:0;" />
+									</td>
+								</tr>
+								<?php }?>
+							</tbody>
+						</table>
 					</div>
 				</div>
-			</form>
+			</div>
 		</div>
 		<!--end card-body-->
+		</form>
 	</div>
-	<?php } ?>
+	<?php }?>
 </div>
 <input type="hidden" name="date_wk" id="date_wk" value="<?php echo $date_wk; ?>">
 <div class="modal fade" id="exampleModalCenter" tabindex="-1" role="dialog" aria-labelledby="exampleModalCenterTitle" aria-hidden="true" style="display: none;">
@@ -190,7 +149,7 @@
 						</div>
 						<div class="col-6 text-left align-self-center">
 							<input type="text" class="form-control" id="add_sum_prod" name="add_sum_prod">
-						</div> 
+						</div>
 					</div>
 					<div class="row">
 						<div class="col-6 text-left align-self-center">
@@ -215,8 +174,61 @@
 	</div>
 	<!--end modal-dialog-->
 </div>
+
+
+
+<div class="modal fade" id="ModalSize" tabindex="-1" role="dialog" aria-labelledby="ModalSize1" aria-hidden="true" style="display: none;">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header bg-primary">
+                <h6 class="modal-title m-0 text-white" id="ModalSize1">Add Menual Size <?php echo $date_wk;?></h6><button type="button"
+                    class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true"><i
+                            class="la la-times text-white"></i></span></button>
+            </div>
+			<!--end modal-header-->
+			<form method="POST" action="<?php echo $action_addmenual;?>">
+            <div class="modal-body">
+                <div class="row">
+					<div class="col-12">
+						<label for="">Size</label>
+						<input type="text" class="form-control" placeholder="Size product code" required />
+					</div>
+					<div class="col-12">
+						<label for="">Sum Product</label>
+						<input type="number" class="form-control" placeholder="Sum product" required />
+					</div>
+					<div class="col-12">
+						<label for="">Remaining Qty</label>
+						<input type="number" class="form-control" placeholder="Remaining Qty" required />
+					</div>
+				</div>
+            </div>
+            <!--end modal-body-->
+            <div class="modal-footer">
+				<button type="button" class="btn btn-secondary btn-sm" data-dismiss="modal">Cancel</button>
+				<button type="submit" class="btn btn-primary btn-sm">Add Size</button>
+			</div>
+			<!--end modal-footer-->
+			</form>
+        </div>
+        <!--end modal-content-->
+    </div>
+    <!--end modal-dialog-->
+</div>
+
 <script>
 $(document).ready(function () {
+
+	$('[type="file"]').on('change', function(e){
+		var fileName = e.target.files[0].name;
+		$(this).next('label.custom-file-label').html('<span class="text-dark">'+fileName+'</span>');
+		console.log(fileName);
+	});
+
+	$('.select2').select2({
+		placeholder: 'Select date upload file',
+		allowClear: true
+	});
 
 	$.get('index.php?route=barcode/jsonFreeGroup', function(data){
 		var json = JSON.parse(data);
@@ -242,12 +254,20 @@ $(document).ready(function () {
 
 	$('#check_all').change(function(){
 		if ($(this).is(':checked')) {
-			$('.check').prop('checked',true);
+			$('.cb').prop('checked',true);
 		} else {
-			$('.check').prop('checked',false);
+			$('.cb').prop('checked',false);
 		}
 	});
-
+	$(document).on('keyup','.txt_group',function(e){
+		let thisvalue = $(this).val();
+		let thiskey = $(this).data('key');
+		if (isNaN(parseInt(thisvalue))==false && parseInt(thisvalue)>0) {
+			$('[name="checkbox['+thiskey+']"]').prop('checked', true);
+		} else {
+			$('[name="checkbox['+thiskey+']"]').prop('checked', false);
+		}
+	});
 	$(document).on('focusin','.txt_group',function(e){
 		var row = $(this).parent('td').parent('tr').index();
 		$('#makeEditableRight tbody tr:eq('+row+')').addClass('trhover');
@@ -337,15 +357,15 @@ $(document).ready(function () {
 		// });
 		// alert(3);
 	});
-	
+
 	$(function(e){
 		// $('#form-import-xlsx').submit(function(e){
 		// 	var form = $(this);
-		// 	var file_data = $("#excel_input").prop("files")[0];   
+		// 	var file_data = $("#excel_input").prop("files")[0];
 		//     var form_data = new FormData();
 		//     form_data.append("excel_input", file_data);
 
-		// 	$.ajax({ 
+		// 	$.ajax({
 		// 		url: 'index.php?route=size',
 		// 		type: 'POST',
 		// 		cache: false,
@@ -369,5 +389,5 @@ $(document).ready(function () {
 		// 	});
 		// 	e.preventDefault();
 		// });
-	});	
+	});
 </script>
