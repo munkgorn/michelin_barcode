@@ -51,6 +51,7 @@
             $data['link_changestatus'] = route('group/change', $url);
             $data['link_del'] = route('group/delGroup', $url);
             $data['action_import_excel'] = '';
+            $data['export_excel'] = route('export/group&date='.$filter_date.'&group='.$filter_group.'&status='.$filter_status);
 
             $data['success'] = $this->hasSession('success') ? $this->getSession('success'): ''; $this->rmSession('success');
             $data['error'] = $this->hasSession('error') ? $this->getSession('error'): ''; $this->rmSession('error');

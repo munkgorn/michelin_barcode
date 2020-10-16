@@ -51,7 +51,8 @@
 			$data['result_group'] = $barcode->getgroup();
 			$data['end_group'] = end($data['result_group'])['group_code'];
 	    	$data['action'] = route('purchase');
-	    	$data['action_import_excel'] = route('listGroup');
+			$data['action_import_excel'] = route('listGroup');
+			$data['export_excel'] = route('export/purchase&start_group='.$data['start_group'].'&end_group='.$data['end_group']);
 			$data['date'] = (get('date')?get('date'):'');
 			
 			$purchase = $this->model('purchase');
@@ -73,8 +74,8 @@
 				$data['getMapping'][] = $value;
 			}
 			// 3 year ago
-			$data['date_first_3_year'] = !empty($data['date_first_3_year']) ? date('Y-m-d', strtotime($purchase->getStartDateOfYearAgo())) : '';
-			$data['date_lasted_order'] = !empty($data['date_lasted_order']) ? date('Y-m-d', strtotime($purchase->getEndDateOfYearAgo())) : '';
+			$data['date_first_3_year'] = date('Y-m-d', strtotime($purchase->getStartDateOfYearAgo()));
+			$data['date_lasted_order'] = date('Y-m-d', strtotime($purchase->getEndDateOfYearAgo()));
 
 
 	    	// $data['start_group'] = $result_group['start_group'];

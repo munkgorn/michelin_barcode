@@ -57,7 +57,8 @@
 		<div class="card-header">
             <div class="row">
                 <div class="col-sm-6">
-					<a href="<?php echo route('barcode/export_excel_range_barcode&date='.$filter_date); ?>" class="btn btn-success">Export Excel</a>
+					<!-- <a href="<?php echo route('barcode/export_excel_range_barcode&date='.$filter_date); ?>" class="btn btn-success">Export Excel</a> -->
+					<a href="<?php echo $export_excel; ?>" target="new" class="btn btn-outline-success"><i class="fas fa-file-excel"></i> Export Excel</a>
                     <!-- <a href="<?php echo route('purchase'); ?>" class="btn btn-danger">Add Barcode</a> -->
                 </div>
                 <div class="col-sm-6 text-right">

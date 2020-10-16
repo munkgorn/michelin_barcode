@@ -26,14 +26,14 @@
 			$data_select = array(
 				'date' => $data['date']
 			);
-			$data['getImportBarcode'] = $barcode->getBarcode();
+			$data['getImportBarcode'] = $barcode->getBarcode($data_select);
 			$data['getBarcode'] = $barcode->getBarcode($data_select);
 			$data['nums_row']	= $barcode->getNumsBarcode($data_select);
 
 
 			$data['action'] = route('barcode/listGroup');
 			$data['action_import'] = route('barcode/importUseBarcode');
-			$data['export_excel'] = route('barcode/export_excel&date='.$data['date']);
+			$data['export_excel'] = route('export/barcode&date='.$data['date']);
 			$data['action_addmenual'] = route('barcode/addmenual&date='.$data['date']);
 			$data['action_import_excel'] = route('barcode');
 
@@ -224,7 +224,8 @@
 	    	// 	'date' => $data['date_wk']
 			// );
 	    	// $data['listPrefixBarcode'] = $barcode->listPrefixBarcode($data_select_date_wk);
-			$data['export_excel'] = route('barcode/export_excel_association&date_wk='.$data['date_wk']);
+			// $data['export_excel'] = route('barcode/export_excel_association&date_wk='.$data['date_wk']);
+			$data['export_excel'] = route('export/association&date='.$data['date_wk']);
 			$data['action_import'] = route('barcode/importAssociation');
 			$data['action_validate'] = route('barcode/association');
 

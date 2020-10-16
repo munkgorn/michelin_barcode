@@ -25,7 +25,7 @@
 							<div class="col-6">
 								<label class="mb-3">&nbsp;</label>
 								<div class="input-group">
-									<button type="submit" class="btn btn-primary">Search</button>
+									<button type="submit" class="btn btn-outline-primary"><i class="fas fa-search"></i> Search</button>
 								</div>
 							</div>
 						</div>
@@ -61,7 +61,7 @@
 
 			<span class="float-left">
 				<?php if (!empty($date)) {?>
-					<a href="<?php echo $export_excel; ?>" class="btn btn-success btn-sm">Export Excel</a>
+					<a href="<?php echo $export_excel; ?>" target="new" class="btn btn-outline-success btn-sm"><i class="fas fa-file-excel"></i> Export Excel</a>
 					<!--<a href="#" class="btn btn-warning" id="import_excel">Import Excel</a>-->
 				<?php }?>
 			</span>

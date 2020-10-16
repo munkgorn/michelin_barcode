@@ -50,7 +50,7 @@
 			<div class="row">
 				<div class="col-12"><h4>Today : <?php echo date('Y-m-d'); ?></h4></div>
 				<div class="col-6">
-					<a href="<?php echo route('barcode/export_excel_range_barcode&start_group='.$start_group.'&end_group='.$end_group); ?>" class="btn btn-outline-success"><i class="fas fa-file-excel"></i> Export Excel</a>
+					<a href="<?php echo $export_excel; ?>" target="new" class="btn btn-outline-success"><i class="fas fa-file-excel"></i> Export Excel</a>
 				</div>
 				<div class="col-6 text-right">
 					<button type="submit" class="btn btn-outline-primary"><i class="fas fa-check-double"></i> Save</button>

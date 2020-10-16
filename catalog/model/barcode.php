@@ -1,6 +1,9 @@
 <?php 
 	class BarcodeModel extends db {
-		public function getBarcode() {
+		public function getBarcode($data='') {
+			if (!empty($data['date'])) {
+				$this->where('b.date_modify', $data['date'].'%', 'LIKE');
+			}
 			$this->where('b.barcode_status', 1);
 			$this->join('user u','u.id_user=b.id_user','LEFT');
 			$this->select('b.barcode_prefix, b.barcode_code, b.date_modify as date_added, u.username');
