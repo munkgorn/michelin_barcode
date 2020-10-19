@@ -65,7 +65,7 @@
 						</a>
 					</li>
 					<li>
-						<a href="<?php echo route('barcode/association'); ?>" class="<?php echo $_GET['route']=='barcode/association'?'active':'';?>">
+						<a href="<?php echo route('association'); ?>" class="<?php echo $_GET['route']=='barcode/association'?'active':'';?>">
 							<i data-feather="link-2" class="align-self-center menu-icon"></i>
 							<span>Barcode Association</span>
 						</a>

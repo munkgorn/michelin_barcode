@@ -1,12 +1,88 @@
 <?php 
 	class AssociationModel extends db {
-        
+        public function importCSV($path) {
+            $result = array();
+            
+            $sql = "LOAD DATA LOCAL INFILE '" . $path . "' INTO TABLE ".PREFIX."product FIELDS TERMINATED BY ',' 
+            LINES TERMINATED BY '\n' IGNORE 1 ROWS ( id_user,size_product_code,sum_product,date_wk,date_added,date_modify);";
+            $result = $this->query($sql);
+
+            $date_now = date('Y-m-d H:i:s');
+            $this->where('date_added', '0000-00-00 00:00:00');
+            $this->update('product', array('date_wk'=>$date_now,'date_added'=>$date_now,'date_modify'=>$date_now));
+
+            // return $result;
+            return $date_now;
+        }
+        public function validatedProductWithGroup( $data = array() ){
+			$result = array();
+			$group_code = $data['id_group'];
+			$id_user = $data['id_user'];
+			$date_wk = $data['date_wk'];
+			$id_product = $data['id_product'];
+
+			// Find barcode start and end
+			$config_barcode = $this->query("SELECT * FROM ".PREFIX."config_barcode WHERE `group` = '".$group_code."'")->row;
+			$size_info = $this->query("SELECT * FROM ".PREFIX."product WHERE id_product = '".$id_product."' AND date_wk LIKE '".$date_wk."%'")->row;
+
+			$id_group = 0;
+
+			// Remove old data 
+			if (isset($size_info['id_group'])&&$size_info['id_group']>0) { 
+				$group_old = $this->query("SELECT * FROM ".PREFIX."group WHERE del=0 AND id_group = '".$size_info['id_group']."'")->row['group_code'];
+				$this->query("DELETE FROM ".PREFIX."group WHERE group_code='$group_old' AND date_wk LIKE '".$date_wk."%'");
+				$this->query("UPDATE ".PREFIX."config_barcode SET remaining = remaining + '".$size_info['sum_product']."' WHERE `group` = '".$group_old."'");
+			}
+
+			$start = 0;
+			$end = 0;
+			$start = (int)$config_barcode['now'];
+			$end = (int)$start + (int)$size_info['sum_product'] - 1;
+
+			$sql_check_have_group = "SELECT * FROM ".PREFIX."group WHERE del=0 AND group_code = '".$group_code."' ";
+			$result_query_check_have_group = $this->query($sql_check_have_group);
+			$data_now = date('Y-m-d H:i:s');
+			
+			if($result_query_check_have_group->num_rows == 0 ){ // Insert because this group is never used.
+				$data_insert = array(
+					'group_code' 	=> $group_code,
+					'id_user'		=> $id_user,
+					'date_added'	=> $data_now,
+					'start'			=> $start,
+					'end'			=> 0,
+					'default_start'	=> $config_barcode['start'],
+					'default_end'	=> $config_barcode['end'],
+					'default_range'	=> $config_barcode['total'],
+					'remaining_qty' => 0
+				);
+				$id_group = $this->insert('group',$data_insert);
+
+			}else{ // Get last id on this group
+				$id_group = $result_query_check_have_group->row['id_group'];
+			}
+            
+			// Update qty 
+			$remaining = $this->query("SELECT * FROM ".PREFIX."config_barcode WHERE `group` = '".$group_code."'")->row['remaining'];
+			$this->query("UPDATE ".PREFIX."group SET date_modify = '".$data_now."', config_remaining = '".$remaining."' WHERE del=0 AND id_group='".$id_group."';");
+
+			// Update qty in setting
+			$product_info = $this->query("SELECT sum_product FROM ".PREFIX."product WHERE id_product = '".$id_product."' AND date_wk LIKE '".$date_wk."%'");
+			$qty = $product_info->row['sum_product'];
+            $this->query("UPDATE ".PREFIX."config_barcode SET remaining = total-'".$qty."' WHERE `group` = '".$group_code."'");
+            
+			// Update import product
+            $result = $this->query("UPDATE ".PREFIX."product SET id_group = '".$id_group."' WHERE id_product = '".$id_product."' AND date_wk LIKE '".$date_wk."%'");
+            return $result==1 ? true :false;
+		}
         public function getDateWK() {
             $this->select('CAST(date_wk as DATE) as date_wk');
             $this->group_by('date_wk');
             $this->order_by('date_wk', 'DESC');
             $query = $this->get('product');
             return $query->rows;
+        }
+        public function addProduct($data=array()) {
+            return $this->insert('product', $data);
         }
         public function getProducts($date_wk) {
             $this->select('p.id_product, p.size_product_code as size, p.sum_product as sum_prod, g.group_code');

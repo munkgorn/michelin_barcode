@@ -36,8 +36,8 @@
 						<select name="status" class="form-control select2status">
 							<option></option>
 							<!-- <option value="-1" >-- Search status --</option> -->
-							<option value="0" <?php echo $filter_status==="0"?'selected':'';?>>Waiting</option>
-							<option value="1" <?php echo $filter_status==="1"?'selected':'';?>>Received</option>
+							<option value="waiting" <?php echo $filter_status==="waiting"?'selected':'';?>>Waiting</option>
+							<option value="received" <?php echo $filter_status==="received"?'selected':'';?>>Received</option>
 						</select>
 					</div>
 					<div class="col-3">

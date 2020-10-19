@@ -21,14 +21,15 @@
 			return isset($query->row['barcode_use']) ? $query->row['barcode_use'] : false;
         }
         public function getGroups($filter=array()) {
-            if (isset($filter['date_modify'])) {
+            if (isset($filter['date_modify'])&&!empty($filter['date_modify'])) {
                 $this->where('g.date_modify', $filter['date_modify'].'%', 'LIKE');
             }
             if (isset($filter['group_code'])&&!empty($filter['group_code'])) {
                 $this->where('g.group_code', $filter['group_code']);
             }
-            if (isset($filter['barcode_use'])&&$filter['barcode_use']>=0) {
-                $this->where('g.barcode_use', (int)$filter['barcode_use']);
+            // print_r($filter);
+            if (isset($filter['barcode_use'])&& (!empty($filter['barcode_use']) || $filter['barcode_use']==="0")) {
+                $this->where('g.barcode_use', $filter['barcode_use']);
             }
             if (isset($filter['has_remainingqty'])) {
                 $this->where('remaining_qty', '0', '>=');
@@ -38,7 +39,6 @@
             $this->join('user u','u.id_user = g.id_user','LEFT');
             $this->select('g.*, u.username');
             $query = $this->get('group g');
-            // echo $this->last_query();
             return $query->rows;
         }
 

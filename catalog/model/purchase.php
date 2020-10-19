@@ -70,7 +70,7 @@
             $this->select("group_code, `start` as barcode_start, '' as barcode_end, default_start, default_end, default_range, remaining_qty ");
             $this->order_by('group_code','ASC');
             $query = $this->get('group');
-            return $query->rows;
+            return $query->num_rows > 0 ? $query->rows : false;
         }
 	}
 ?>

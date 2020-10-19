@@ -49,6 +49,12 @@
 			
 
 			$data['result_group'] = $barcode->getgroup();
+
+			if (count($data['result_group'])==0) {
+				$this->setSession('error', 'Cannot go page "new barcode ordering", please import association and validated.');
+				$this->redirect('association');
+			}
+
 			$data['end_group'] = end($data['result_group'])['group_code'];
 	    	$data['action'] = route('purchase');
 			$data['action_import_excel'] = route('listGroup');
@@ -57,6 +63,12 @@
 			
 			$purchase = $this->model('purchase');
 			$group = $this->model('group');
+
+			if (empty($data['start_group']) || empty($data['end_group'])) {
+				// $this->setSession('error', 'Not found');
+				// $this->redirect('association');
+			}
+
 			// Get List
 			$filter = array(
 				'start_group' => $data['start_group'],
@@ -64,15 +76,18 @@
 			);
 			$mapping = $purchase->getPurchases($filter);
 			$data['getMapping'] = array();
-			foreach ($mapping as $key => $value) {
-				$value['barcode_start_year'] = $purchase->getStartBarcodeOfYearAgo($value['group_code']);
-				$value['barcode_end_year'] = $purchase->getEndBarcodeOfYearAgo($value['group_code']);
-				$barcode_use = $group->getGroupStatus($value['group_code']);
-				$value['status'] = $barcode_use==="1" ? '<span class="text-primary">Recived</span>' : ($barcode_use==="0" ? '<span class="text-danger">Waiting</span>' : '');
-				$value['status_id'] = $barcode_use;
-
-				$data['getMapping'][] = $value;
+			if ($mapping!=false) {
+				foreach ($mapping as $key => $value) {
+					$value['barcode_start_year'] = $purchase->getStartBarcodeOfYearAgo($value['group_code']);
+					$value['barcode_end_year'] = $purchase->getEndBarcodeOfYearAgo($value['group_code']);
+					$barcode_use = $group->getGroupStatus($value['group_code']);
+					$value['status'] = $barcode_use==="1" ? '<span class="text-primary">Recived</span>' : ($barcode_use==="0" ? '<span class="text-danger">Waiting</span>' : '');
+					$value['status_id'] = $barcode_use;
+	
+					$data['getMapping'][] = $value;
+				}
 			}
+			
 			// 3 year ago
 			$data['date_first_3_year'] = date('Y-m-d', strtotime($purchase->getStartDateOfYearAgo()));
 			$data['date_lasted_order'] = date('Y-m-d', strtotime($purchase->getEndDateOfYearAgo()));

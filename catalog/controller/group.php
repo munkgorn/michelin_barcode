@@ -51,7 +51,8 @@
             $data['link_changestatus'] = route('group/change', $url);
             $data['link_del'] = route('group/delGroup', $url);
             $data['action_import_excel'] = '';
-            $data['export_excel'] = route('export/group&date='.$filter_date.'&group='.$filter_group.'&status='.$filter_status);
+            // $data['export_excel'] = route('export/group&date='.$filter_date.'&group='.$filter_group.'&status='.$filter_status);
+            $data['export_excel'] = route('export/groupPattern&date='.$filter_date.'&group='.$filter_group.'&status='.$filter_status);
 
             $data['success'] = $this->hasSession('success') ? $this->getSession('success'): ''; $this->rmSession('success');
             $data['error'] = $this->hasSession('error') ? $this->getSession('error'): ''; $this->rmSession('error');
@@ -67,12 +68,22 @@
         public function getLists() {
             $data = array();
             $group = $this->model('group');
+            
+            switch (get('status')) {
+                case 'waiting' : $status = 0; break;
+                case 'received' : $status = 1; break;
+                default : $status = false; break;
+            }
+            // echo $status;
             $filter = array(
-                'date_modify' => get('date'),
+                'date_modify' => !empty(get('date')) ? get('date') : '',
                 'group_code' => get('group'),
-                'barcode_use' => get('status')>=0 ? get('status') : null,
+                // 'barcode_use' => $status,
                 'has_remainingqty' => true
             );
+            if ($status!==false) {
+                $filter['barcode_use'] = "$status";
+            }
             $data = $group->getGroups($filter);
             return $data;
         }

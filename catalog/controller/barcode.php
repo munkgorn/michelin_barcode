@@ -160,12 +160,6 @@
 				$this->redirect('barcode/association&date_wk='.post('date_wk'));
 			}
 			
-	    	// $barcode = $this->model('barcode');
-	    	// $data['date_wk'] = get('date_wk');
-			// $data['listDateWK'] = $barcode->listDateWK();
-
-
-
 			$association = $this->model('association');
 			$data['date_wk'] = get('date_wk');
 			$data['listDateWK'] = $association->getDateWK();
@@ -220,11 +214,6 @@
 				);
 			}
 			
-	    	// $data_select_date_wk = array(
-	    	// 	'date' => $data['date_wk']
-			// );
-	    	// $data['listPrefixBarcode'] = $barcode->listPrefixBarcode($data_select_date_wk);
-			// $data['export_excel'] = route('barcode/export_excel_association&date_wk='.$data['date_wk']);
 			$data['export_excel'] = route('export/association&date='.$data['date_wk']);
 			$data['action_import'] = route('barcode/importAssociation');
 			$data['action_validate'] = route('barcode/association');

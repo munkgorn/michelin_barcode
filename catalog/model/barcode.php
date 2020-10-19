@@ -350,83 +350,58 @@
 			$date_wk = $data['date_wk'];
 			$id_product = $data['id_product'];
 
-		
-
-			// ? Find barcode start and end
+			// Find barcode start and end
 			$config_barcode = $this->query("SELECT * FROM ".PREFIX."config_barcode WHERE `group` = '".$group_code."'")->row;
 			$size_info = $this->query("SELECT * FROM ".PREFIX."product WHERE id_product = '".$id_product."' AND date_wk LIKE '".$date_wk."%'")->row;
 
 			$id_group = 0;
 
-			// ? Return qty in config
-			if (isset($size_info['id_group'])&&$size_info['id_group']>0) { // ? กรณีมีค่าเก่าอยู่แล้ว
-				// ? remove old 
+			// Remove old data 
+			if (isset($size_info['id_group'])&&$size_info['id_group']>0) { 
 				$group_old = $this->query("SELECT * FROM ".PREFIX."group WHERE del=0 AND id_group = '".$size_info['id_group']."'")->row['group_code'];
-				// $this->query("UPDATE ".PREFIX."group SET del=1 WHERE group_code = '".$group_old."' AND date_wk LIKE '".$date_wk."%'");
 				$this->query("DELETE FROM ".PREFIX."group WHERE group_code='$group_old' AND date_wk LIKE '".$date_wk."%'");
 				$this->query("UPDATE ".PREFIX."config_barcode SET remaining = remaining + '".$size_info['sum_product']."' WHERE `group` = '".$group_old."'");
-				// $update = array(
-				// 	'date_modify' => date('Y-m-d H:i:s')
-				// );
-				// $this->where('id_group', $size_info['id_group']);
-				// $this->update('group', $update);
-				// $id_group = $size_info['id_group'];
-			// } else {
 			}
 
-				$start = 0;
-				$end = 0;
-				$start = (int)$config_barcode['now'];
-				$end = (int)$start + (int)$size_info['sum_product'] - 1;
+			$start = 0;
+			$end = 0;
+			$start = (int)$config_barcode['now'];
+			$end = (int)$start + (int)$size_info['sum_product'] - 1;
 
-				// ที่เอาออกเพราะ group จะจับรวมเป็นอันเดียว
-				// $sql_check_have_group = "SELECT * FROM ".PREFIX."group WHERE group_code = '".$group_code."' AND date_wk LIKE '".$date_wk."%'";
-				
-				$sql_check_have_group = "SELECT * FROM ".PREFIX."group WHERE del=0 AND group_code = '".$group_code."' ";
-				$result_query_check_have_group = $this->query($sql_check_have_group);
-				$data_now = date('Y-m-d H:i:s');
-				// if not have group
-				if($result_query_check_have_group->num_rows == 0 ){
-					$data_insert = array(
-						'group_code' 	=> $group_code,
-						'id_user'		=> $id_user,
-						// 'date_wk'		=> $date_wk,
-						'date_added'	=> $data_now,
-						// 'barcode_use'	=> null,
-						'start'			=> $start,
-						'end'			=> 0,
-						'default_start'	=> $config_barcode['start'],
-						'default_end'	=> $config_barcode['end'],
-						'default_range'	=> $config_barcode['total'],
-						'remaining_qty' => 0
-					);
-					$id_group = $this->insert('group',$data_insert);
-				}else{
-					// $update = array();
-					$id_group = $result_query_check_have_group->row['id_group'];
-				}
+			$sql_check_have_group = "SELECT * FROM ".PREFIX."group WHERE del=0 AND group_code = '".$group_code."' ";
+			$result_query_check_have_group = $this->query($sql_check_have_group);
+			$data_now = date('Y-m-d H:i:s');
 
-			// }
 			
-			
-			
-			$this->query("UPDATE ".PREFIX."product SET id_group = '".$id_group."' WHERE id_product = '".$id_product."' AND date_wk LIKE '".$date_wk."%'");
+			if($result_query_check_have_group->num_rows == 0 ){ // Insert because this group is never used.
+				$data_insert = array(
+					'group_code' 	=> $group_code,
+					'id_user'		=> $id_user,
+					'date_added'	=> $data_now,
+					'start'			=> $start,
+					'end'			=> 0,
+					'default_start'	=> $config_barcode['start'],
+					'default_end'	=> $config_barcode['end'],
+					'default_range'	=> $config_barcode['total'],
+					'remaining_qty' => 0
+				);
+				$id_group = $this->insert('group',$data_insert);
 
+			}else{ // Get last id on this group
+				$id_group = $result_query_check_have_group->row['id_group'];
+			}
+			
+			// Update import product
+			$result = $this->query("UPDATE ".PREFIX."product SET id_group = '".$id_group."' WHERE id_product = '".$id_product."' AND date_wk LIKE '".$date_wk."%'");
+
+			// Update qty 
 			$remaining = $this->query("SELECT * FROM ".PREFIX."config_barcode WHERE `group` = '".$group_code."'")->row['remaining'];
 			$this->query("UPDATE ".PREFIX."group SET date_modify = '".$data_now."', config_remaining = '".$remaining."' WHERE del=0 AND id_group='".$id_group."';");
 
-			$result = array(
-				'result' => 'success'
-			);
-
-
-			// update remaining
+			// Update qty in setting
 			$product_info = $this->query("SELECT sum_product FROM ".PREFIX."product WHERE id_product = '".$id_product."' AND date_wk LIKE '".$date_wk."%'");
 			$qty = $product_info->row['sum_product'];
-			// ? cut stock
 			$this->query("UPDATE ".PREFIX."config_barcode SET remaining = total-'".$qty."' WHERE `group` = '".$group_code."'");
-			// $this->where('`group`',$group);
-			// $this->update('config_barcode', array('remaining'=>'total-'.$qty));
 
 			return $result;
 		}
