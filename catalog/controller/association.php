@@ -1,6 +1,14 @@
 <?php 
 class AssociationController extends Controller {
 
+    public function __construct() {
+        if ($this->hasSession('id_user')==false) {
+            $this->rmSession('id_user');
+            $this->rmSession('username');
+            $this->setSession('error', 'Please Login');
+            $this->redirect('home');
+        } 
+    }
     public function index() {
         $data = array();
         $association = $this->model('association');
@@ -11,6 +19,9 @@ class AssociationController extends Controller {
         $data['list'] = array();
         if (!empty($data['date_wk'])) {
             $data['list'] = $this->getLists($data['date_wk']);
+
+            $checkValidated = $association->checkValidatedDate($data['date_wk']);
+            $data['hasValidated'] = $checkValidated>0 ? true : false;
         } else {
             if (isset($_GET['date_wk'])) {
                 $this->setSession('error', 'Not found date');
@@ -40,12 +51,25 @@ class AssociationController extends Controller {
             $this->redirect('association');
         }
 
+
         $lists = $association->getProducts($date_wk);
         $date_lastweek = $association->getDateLastWeek();
         $thisFirstWeek = ($date_lastweek==false) ? true : false;
         foreach ($lists as $key => $value) {
             $last_week = ($date_lastweek!=false) ? $association->getGroupLastWeek($value['size'], $date_lastweek) : '';
-            $remaining_qty = !empty($last_week) ? $association->getRemainingByGroup($last_week) : 0;
+            $remaining_qty = 0;
+            if (!empty($last_week)) {
+                $groupReceived = $association->getGroupReceived($last_week);
+                $barcodeUse = $association->getBarcodeUse($last_week);
+                if ($groupReceived!=false) {
+                    if ($barcodeUse==0) {
+                        $remaining_qty = $groupReceived;
+                    } else {
+                        $remaining_qty = $groupReceived - $barcodeUse;
+                    }
+                }
+            }
+            // $remaining_qty = !empty($last_week) ? $association->getRemainingByGroup($last_week) : 0;
 
             $relation_group = $association->getRelationshipBySize($value['size']);
 

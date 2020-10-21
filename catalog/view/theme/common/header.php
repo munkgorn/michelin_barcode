@@ -95,6 +95,9 @@
 									<i class="ti-control-record"></i>Recode Consumed Barcode
 								</a>
 							</li>
+							<li>
+								<a><i class="ti-control-record"></i> Report remaining stock barcode</a>
+							</li>
 						</ul>
 					</li>
 					<!-- <li>

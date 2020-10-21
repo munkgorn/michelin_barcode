@@ -185,72 +185,46 @@
 				// ไม่เคยมีค่า ของวันนี้
 				else {
 					// หาค่า default barcode
-					$this->where('`group`', $group_code);
+					$this->where('`group`', $group_code, 'LIKE');
 					$query_configbarcode = $this->get('config_barcode');
 					$config_barcode = $query_configbarcode->row;
 
 					// หายอดคงเหลือ ของ วันก่อน
-					// $this->group_by('date_added');
-					// $this->order_by('date_added','DESC');
-					// $this->where('group_code', $group_code);
-					// $this->limit(1,1);
-					// $this->select('*');
-					// $findold = $this->get('group');
 					$findold = $this->query("SELECT * FROM ".PREFIX."group WHERE group_code = '$group_code' GROUP BY date_added ORDER BY date_added DESC;");
 					
 
+					$insert = array(
+						'id_user' => isset($data['user']) ? $data['user'] : 0,
+						'group_code' => $group_code,
+						'start' => 0,
+						'end' => 0,
+						'remaining_qty' => $val,
+						'default_start' => $config_barcode['start'],
+						'default_end' => $config_barcode['end'],
+						'default_range' => $config_barcode['total'],
+						'barcode_use' => 0,
+						'config_remaining' => $config_barcode['remaining'], // ค่าคงเหลือเฉยๆ เก็บไว้ในระบบดูว่า ใช้ไปเท่าไหร่
+						'date_added' => date('Y-m-d H:i:s'),
+						'date_modify' => date('Y-m-d H:i:s')
+					);
+
 					if ($findold->num_rows==1) {
 						$old_group = $findold->row;
-						$insert = array(
-							'id_user' => isset($data['user']) ? $data['user'] : 0,
-							'group_code' => $group_code,
-							'start' => 0,
-							'end' => 0,
-							'remaining_qty' => null,
-							'default_start' => $config_barcode['start'],
-							'default_end' => $config_barcode['end'],
-							'default_range' => $config_barcode['total'],
-							'barcode_use' => 0,
-							'config_remaining' => $config_barcode['remaining'], // ค่าคงเหลือเฉยๆ เก็บไว้ในระบบดูว่า ใช้ไปเท่าไหร่
-							'date_added' => date('Y-m-d H:i:s'),
-							'date_modify' => date('Y-m-d H:i:s')
-						);
 						$insert['start'] = $old_group['start']; // เลขล่าสุด จากครั้งที่แล้ว ไม่สนใจว่า barcode นั้น confirm การใช้ไปรึยัง
 						$insert['config_remaining'] = $old_group['config_remaining'] - $old_group['remaining_qty']; // เอาเลข 
 
-						$id_group = $this->insert('group', $insert);
 						$start = $insert['start'];
+					} else {
+						$insert['start'] = (int)$config_barcode['start'] + (int)$val;
+						$start = $config_barcode['start'];
 					}
 
+					if ($val>0) {
+						$id_group = $this->insert('group', $insert);
+					}
+					
+
 				}
-
-				// $start = 0;
-				// $end = 0;
-				// $qty = $val;
-				// $id_user = $data['id_user'];
-				// // $group_code = $data['group_code'];
-				// $date_now = date('Y-m-d H:i:s');
-				// $id_group = 0;
-				// $old_qty = 0;
-
-				// $result_get_start_end = $this->query("SELECT * FROM ".PREFIX."group WHERE group_code = '".$group_code."'");
-				// if($result_get_start_end->num_rows>0){
-				// 	$start 	= $result_get_start_end->row['start'];
-				// 	$end 	= $result_get_start_end->row['end'];
-				// 	$id_group = $result_get_start_end->row['id_group'];
-				// 	$old_qty = $result_get_start_end->row['remaining_qty'];
-				// }
-				// $updatestart = (int)$start+(int)$qty;
-				// $updateend 	= 0;
-
-
-				// $data_update_group_code = array(
-				// 	'remaining_qty' => 	(int)$val + (int)$old_qty,
-				// 	'start'			=> 	$updatestart,
-				// 	'end'			=>	$updateend,
-				// 	'date_added' => $date_now
-				// );
-				// $result_update = $this->update('group',$data_update_group_code,"group_code = '".$group_code."'");
 
 				$date_now = date('Y-m-d H:i:s');
 				$qty = $val;
@@ -286,6 +260,7 @@
 			$sql = "LOAD DATA LOCAL INFILE '" . $full_name . "' INTO TABLE ".PREFIX."barcode FIELDS TERMINATED BY ',' 
 			LINES TERMINATED BY '\n'  ( id_user,id_group,barcode_prefix,barcode_code,barcode_status,barcode_flag,date_added,date_modify);";
 			$this->query($sql);
+
 			$date_now = date('Y-m-d H:i:s');
 			$sql_update_date = "UPDATE ".PREFIX."barcode SET date_added = '".$date_now."', date_modify = '".$date_now."' WHERE date_added = '0000-00-00 00:00:00'";
 			$this->query($sql_update_date);

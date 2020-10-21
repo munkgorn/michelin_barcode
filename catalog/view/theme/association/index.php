@@ -66,7 +66,7 @@
 			<div class="row">
 				<div class="col-6">
 					<a type="button" href="<?php echo $export_excel; ?>" target="new" class="btn btn-outline-success "><i class="fas fa-file-excel"></i> Export Excel</a>
-					<button type="button" class="btn btn-outline-info " data-toggle="modal" data-target="#ModalSize"><i class="fas fa-plus-circle"></i> Add Menual Size</button>
+					<button type="button" class="btn btn-outline-info " data-toggle="modal" data-target="#ModalSize" <?php echo $hasValidated ? 'disabled="disabled"' : '';?>><i class="fas fa-plus-circle"></i> Add Menual Size</button>
 				</div>
 				<div class="col-6 text-right">
 					<button type="submit"  class="btn btn-outline-primary "><i class="fas fa-check-double"></i> Validate Check</button>

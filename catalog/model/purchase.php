@@ -60,16 +60,20 @@
             // SELECT group_code, `start` as barcode_start, '00000000' as barcode_end, default_start, default_end, default_range FROM mb_master_group ORDER BY group_code
             if (count($filter)>0) {
                 if (isset($filter['start_group'])&&isset($filter['end_group'])) {
-                    $this->where("group_code BETWEEN '".$filter['start_group']."' AND '".$filter['end_group']."'",'','');
+                    $this->where("cb.`group` BETWEEN '".$filter['start_group']."' AND '".$filter['end_group']."'",'','');
                 } else {
                     foreach ($filter as $key => $value) {
                         $this->where($key, $value);
                     }
                 }
             }
-            $this->select("group_code, `start` as barcode_start, '' as barcode_end, default_start, default_end, default_range, remaining_qty ");
-            $this->order_by('group_code','ASC');
-            $query = $this->get('group');
+            // $this->select("group_code, `start` as barcode_start, '' as barcode_end, default_start, default_end, default_range, remaining_qty ");
+            $this->select("cb.`group` AS group_code,IF (g.`start` IS NULL,cb.`start`,g.`start`) AS barcode_start,'' AS barcode_end,cb.`start` AS default_start,cb.`end` AS default_end,cb.total AS default_range,g.remaining_qty");
+            // $this->order_by('group_code','ASC');
+            $this->order_by('cb.`group`','ASC');
+            $this->join('group g', 'g.group_code = cb.`group`', 'LEFT');
+            $query = $this->get('config_barcode cb');
+            // echo $this->last_query();
             return $query->num_rows > 0 ? $query->rows : false;
         }
 	}

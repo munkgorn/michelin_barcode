@@ -10,7 +10,8 @@
 		}
 	    public function index() {
 	    	$data = array();
-	    	$barcode = $this->model('barcode');
+			$barcode = $this->model('barcode');
+			$config = $this->model('config');
 	    	$data['start_group'] = get('start_group');
 			$data['end_group'] = get('end_group');
 			
@@ -48,14 +49,16 @@
 			// $data['date_lasted_order'] = date('Y-m-d');
 			
 
-			$data['result_group'] = $barcode->getgroup();
+			// $data['result_group'] = $barcode->getgroup();
+			$data['result_group'] = array();
+			$data['result_group'] = $config->getBarcodes();
 
 			if (count($data['result_group'])==0) {
 				$this->setSession('error', 'Cannot go page "new barcode ordering", please import association and validated.');
 				$this->redirect('association');
 			}
 
-			$data['end_group'] = end($data['result_group'])['group_code'];
+			$data['end_group'] = end($data['result_group'])['group'];
 	    	$data['action'] = route('purchase');
 			$data['action_import_excel'] = route('listGroup');
 			$data['export_excel'] = route('export/purchase&start_group='.$data['start_group'].'&end_group='.$data['end_group']);

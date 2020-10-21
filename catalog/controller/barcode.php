@@ -26,8 +26,15 @@
 			$data_select = array(
 				'date' => $data['date']
 			);
-			$data['getImportBarcode'] = $barcode->getBarcode($data_select);
-			$data['getBarcode'] = $barcode->getBarcode($data_select);
+			$data['getImportBarcode'] = array();
+			$barcodes = $barcode->getBarcode($data_select);
+			// $config = $this->model('config');
+			// $default_number_maximum_alert = $config->getConfig('config_maximum_alert'); // ? ค่าที่ตั้งไว้ว่าเกินเท่าไหร่ให้ alert
+			// return $this->calcurateDiffernce($list1, $list2, $default_number_maximum_alert);
+			// foreach ($barcodes as $barcode) {
+
+			// }
+
 			$data['nums_row']	= $barcode->getNumsBarcode($data_select);
 
 
@@ -36,7 +43,6 @@
 			$data['export_excel'] = route('export/barcode&date='.$data['date']);
 			$data['action_addmenual'] = route('barcode/addmenual&date='.$data['date']);
 			$data['action_import_excel'] = route('barcode');
-
 			
 			$data['groups'] = $barcode->getGroupInBarcode($data['date']);
 
@@ -842,6 +848,13 @@
 				$list2[] = (int)$value['barcode'];
 			}
 
+			// ? get default alert
+			$config = $this->model('config');
+			$default_number_maximum_alert = $config->getConfig('config_maximum_alert'); // ? ค่าที่ตั้งไว้ว่าเกินเท่าไหร่ให้ alert
+			return $this->calcurateDiffernce($list1, $list2, $default_number_maximum_alert);
+		}
+
+		public function calcurateDiffernce($list1, $list2, $default_number_maximum_alert) {
 			sort($list1);
 			sort($list2);
 			$arr_diff = array_diff($list1, $list2); // ? ได้อาเรย์ ส่วนต่างที่ไม่เหมือนกัน
@@ -876,10 +889,6 @@
 					$save[] = $value;
 				}
 			}
-
-			// ? get default alert
-			$config = $this->model('config');
-			$default_number_maximum_alert = $config->getConfig('config_maximum_alert'); // ? ค่าที่ตั้งไว้ว่าเกินเท่าไหร่ให้ alert
 
 			$text = array();
 			foreach ($diff as $key => $value) {

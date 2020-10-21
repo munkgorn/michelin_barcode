@@ -73,7 +73,14 @@
 			// Update import product
             $result = $this->query("UPDATE ".PREFIX."product SET id_group = '".$id_group."' WHERE id_product = '".$id_product."' AND date_wk LIKE '".$date_wk."%'");
             return $result==1 ? true :false;
-		}
+        }
+        public function checkValidatedDate($date) {
+            $this->where('date_wk', $date.'%', 'LIKE');
+            $this->where('id_group is not null','','');
+            $this->select('count(id_group) as count_group');
+            $result = $this->get('product');
+            return $result->row['count_group'];
+        }
         public function getDateWK() {
             $this->select('CAST(date_wk as DATE) as date_wk');
             $this->group_by('date_wk');
@@ -115,14 +122,33 @@
                 return '';
             }
         }
-        public function getRemainingByGroup($group_code) {
+        public function getGroupReceived($group_code) {
+            $this->select('remaining_qty as barcode_received');
+            $this->where('group_code', $group_code);
+            $this->where('barcode_use', 1);
+            $this->where('del', 0);
+            $query = $this->get('group');
+            return $query->num_rows>0 ? $query->row['barcode_received'] : false;
+        }
+        public function getBarcodeUse($group_code) {
+            $this->select('count(b.id_barcode) as barcode');
+            $this->join('barcode b', 'b.id_group = g.id_group', 'LEFT');
             $this->where('g.group_code', $group_code);
             $this->where('g.barcode_use', 1);
             $this->where('b.barcode_status', 1);
+            $this->where('g.del', 0);
+            $query = $this->get('group g');
+            return $query->row['barcode'];
+        }
+        public function getRemainingByGroup($group_code) {
+            $this->where('g.group_code', $group_code);
+            $this->where('g.barcode_use', 1);
+            // $this->where('b.barcode_status', 1);
             $this->where('g.del',0);
-            $this->select('if (count(b.id_barcode)>0, g.remaining_qty-count(b.id_barcode), g.remaining_qty) as remaining_qty');
+            $this->select('if (count( b.id_barcode )> 0, g.remaining_qty-count(b.id_barcode), g.remaining_qty) as remaining_qty');
             $this->join('barcode b','b.id_group=g.id_group');
             $query = $this->get('group g');
+            // echo $this->last_query();
             return !empty($query->row['remaining_qty']) ? $query->row['remaining_qty'] : '';
         }
         public function getRelationshipBySize($size) {

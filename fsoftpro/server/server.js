@@ -49,13 +49,22 @@ app.post("/truncate", (req, res) => {
 
 app.post("/setdate", (req, res) => {
   let text = '';
-  let sql = "update mb_master_barcode set date_added = '"+req.body.todate+"';";
-  sql += "update mb_master_import_barcode set date_added = '"+req.body.todate+"', date_modify = '"+req.body.todate+"';";
-  sql += "update mb_master_group set date_added = '"+req.body.todate+"', date_modify = '"+req.body.todate+"';";
-  sql += "update mb_master_product set date_wk = '"+req.body.todate+"';";
+  let sql = "update mb_master_barcode set date_added = '"+req.body.todate+"', date_modify = '"+req.body.todate+"' WHERE date_added LIKE '"+req.body.datefrom+"%';";
+  sql += "update mb_master_import_barcode set date_added = '"+req.body.todate+"', date_modify = '"+req.body.todate+"' WHERE date_added LIKE '"+req.body.datefrom+"%';";
+  sql += "update mb_master_group set date_added = '"+req.body.todate+"', date_modify = '"+req.body.todate+"' WHERE date_added LIKE '"+req.body.datefrom+"%';";
+  sql += "update mb_master_product set date_wk = '"+req.body.todate+"' WHERE date_wk LIKE '"+req.body.datefrom+"%';";
   let query = db.query(sql, (err, results) => {
     if (err) throw err;
     text = 'set date all success';
     res.send(text);
+  });
+});
+
+app.post("/getAssociationDate", (req, res) => {
+  let text = '';
+  let sql = "SELECT date_wk FROM mb_master_product GROUP BY date_wk;";
+  let query = db.query(sql, (err, results) => {
+    if (err) throw err;
+    res.send(results);
   });
 });

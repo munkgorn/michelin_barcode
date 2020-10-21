@@ -21,9 +21,9 @@
 				<li class="nav-item">
 					<a class="nav-link <?php echo $tab=='config_barcode'?'active':'';?> " data-toggle="tab" href="#config_barcode" role="tab" aria-controls="config_barcode" aria-selected="false">Barcode</a>
 				</li>
-				<li class="nav-item">
+				<!-- <li class="nav-item">
 					<a class="nav-link <?php echo $tab=='config_status'?'active':'';?> " data-toggle="tab" href="#config_status" role="tab" aria-controls="config_status" aria-selected="false">Status</a>
-				</li>
+				</li> -->
 			</ul>
 			<div class="tab-content pt-5" id="myTabContent">
 				<div class="tab-pane fade <?php echo $tab=='config_default' ? 'show active' : '';?>" id="config_default" role="tabpanel" aria-labelledby="config_default">

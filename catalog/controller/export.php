@@ -19,11 +19,29 @@ class ExportController extends Controller {
             'Validated',
         );
 
+        $freegroup = $this->jsonFreeGroup(false);
+        $jsonfreegroup = json_decode($freegroup, true);
+        $freegroup = json_decode($jsonfreegroup[0], true);
+
+        $i=0;
+
         $date_lastweek = $association->getDateLastWeek();
         $products = $association->getProducts($date_wk);
         foreach ($products as $product) {
             $last_week = ($date_lastweek!=false) ? $association->getGroupLastWeek($product['size'], $date_lastweek) : '';
-            $remaining_qty = !empty($last_week) ? $association->getRemainingByGroup($last_week) : 0;
+            $remaining_qty = 0;
+            if (!empty($last_week)) {
+                $groupReceived = $association->getGroupReceived($last_week);
+                $barcodeUse = $association->getBarcodeUse($last_week);
+                if ($groupReceived!=false) {
+                    if ($barcodeUse==0) {
+                        $remaining_qty = $groupReceived;
+                    } else {
+                        $remaining_qty = $groupReceived - $barcodeUse;
+                    }
+                }
+            }
+            // $remaining_qty = !empty($last_week) ? $association->getRemainingByGroup($last_week) : 0;
 
             $relation_group = $association->getRelationshipBySize($product['size']);
 
@@ -42,6 +60,10 @@ class ExportController extends Controller {
                     $propose_remaining_qty = $qty;
                     $message = 'Relationship';
                 }
+            } else { // Use free group in json file
+                $propose = (int)$freegroup[$i];
+                $message = 'Free group';
+                $i++;
             }
 
             $text = '';
@@ -67,6 +89,24 @@ class ExportController extends Controller {
         $file = whiteExcel($excel, $doc, $name);
         header('location:uploads/export/'.$file);
         exit();
+    }
+
+    public function jsonFreeGroup($header=true) {
+        $json = array();
+        if (!file_exists(DOCUMENT_ROOT . 'uploads/freegroup.json')) {
+            $this->generateJsonFreeGroup();
+        }
+        $file_handle = fopen(DOCUMENT_ROOT . 'uploads/freegroup.json', "r");
+        while(!feof($file_handle)){
+            $line_of_text = fgets($file_handle);
+            $json[] = $line_of_text;
+        }
+        fclose($file_handle);
+        if ($header) {
+            $this->json($json);
+        } else {
+            return json_encode($json);
+        }
     }
 
     public function purchase() {
