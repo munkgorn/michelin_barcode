@@ -11,7 +11,16 @@
 				<div class="row">
 					<div class="col-3">
 						<label class="mb-3">Purchase date</label>
-						<div class="input-group">
+						<select name="date" id="" class="form-control select2date">
+							<?php foreach ($date_group as $date) : ?>
+							<option 
+								value="<?php echo date('Y-m-d', strtotime($date['date_modify']));?>"
+								<?php echo date('Y-m-d', strtotime($date['date_modify']))==$filter_date ? 'selected' : '';?>>
+								<?php echo date('d/m/Y', strtotime($date['date_modify']));?>
+							</option>
+							<?php endforeach; ?>
+						</select>
+						<!-- <div class="input-group">
 							<input type="text" class="form-control datepicker" 
 							id="date" 
 							name="date" 
@@ -19,7 +28,7 @@
 							<div class="input-group-append">
 								<span class="input-group-text"><i class="dripicons-calendar"></i></span>
 							</div>
-						</div>
+						</div> -->
 					</div>
 					<div class="col-3">
 						<label class="mb-3">Group barcode</label>
@@ -27,7 +36,7 @@
 							<option></option>
 							<!-- <option value="" >-- Search group prefix --</option> -->
                             <?php foreach ($groups as $group) : ?>
-                            <option value="<?php echo $group;?>" <?php echo $filter_group==$group?'selected':'';?>><?php echo $group;?></option>
+                            <option value="<?php echo $group;?>" <?php echo $filter_group==$group?'selected':'';?>><?php echo sprintf('%03d',$group);?></option>
                             <?php endforeach; ?> 
 						</select>
 					</div>
@@ -102,9 +111,9 @@
 									</div>
 								</div>
 							</th>
-							<td class="text-center"><?php echo $val['group_code']; ?></td>
-							<td class="text-center"><?php echo $val['start']-$val['remaining_qty']; ?></td>
-							<td class="text-center"><?php echo $val['start']-1; ?></td>
+							<td class="text-center"><?php echo sprintf('%03d',$val['group_code']); ?></td>
+							<td class="text-center"><?php echo sprintf('%08d',($val['start']-$val['remaining_qty'])); ?></td>
+							<td class="text-center"><?php echo sprintf('%08d',($val['start']-1)); ?></td>
 							<td class="text-center"><?php echo number_format($val['remaining_qty'], 0);?></td>
 							<td class="text-center">
 								<?php if($val['barcode_use']==1) : ?>
@@ -113,7 +122,7 @@
 								<a href="<?php echo $link_changestatus."&id=$val[id_group]";?>" class="btn btn-outline-info btn-sm">Waiting <i class="fas fa-chevron-right"></i> Receive</a>
 								<?php endif; ?>
 							</td>
-							<td><?php echo $val['date_added']; ?></td>
+							<td><?php echo $val['date_modify']; ?></td>
 							<td><?php echo $val['username']; ?></td>
 							<td class="text-center">
                                 <a href="<?php echo $val['barcode_use']==0?$link_del.'&id='.$val['id_group']:'#';?>" class="btn btn-danger btn-sm <?php echo $val['barcode_use']==1?'disabled':'';?>" onclick="return confirm('Are you sure delete this purchase group?')"><i class="fas fa-trash-alt"></i></a>
@@ -162,6 +171,10 @@ $(document).ready(function(){
 </script>
 <script>
 $(document).ready(function () {
+	$('.select2date').select2({
+		placeholder: 'Search group barcode',
+		allowClear: true
+	}) ;
 	$('.select2prefix').select2({
 		placeholder: 'Search group barcode',
 		allowClear: true

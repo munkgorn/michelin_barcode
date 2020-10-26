@@ -77,11 +77,13 @@
 				<table class="table table-bordered" id="">
 					<thead>
 						<tr>
-							<th width="25%">Prefix</th>
-							<th width="25%">Barcode</th>
+							<th width="25%">Group Prefix</th>
+							<!-- <th width="25%">Barcode</th> -->
+							<th>Range Barcode</th>
+							<th>Qty</th>
 							<!-- <th>Status</th> -->
-							<th>Used date</th>
-							<th>Create by</th>
+							<!-- <th>Used date</th> -->
+							<!-- <th>Create by</th> -->
 							<!-- <th name="buttons" style="width:50px;"></th> -->
 						</tr>
 					</thead>
@@ -89,11 +91,11 @@
 						<?php if ($getImportBarcode) {?>
 							<?php foreach ($getImportBarcode as $val) {?>
 							<tr>
-								<td><?php echo $val['barcode_prefix']; ?></td>
-								<td><?php echo $val['barcode_code']; ?></td>
+								<td><?php echo $val['group']; ?></td>
+								<td><?php echo $val['name']; ?></td>
 								<!-- <td><span class="text-success">Use</span></td> -->
-								<td><?php echo $val['date_added']; ?></td>
-								<td><?php echo $val['username']; ?></td>
+								<td><?php echo $val['count']; ?></td>
+								<!-- <td><?php echo $val['username']; ?></td> -->
 								<!-- <td name="buttons">
 									<div class=" pull-right">
 										<button id="bElim" type="button" class="btn btn-sm btn-soft-danger btn-circle" onclick="rowElim(this);">
@@ -112,7 +114,7 @@
 					</tbody>
 				</table>
 			</div>
-			<div>Count row: <?php echo number_format($nums_row); ?></div>
+			<!-- <div>Count row: <?php echo number_format($nums_row); ?></div> -->
 			<?php }?>
 		</div>
 		<!--end card-body-->
@@ -160,7 +162,7 @@
 						<select class="select2 form-control mb-3 custom-select" name="barcode_prefix">
 							<option hidden value="">Please select prefix barcode</option>
 						<?php foreach ($groups as $group): ?>
-							<option><?php echo $group['group']; ?></option>
+							<option value="<?php echo $group['group'];?>"><?php echo sprintf('%03d',$group['group']); ?></option>
 						<?php endforeach;?>
 						</select>
 						</div>
@@ -246,6 +248,7 @@ let textRange = () => {
 	let end = $('#ModalAddMenual [name="barcode_code_end"]').val();
 	console.log(parseInt(start)+ ' ' + parseInt(end));
 	let alert = (parseInt(end) < parseInt(start) || isNaN(parseInt(start)) || isNaN(parseInt(end)) || parseInt(start)==parseInt(end)) ? true : false;
+	prefix = sprintf(3, '0', prefix);
 	start = sprintf(5, '0', start);
 	end = sprintf(5, '0', end);
 	var text = '';
@@ -279,6 +282,7 @@ var modalInit = () => {
 	
 	$('#ModalAddMenual [name="barcode_prefix"]').on('select2:select', function (e) {
 		var prefix = $(this).val();
+		prefix = sprintf(3, '0', prefix);
 		$('#ModalAddMenual .input-group-text').html(prefix);
 		$('#textrange').html(textRange());
 	});
@@ -297,40 +301,40 @@ var modalInit = () => {
 	$(document).on('click','#import_excel',function(e){
 		$('#import_file').trigger('click');
 	});
-	$(document).on('change','#import_file',function(e){
-		var ele = $(this);
+	// $(document).on('change','#import_file',function(e){
+	// 	var ele = $(this);
 
-		var date = $('#date').val();
+	// 	var date = $('#date').val();
 
-		var file_data = $('#import_file').prop('files')[0];
-	    var form_data = new FormData();
-	    form_data.append('file_import', file_data);
-	    form_data.append('date', date);
-		$.ajax({
-			url: 'index.php?route=barcode',
-			cache: false,
-	        contentType: false,
-	        processData: false,
-	        dataType: 'text',
-			type: 'POST',
-			dataType: 'json',
-			data: form_data,
-		})
-		.done(function(e) {
-			window.location = 'index.php?route=barcode&date='+date+'&result=success';
-			console.log(e);
-			console.log("success");
-		})
-		.fail(function(a,b,c) {
-			console.log(a);
-			console.log(b);
-			console.log(c);
-			console.log("error");
-		})
-		.always(function() {
-			console.log("complete");
-		});
-		// location.reload();
-	});
+	// 	var file_data = $('#import_file').prop('files')[0];
+	//     var form_data = new FormData();
+	//     form_data.append('file_import', file_data);
+	//     form_data.append('date', date);
+	// 	$.ajax({
+	// 		url: 'index.php?route=barcode',
+	// 		cache: false,
+	//         contentType: false,
+	//         processData: false,
+	//         dataType: 'text',
+	// 		type: 'POST',
+	// 		dataType: 'json',
+	// 		data: form_data,
+	// 	})
+	// 	.done(function(e) {
+	// 		window.location = 'index.php?route=barcode&date='+date+'&result=success';
+	// 		console.log(e);
+	// 		console.log("success");
+	// 	})
+	// 	.fail(function(a,b,c) {
+	// 		console.log(a);
+	// 		console.log(b);
+	// 		console.log(c);
+	// 		console.log("error");
+	// 	})
+	// 	.always(function() {
+	// 		console.log("complete");
+	// 	});
+	// 	// location.reload();
+	// });
 	// $('#form-import-excel').submit();
 </script>

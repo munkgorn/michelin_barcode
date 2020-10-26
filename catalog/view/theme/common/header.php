@@ -67,7 +67,7 @@
 					<li>
 						<a href="<?php echo route('association'); ?>" class="<?php echo $_GET['route']=='barcode/association'?'active':'';?>">
 							<i data-feather="link-2" class="align-self-center menu-icon"></i>
-							<span>Barcode Association</span>
+							<span>Barcode Association<br>จับคู่บาร์โค้ด</span>
 						</a>
 					</li>
 					<li id="barcode">
@@ -82,21 +82,28 @@
 						<ul class="nav-second-level" aria-expanded="false">
 							<li>
 								<a href="<?php echo route('purchase'); ?>" class="<?php echo $_GET['route']=='purchase'?'active':'';?>">
-									<i class="ti-control-record"></i>New Barcode Ordering
+									<i class="ti-control-record"></i>New Barcode Ordering<br>สั่งซื้อบาร์โค้ดสำหรับออเดอร์ถัดไป
 								</a>
 							</li>
 							<li>
 								<a href="<?php echo route('group'); ?>" class="<?php echo $_GET['route']=='group'?'active':'';?>">
-									<i class="ti-control-record"></i>Barcode Reception
+									<i class="ti-control-record"></i>Barcode Reception<br>บันทึกบาร์โค้ดที่ได้รับจริง
 								</a>
 							</li>
 							<li>
 								<a href="<?php echo route('barcode'); ?>" class="<?php echo $_GET['route']=='barcode'?'active':'';?>">
-									<i class="ti-control-record"></i>Recode Consumed Barcode
+									<i class="ti-control-record"></i>Ordering History<br>ประวัติการสั่งซื้อบาร์โค้ด
 								</a>
 							</li>
 							<li>
-								<a><i class="ti-control-record"></i> Report remaining stock barcode</a>
+								<a href="<?php echo route('barcode'); ?>" class="<?php echo $_GET['route']=='barcode'?'active':'';?>">
+									<i class="ti-control-record"></i>Recode Consumed Barcode<br>บันทึกบาร์โค้ดที่นำมาใช้งานแล้ว
+								</a>
+							</li>
+							<li>
+								<a href="<?php echo route('report');?>" class="<?php echo $_GET['route']=='report'?'active':'';?>">
+								<i class="ti-control-record"></i> Report remaining stock barcode<br>รายงานสต๊อกบาร์โค้ดที่เหลืออยู่
+								</a>
 							</li>
 						</ul>
 					</li>
@@ -130,28 +137,34 @@
 						<ul class="nav-second-level" aria-expanded="false">
 							<li>
 								<a href="<?php echo route('user'); ?>" class="<?php echo $_GET['route']=='user'?'active':'';?>">
-									<i class="ti-control-record"></i> Manage Users (Add/Remove) 
+									<i class="ti-control-record"></i> Manage Users (Add/Remove)<br>สร้าง/ลบ ผู้ใช้งาน
 								</a>
 							</li>
 							<li>
 								<a href="<?php echo route('setting&tab=config_barcode');?>" class="<?php echo $_GET['route']=='setting'&&$_GET['tab']=='config_barcode'?'active':'';?>">
-									<i class="ti-control-record"></i> List of barcodes that plant can use
+									<i class="ti-control-record"></i> List of barcodes that plant can use<br>กลุ่มบาร์โค้ดทั้งหมดที่โรงงานนำมาใช้ได้
 								</a>
 							</li>
 							<li>
 								<a href="<?php echo route('setting&tab=config_relationship');?>" class="<?php echo $_GET['route']=='setting'&&$_GET['tab']=='config_relationship'?'active':'';?>">
-									<i class="ti-control-record"></i> List of special barcodes for association
+									<i class="ti-control-record"></i> List of special barcodes for association<br>บาร์โค้ดพิเศษสำหรับใช้ในการจับคู่
 								</a>
 							</li>
 							<li>
 								<a href="<?php echo route('setting&tab=config_default');?>" class="<?php echo $_GET['route']=='setting'&&$_GET['tab']=='config_default'?'active':'';?>">
-									<i class="ti-control-record"></i> Nb of days that barcode cannot be repeated
+									<i class="ti-control-record"></i> Nb of days that barcode cannot be repeated<br>จำนวนวันที่ไม่อนุญาตให้ใช้เลขบาร์โค้ด
 								</a>
 							</li>
 							
 						</ul>
 					</li>
 					<hr class="hr-dashed hr-menu">
+					<li>
+						<a href="<?php echo route('user/resetPassword');?>" class="<?php echo $_GET['route']=='user/resetPassword'?'active':'';?>">
+						<i data-feather="edit-3" class="align-self-center menu-icon"></i>
+							Reset password
+						</a>
+					</li>
 					<li>
 						<a type="button" id="sa-logout" href="#">
 							<i data-feather="power" class="align-self-center menu-icon"></i>

@@ -13,6 +13,13 @@
             $query = $this->get('group');
             return !empty($query->row['group_code']) ? $query->row['group_code'] : '';
         }
+        public function getDateGroup() {
+            $this->select('date_modify');
+            $this->group_by('date_modify');
+            $this->order_by('date_modify', 'DESC');
+            $query = $this->get('group');
+            return $query->num_rows > 0 ? $query->rows : false;
+        }
         public function getGroupStatus($group_code) {
             $this->where('group_code', $group_code);
             $this->where('del',0);
@@ -35,6 +42,7 @@
                 $this->where('remaining_qty', '0', '>=');
             }
             $this->where('g.del',0);
+            $this->where('remaining_qty', 0, '>');
             $this->group_by('g.group_code');
             $this->join('user u','u.id_user = g.id_user','LEFT');
             $this->select('g.*, u.username');
@@ -69,5 +77,6 @@
             // }
 
         }
+
 	}
 ?>

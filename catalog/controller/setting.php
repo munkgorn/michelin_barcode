@@ -102,6 +102,7 @@
 
 						fclose($fp);
 						$config->importRelationship($csv_file);
+						$this->generateJsonFreeGroup();
 
 						$this->setSession('success', 'Import file config relationship successful.');
 					} else {
@@ -183,24 +184,30 @@
 						$csv_file = $path_csv.$file_csv;
 						$fp = fopen($csv_file, 'w');
 						foreach ($results as $key => $result) {
-							$text_range = $result[1];
-							$trim = str_replace(" ", "", trim($text_range));
-							$split = explode('-', $trim);
+							// $text_range = $result[1];
+							// $trim = str_replace(" ", "", trim($text_range));
+							// $split = explode('-', $trim);
 
 							$rowcsv = array(
 								$result[0],
-								$split[0],
-								$split[1],
+								$result[1],
+								// $split[0],
+								// $split[1],
+								// $result[2],
 								$result[2],
-								$result[2],
-								$split[0],
-								'0000-00-00 00:00:00'
+								$result[3],
+								$result[3],
+								$result[1],
+								// $split[0],
+								'0000-00-00 00:00:00',
 							);
 							fputcsv($fp, $rowcsv,',',chr(0));
 						}	
 
 						fclose($fp);
 						$config_barcode->importBarcode($csv_file);
+
+						$this->generateJsonFreeGroup();
 
 						$this->setSession('success', 'Import file config barcode successful.');
 					} else {
@@ -218,8 +225,21 @@
 
 
 
+		public function generateJsonFreeGroup() {
+			$association = $this->model('association');
+			$lists = $association->getFreeGroup();
+			$json = array();
+			foreach ($lists as $value) {
+				$json[] = $value['group'];
+			}
+			$fp = fopen(DOCUMENT_ROOT . 'uploads/freegroup.json', 'w');
+			fwrite($fp, json_encode($json));
+			fclose($fp);
+			return $json;
+		}
 
 
 		
 	}
+
 ?>

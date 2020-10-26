@@ -38,18 +38,7 @@
 	    	$data_select_date_wk = array(
 	    		'date' => $data['date_wk']
 	    	);
-	    	$data['listPrefixBarcode'] = $barcode->listPrefixBarcode($data_select_date_wk);
-
-	    	// $data_select = array(
-	    		// 'start_group'	=> $data['start_group'],
-				// 'end_group'		=> $data['end_group']
-	    	// );
-	    	// $data['getMapping'] = $barcode->getMapping($data_select);
-	    	// $data['date_first_3_year'] = date('Y-m-d', strtotime('-3 years'));
-			// $data['date_lasted_order'] = date('Y-m-d');
-			
-
-			// $data['result_group'] = $barcode->getgroup();
+	    	// $data['listPrefixBarcode'] = $barcode->listPrefixBarcode($data_select_date_wk);
 			$data['result_group'] = array();
 			$data['result_group'] = $config->getBarcodes();
 
@@ -61,7 +50,8 @@
 			$data['end_group'] = end($data['result_group'])['group'];
 	    	$data['action'] = route('purchase');
 			$data['action_import_excel'] = route('listGroup');
-			$data['export_excel'] = route('export/purchase&start_group='.$data['start_group'].'&end_group='.$data['end_group']);
+			$data['export_excel'] = route('export/pattern&start_group='.$data['start_group'].'&end_group='.$data['end_group']);
+			$data['action_ajax'] = route('purchase/ajax&start_group='.$data['start_group'].'&end_group='.$data['end_group']);
 			$data['date'] = (get('date')?get('date'):'');
 			
 			$purchase = $this->model('purchase');
@@ -95,13 +85,24 @@
 			$data['date_first_3_year'] = date('Y-m-d', strtotime($purchase->getStartDateOfYearAgo()));
 			$data['date_lasted_order'] = date('Y-m-d', strtotime($purchase->getEndDateOfYearAgo()));
 
-
-	    	// $data['start_group'] = $result_group['start_group'];
-	    	// $data['end_group'] = $result_group['end_group'];
-	    	// var_dump($result_group);exit();
-	    	// var_dump($data['listPrefixBarcode']);
  	    	$this->view('purchase/list',$data);
-	    }
+		}
+		public function ajax() {
+			$post = post();
+			
+			$update = array(
+				'change_qty' => $post['change_qty'],
+				'change_end' => $post['change_end']
+			);
+			$purchase = $this->model('purchase');
+			
+			$result = $purchase->updatePurchase($post['group_code'], $update);
+			if ($result) {
+				echo 'success';
+			} else {
+				echo 'fail';
+			}
+		}
 	    public function updateDefaultGroup(){
 			$data = array();
 			$barcode = $this->model('barcode');

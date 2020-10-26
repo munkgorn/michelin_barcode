@@ -51,14 +51,23 @@
 			$result = array();
 			$date = isset($data['date'])&&!empty($data['date']) ? $data['date'] : '';
 			$date_wk = isset($date['date_wk'])&&!empty($data['date_wk']) ? $data['date_wk'] : '';
+			$status = isset($data['barcode_status'])&&!empty($data['barcode_status']) ? $data['barcode_status'] : '';
+			$flag = isset($data['barcode_falg'])&&!empty($data['barcode_falg']) ? $data['barcode_falg'] : '';
+			$barcode_use = isset($data['barcode_use'])&&!empty($data['barcode_use']) ? $data['barcode_use'] : '';
 
 			$sql = "SELECT *,".PREFIX."barcode.date_added AS date_added 
 			FROM ".PREFIX."barcode 
 			LEFT JOIN ".PREFIX."user ON ".PREFIX."barcode.id_user = ".PREFIX."user.id_user
+			LEFT JOIN ".PREFIX."group ON ".PREFIX."group.id_group = ".PREFIX."barcode.id_group
 			WHERE id_barcode > 0 ";
 			$sql .= !empty($date) ? "AND DATE(".PREFIX."barcode.date_added) = '".$date."' " : ""; 
 			$sql .= !empty($date_wk) ? "AND DATE(".PREFIX."barcode.date_wk) = '".$date_wk."' " : ""; 
+			$sql .= !empty($status) ? "AND ".PREFIX."barcode.barcode_status = '".(int)$status."' " : ""; 
+			$sql .= !empty($barcode_use) ? "AND ".PREFIX."group.barcode_use = 1 " : "";
+			$sql .= !empty($flag) ? "AND ".PREFIX."barcode.barcode_flag = '".(int)$flag."' " : ""; 
 			$result_group = $this->query($sql);
+			// echo $sql;
+			// echo '<br>';
 			$result = $result_group->rows;
 			return $result;
 		}
@@ -165,7 +174,7 @@
 				$query = $this->get('group');
 
 				// มีค่าเดิม ของวันนี้อยู่แล้ว ให้อัพเดท
-				if ($query->num_rows==1) {  
+				if ($query->num_rows==1 && (int)$val>0) {  
 					$oldgroup = $query->row;
 					
 					$this->where('id_group', $oldgroup['id_group']);
@@ -519,6 +528,7 @@
 					$sql .= "ORDER BY ABS( p.size_product_code ) ASC ";
 			
 			// echo $sql;
+			// echo '<br>';
 			$result = $this->query($sql)->rows; 
 			
 

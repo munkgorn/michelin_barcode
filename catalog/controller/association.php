@@ -95,12 +95,12 @@ class AssociationController extends Controller {
                 'id_product' => $value['id_product'],
                 'size' => $value['size'],
                 'sum_prod' => $value['sum_prod'],
-                'last_wk0' => $last_week,
+                'last_wk0' => !empty($last_week) ? sprintf('%03d', $last_week) : '',
                 'remaining_qty' => number_format((int)$remaining_qty,0),
-                'propose' => $propose,
+                'propose' => !empty($propose) ? sprintf('%03d', $propose) : '',
                 'propose_remaining_qty' => number_format((int)$propose_remaining_qty,0),
                 'message' => $text,
-                'save' => $value['group_code']
+                'save' => !empty($value['group_code']) ? sprintf('%03d',$value['group_code']) : ''
             );
         }
         return $data['list'];
@@ -261,6 +261,7 @@ class AssociationController extends Controller {
             if (in_array(false, $resultMapping)) {
                 $this->setSession('error', 'Fail some group cannot validated');
             } else {
+                $this->generateJsonFreeGroup();
                 $this->setSession('success', 'Successfil validated group');
             }
         } else {
@@ -291,6 +292,7 @@ class AssociationController extends Controller {
         } 
         $this->redirect('association&date_wk='.post('date_wk'));
     }
+
 
     // JSON FILE
     public function jsonFreeGroup($header=true) {

@@ -210,9 +210,13 @@ class ExportController extends Controller {
         exit();
     }
 
-    public function groupPattern() {
+    public function pattern() {
 
-        $excel = array();
+
+        $start_group = get('start_group');
+        $end_group = get('end_group');
+        $purchase = $this->model('purchase');
+        $group = $this->model('group');
 
         $excel[] = array(
             'BARCODE FOR PCLT',
@@ -268,29 +272,41 @@ class ExportController extends Controller {
             // 'Create By',
         );
 
-        $group = $this->model('group');
+
+        // Get List
         $filter = array(
-            'date_modify' => get('date'),
-            'group_code' => get('group'),
-            'barcode_use' => get('status')>=0 ? get('status') : null,
-            'has_remainingqty' => true
+            'start_group' => $start_group,
+            'end_group' => $end_group
         );
-        $datas = $group->getGroups($filter);
         $i=1;
-        foreach ($datas as $val) {
-            $excel[] = array(
-                '',
-                $i++,
-                // $val['group_code'],
-                $val['start']-$val['remaining_qty'],
-                $val['start']-1,
-                $val['remaining_qty'],
-                // ($val['barcode_use']==1?'Received':'Waiting'),
-                // $val['date_added'],
-                // $val['username']
-            );
+        $mapping = $purchase->getPurchases($filter);
+        foreach ($mapping as $key => $value) {
+            $value['barcode_start_year'] = $purchase->getStartBarcodeOfYearAgo($value['group_code']);
+            $value['barcode_end_year'] = $purchase->getEndBarcodeOfYearAgo($value['group_code']);
+            $barcode_use = $group->getGroupStatus($value['group_code']);
+            $value['status'] = $barcode_use==="1" ? 'Recived' : ($barcode_use==="0" ? 'Waiting' : '');
+            $value['status_id'] = $barcode_use;
+
+            if (!empty($value['change_end'])) {
+                $excel[] = array(
+                    '',
+                    $i++,
+                    // $value['group_code'],
+                    sprintf('%06d', $value['barcode_start']),
+                    '="'.sprintf('%06d', $value['change_end']).'"',
+                    ($value['change_qty']>0 ? $value['change_qty'] : ''),
+                    // $value['barcode_start_year'],
+                    // $value['barcode_end_year'],
+                    // $value['default_start'],
+                    // $value['default_end'],
+                    // $value['default_range'],
+                    // $value['status']
+                );
+            }
         }
 
+        $purchase = $this->model('purchase');
+        $purchase->clearAjaxPurchase(); // clear data ajax
 
         $doc = DOCUMENT_ROOT . 'uploads/export/';
         $name = 'export_group_date'.$filter['date_modify'].'-group'.$filter['group_code'].'-barcode'.$filter['barcode_use'].'_'.date('YmdHis').'.xlsx';
@@ -367,33 +383,224 @@ class ExportController extends Controller {
         $excel = array();
 
         $excel[] = array(
-            'Prefix',
-            'Barcode',
-            'Used Date',
-            'Create By'
+            'Group prefix',
+            'Start',
+            'End',
+            'Total'
         );
 
         $date = get('date');
 
-        $barcode = $this->model('barcode');
-
-        $data_select = array(
-            'date' => $date
-        );
-        $results = $barcode->getBarcode($data_select);
+        $results = $this->calcurateBarcode2($data['date']);
         foreach ($results as $value) {
+            $ex = explode('-', $value['name']);
             $excel[] = array(
-                $value['barcode_prefix'],
-                $value['barcode_code'],
-                $value['date_added'], // this date modify
-                $value['username'],
+                '="'.$value['group'].'"',
+                '="'.sprintf('%08d', trim($ex[0])).'"',
+                '="'.sprintf('%08d', trim($ex[1])).'"',
+                $value['count']
             );
         }
+
+        // $barcode = $this->model('barcode');
+
+        // $data_select = array(
+        //     'date' => $date
+        // );
+        // $results = $barcode->getBarcode($data_select);
+        // foreach ($results as $value) {
+        //     $excel[] = array(
+        //         $value['barcode_prefix'],
+        //         $value['barcode_code'],
+        //         $value['date_added'], // this date modify
+        //         $value['username'],
+        //     );
+        // }
 
         $doc = DOCUMENT_ROOT . 'uploads/export/';
         $name = 'export_importbarcode_date'.$date.'_'.date('YmdHis').'.xlsx';
         $file = whiteExcel($excel, $doc, $name);
         header('location:uploads/export/'.$file);
         exit();
+    }
+
+    public function report() {
+        $excel = array();
+
+        $excel[] = array(
+            'Group Prefix',
+            'Range barcode',
+            'Remaining QTY',
+        );
+
+        $datas = $this->calcurateBarcode();
+        foreach ($datas as $val) {
+            $excel[] = array(
+                $val['group'],
+                $val['name'],
+                $val['count'],
+            );
+        }
+
+
+        $doc = DOCUMENT_ROOT . 'uploads/export/';
+        $name = 'export_report-remaining-qty_'.date('YmdHis').'.xlsx';
+        $file = whiteExcel($excel, $doc, $name);
+        header('location:uploads/export/'.$file);
+        exit();
+    }
+
+    public function setting_barcode() {
+        $excel = array();
+
+        $excel[] = array(
+            'Group',
+            'Start',
+            'End',
+            'Total'
+        );
+
+        $config = $this->model('config');
+        $results = $config->getBarcodes();
+        foreach ($results as $value) {
+            $excel[] = array(
+                '="'.sprintf('%03d',$value['group']).'"',
+                '="'.sprintf('%08d',$value['start']).'"',
+                '="'.sprintf('%08d',$value['end']).'"',
+                $value['total']
+            );
+        }
+
+        $doc = DOCUMENT_ROOT . 'uploads/export/';
+        $name = 'export_config_barcode_'.$date.'_'.date('YmdHis').'.xlsx';
+        $file = whiteExcel($excel, $doc, $name);
+        header('location:uploads/export/'.$file);
+        exit();
+    }
+    public function setting_relation() {
+        $excel = array();
+
+        $excel[] = array(
+            'Group',
+            'Size',
+        );
+
+        $config = $this->model('config');
+        $results = $config->getRelationship();
+        foreach ($results as $value) {
+            $excel[] = array(
+                '="'.sprintf('%03d',$value['group']).'"',
+                $value['size']
+            );
+        }
+
+        $doc = DOCUMENT_ROOT . 'uploads/export/';
+        $name = 'export_config_relation_'.$date.'_'.date('YmdHis').'.xlsx';
+        $file = whiteExcel($excel, $doc, $name);
+        header('location:uploads/export/'.$file);
+        exit();
+    }
+
+    private function calcurateBarcode2($date_wk='') {
+        $input=array();
+        if (!empty($date_wk)) { $input['date_wk'] = $date_wk; }
+        $barcode = $this->model('barcode');
+
+        $list1 = array();
+        $list2 = array();
+        $input['barcode_use'] = 1;
+        $listbarcode = $barcode->getListBarcode($input); // ? ที่จองในระบบทั้งหมด
+        foreach ($listbarcode as $key => $value) {
+            $list1[] = (int)$value['barcode_code'];
+        }
+        $input['barcode_status'] = 1;
+        $listbarcode = $barcode->getListBarcode($input); // ? ที่ใช้ไปแล้ว
+        foreach ($listbarcode as $key => $value) {
+            $list2[] = (int)$value['barcode_code'];
+        }
+
+        // ? get default alert
+        $config = $this->model('config');
+        $default_number_maximum_alert = $config->getConfig('config_maximum_alert'); // ? ค่าที่ตั้งไว้ว่าเกินเท่าไหร่ให้ alert
+        return $this->calcurateDiffernce($list1, $list2, $default_number_maximum_alert);
+    }
+    private function calcurateBarcode() {
+        $input=array();
+        $barcode = $this->model('barcode');
+
+        $list1 = array();
+        $list2 = array();
+
+        $listbarcode = $barcode->getListBarcode(); // ? ที่จองในระบบ
+        foreach ($listbarcode as $key => $value) {
+            $list1[] = (int)$value['barcode_code'];
+        }
+
+
+        // $listimport = $barcode->getListImportBarcode($input); // ? ที่ Import เข้ามา
+        $filter = array('barcode_status'=>1);
+        $listbarcode2 = $barcode->getListBarcode($filter); // ? ที่ใช้ไปแล้ว 
+        foreach ($listbarcode2 as $key => $value) {
+            $list2[] = (int)$value['barcode_code'];
+        }
+
+        // ? get default alert
+        $config = $this->model('config');
+        $default_number_maximum_alert = $config->getConfig('config_maximum_alert'); // ? ค่าที่ตั้งไว้ว่าเกินเท่าไหร่ให้ alert
+        return $this->calcurateDiffernce($list1, $list2, $default_number_maximum_alert);
+    }
+    private function calcurateDiffernce($list1, $list2, $default_number_maximum_alert) {
+        sort($list1);
+        sort($list2);
+        $arr_diff = array_diff($list1, $list2); // ? ได้อาเรย์ ส่วนต่างที่ไม่เหมือนกัน
+        $list_notfound = array_values($arr_diff); // ? reset key array
+
+        $count = 0;
+        $first = '';
+        $end = '';
+        $save = array();
+        $group = '';
+        foreach ($list_notfound as $key => $value) {
+            if (isset($list_notfound[$key+1]) && $list_notfound[$key+1] == $value+1) { // ? ในกรณีที่ คียอันถัดไป เท่า ค่า+1 แสดงว่า ส่วนต่างที่ไม่มีนี้กำลังเรียง
+                if (empty($first)) {
+                    $save = array();
+                    $first = $value;
+                    if (strlen($value)==8) {
+                        $group = substr($value, 0, 3);
+                    } else if (strlen($value)==7) {
+                        $group = sprintf('%03d', substr($value, 0, 2));
+                    } else if (strlen($value)==6) {
+                        $group = sprintf('%03d', substr($value, 0, 1));
+                    }
+                }
+                $count++; // ? เริ่มนับจำนวนส่วนต่าง
+            } else {
+                if (empty($end)) {
+                    $end = $value;
+                    $save[] = $value;
+                }
+                $diff[] = array(
+                    'name' => "$first - $end",
+                    'group' => $group,
+                    // 'barcodes' => $save, 
+                    'count' => $count + 1 //  ? จำนวนระยะห่างที่หายไป +1 นับตัวแรกด้วย
+                );
+                $first = '';
+                $end = '';
+                $count = 0;
+            }
+            if ($count>0) {
+                $save[] = $value;
+            }
+        }
+
+        $text = array();
+        foreach ($diff as $key => $value) {
+            if ($value['count'] >= $default_number_maximum_alert) {
+                $text[] = $value;
+            }
+        }
+
+        return $text;
     }
 }

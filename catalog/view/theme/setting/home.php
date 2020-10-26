@@ -30,21 +30,21 @@
 					<!-- Default -->
 					<form method="post" action="<?php echo $action_default; ?>">
 						<div class="form-group row">
-							<label for="" class="col-sm-3 col-md-4 col-form-label text-left">Nb of days that barcode prefix cannot be used with the new size association</label>
+							<label for="" class="col-sm-3 col-md-4 col-form-label text-left">Nb of days that barcode prefix cannot be used with the new size association<br>จำนวนวันที่ไม่อนุญาตให้ใช้กลุ่มบาร์โค้ดเดิมกับไซส์ใหม่</label>
 							<div class="col-sm-9 col-md-8">
 								<input type="number" name="config_date_size" class="form-control" min="0" value="<?php echo $config_date_size; ?>" required/>
-								<small>0 คือห้ามใช้ซ้ำ ณ​ ขณะที่เคยมีการใช้แล้ว</small>
+								<small>เช่น ถ้า 105xxxxx เคยใช้กับไซส์ A ไปแล้ว ต้องรออีก X วันถึงจะกลับมาใช้กับไซส์ B ได้</small>
 							</div>
 						</div>
 						<div class="form-group row">
-							<label for="" class="col-sm-3 col-md-4 col-form-label text-left">Nb of days that barcode cannot be repeated</label>
+							<label for="" class="col-sm-3 col-md-4 col-form-label text-left">Nb of days that barcode cannot be repeated<br>จำนวนวันที่ไม่อนุญาตให้ใช้เลขบาร์โค้ดซ้ำ</label>
 							<div class="col-sm-9 col-md-8">
 								<input type="number" name="config_date_year" class="form-control" min="0" value="<?php echo $config_date_year; ?>" required/>
-								<small>1 ปี เท่ากับ 365 วัน</small>
+								<small>เช่น ห้ามซ้ำกัน 3 ปี ให้คีย์ 365x3 = 1095 วัน (1 ปี เท่ากับ 365 วัน)</small>
 							</div>
 						</div>
 						<div class="form-group row">
-							<label for="" class="col-sm-3 col-md-4 col-form-label text-left">Nb of skipped barcodes that will be automatically changed status to "consumed"</label>
+							<label for="" class="col-sm-3 col-md-4 col-form-label text-left">Nb of skipped barcodes that will be automatically changed status to "consumed"<br>หากเลขบาร์โค้ดกระโดข้ามช่วงไปน้อยกว่าจำนวนที่ระบุนี้ โปรแกรมจะทำการตัดสต๊อกให้อัตโนมัติ</label>
 							<div class="col-sm-9 col-md-8">
 								<input type="number" name="config_maximum_alert" class="form-control" min="0" value="<?php echo $config_maximum_alert; ?>" required/>
 							</div>
@@ -62,27 +62,34 @@
 					<form action="<?php echo $action_barcode; ?>" method="post" enctype="multipart/form-data">
 						<div class="form-group row">
 							<label for="" class="col-sm-3 col-md-2 col-form-label text-left">Import Excel Config</label>
-							<div class="col-sm-9 col-md-10">
+							<d	iv class="col-sm-9 col-md-10">
 								<div class="input-group">
 									<div class="custom-file">
 										<input type="file" name="import_file" class="custom-file-input" id="inputImportConfigFlexibleGroup" aria-describedby="inputGroupFileAddon04" required accept="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet, application/vnd.ms-excel" />  >
 										<label class="custom-file-label" for="inputImportConfigFlexibleGroup">Browse Excel File (.xlsx)</label>
 									</div>
 									<div class="input-group-append">
-										<button class="btn btn-outline-primary" type="submit" id="">Import</button>
+										<button class="btn btn-outline-primary" type="submit" id=""><i class="fas fa-file-excel"></i> Import</button>
 									</div>
 								</div>
 								<small>อัพโหลดไฟล์ สำหรับกำหนดเงื่อนไขการใช้ตัวเลข barcode ในสาขานี้</small>
-							</div>
+							</d>
 						</div>
 					</form>
+					<div class="row">
+						<div class="col-12 ">
+							<a href="<?php echo route('export/setting_barcode');?>" target="new" class="btn btn-outline-success"><i class="fas fa-file-excel"></i> Export</a>
+						</div>
+					</div>
 					<hr />
 					<p class="mb-0">อัพโหลดครั้งล่าสุดเมื่อ <?php echo date('d/m/Y H:i', strtotime($lastupdate_barcode)); ?></p>
 					<table class="table table-bordered table-hover">
 						<thead>
 							<tr>
 								<th>Group</th>
-								<th>Code</th>
+								<!-- <th>Code</th> -->
+								<th>Start</th>
+								<th>End</th>
 								<th>Total</th>
 							</tr>
 						</thead>
@@ -90,8 +97,9 @@
 							<?php if (count($barcodes) > 0): ?>
 							<?php foreach ($barcodes as $barcode): ?>
 							<tr>
-								<td><?php echo $barcode['group']; ?></td>
-								<td><?php echo $barcode['start'] . '-' . $barcode['end']; ?></td>
+								<td><?php echo sprintf('%03d',$barcode['group']); ?></td>
+								<td><?php echo sprintf('%08d',$barcode['start']);?></td>
+								<td><?php echo sprintf('%08d',$barcode['end']); ?></td>
 								<td><?php echo $barcode['total']; ?></td>
 							</tr>
 							<?php endforeach; ?>
@@ -119,6 +127,11 @@
 							</div>
 						</div>
 					</form>
+					<div class="row">
+						<div class="col-12 ">
+							<a href="<?php echo route('export/setting_relation');?>" target="new" class="btn btn-outline-success"><i class="fas fa-file-excel"></i> Export</a>
+						</div>
+					</div>
 					<hr /> 
 					<p class="mb-0">อัพโหลดครั้งล่าสุดเมื่อ <?php echo date('d/m/Y H:i', strtotime($lastupdate_relationship)); ?></p>
 					<form action="<?php echo $action_relationship;?>" id="formresult" method="post">
@@ -134,8 +147,10 @@
 									<tbody>
 										<?php foreach ($relationships as $val) { ?>
 										<tr>
-											<td><input type="text" class="form-control" name="group" value="<?php echo $val['group']; ?>"></td>
-											<td><input type="text" class="form-control" name="size" value="<?php echo $val['size']; ?>"></td>
+											<td><?php echo sprintf('%03d', $val['group']);?></td>
+											<td><?php echo $val['size'];?></td>
+											<!-- <td><input type="text" class="form-control" name="group" value="<?php echo sprintf('%03d',$val['group']); ?>"></td> -->
+											<!-- <td><input type="text" class="form-control" name="size" value="<?php echo $val['size']; ?>"></td> -->
 										</tr>
 										<?php } ?>
 									</tbody>
@@ -143,7 +158,7 @@
 							</div>
 						</div>
 
-						<div class="row mt-4">
+						<!-- <div class="row mt-4">
 							<div class="col-12">
 								<div class="float-left">
 									<a href="<?php echo route('barcode'); ?>" class="btn btn-default">back</a>
@@ -152,7 +167,7 @@
 									<input type="submit" value="Save" class="btn btn-primary">
 								</div>
 							</div>
-						</div>
+						</div> -->
 					</form>
 
 				</div>
@@ -215,5 +230,10 @@
 <script>
 $(document).ready(function(){
 	$('#config').addClass('mm-active').children('ul.mm-collapse').addClass('mm-show');
+	$('[type="file"]').on('change', function(e){
+		var fileName = e.target.files[0].name;
+		$(this).next('label.custom-file-label').html('<span class="text-dark">'+fileName+'</span>');
+		console.log(fileName);
+	});
 });
 </script>

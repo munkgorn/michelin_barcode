@@ -10,6 +10,9 @@
 		}
         public function index() {
             $data = array();
+
+            $group = $this->model('group');
+
             $data['title'] = "Barcode Reception";
             $style = array('assets/home.css');
             $data['style'] 	= $style;
@@ -25,9 +28,9 @@
                 'date' => $filter_date
             );
             
+            $data['date_group'] = $group->getDateGroup();
             
              // group for filter
-            $group = $this->model('group');
             $data['groups'] = array();
             $lists = $group->getGroups();
             foreach ($lists as $key => $value) {
@@ -39,7 +42,7 @@
             // if (method_post()) {
                 $data['lists'] = $this->getLists();
             // }
-            
+
 
             $url = '';
             $url .= !empty($filter_date) ? "&date=$filter_date" : '';
@@ -52,7 +55,7 @@
             $data['link_del'] = route('group/delGroup', $url);
             $data['action_import_excel'] = '';
             // $data['export_excel'] = route('export/group&date='.$filter_date.'&group='.$filter_group.'&status='.$filter_status);
-            $data['export_excel'] = route('export/groupPattern&date='.$filter_date.'&group='.$filter_group.'&status='.$filter_status);
+            $data['export_excel'] = route('export/group&date='.$filter_date.'&group='.$filter_group.'&status='.$filter_status);
 
             $data['success'] = $this->hasSession('success') ? $this->getSession('success'): ''; $this->rmSession('success');
             $data['error'] = $this->hasSession('error') ? $this->getSession('error'): ''; $this->rmSession('error');

@@ -16,7 +16,7 @@
         }
         public function validatedProductWithGroup( $data = array() ){
 			$result = array();
-			$group_code = $data['id_group'];
+			$group_code = (int)$data['id_group'];
 			$id_user = $data['id_user'];
 			$date_wk = $data['date_wk'];
 			$id_product = $data['id_product'];
@@ -59,7 +59,31 @@
 
 			}else{ // Get last id on this group
 				$id_group = $result_query_check_have_group->row['id_group'];
-			}
+            }
+            
+            $config_barcodes = $this->get('config_barcode');
+            foreach ($config_barcodes->rows as $barcode) {
+                $this->where('group_code', $barcode['group']);
+                $group_info = $this->get('group');
+                if ($group_info->num_rows==0) {
+                    $insert = array(
+                        'id_user' => $id_user,
+                        'group_code' => $barcode['group'],
+                        'start' => $barcode['start'],
+                        'end' => 0,
+                        'remaining_qty' => 0,
+                        'default_start' => $barcode['start'],
+                        'default_end' => $barcode['end'],
+                        'default_range' => $barcode['total'],
+                        'barcode_use' => 0,
+                        'config_remaining' => $barcode['total'],
+                        'del' => 0,
+                        'date_added' => date('Y-m-d H:i:s'),
+                        'date_modify' => date('Y-m-d H:i:s'),
+                    );
+                    $this->insert('group', $insert);
+                }
+            }
             
 			// Update qty 
 			$remaining = $this->query("SELECT * FROM ".PREFIX."config_barcode WHERE `group` = '".$group_code."'")->row['remaining'];
@@ -81,6 +105,7 @@
             $result = $this->get('product');
             return $result->row['count_group'];
         }
+        
         public function getDateWK() {
             $this->select('CAST(date_wk as DATE) as date_wk');
             $this->group_by('date_wk');
@@ -162,12 +187,16 @@
             return !empty($query->row['group']) ? $query->row['group'] : '';
         }
         public function getFreeGroup() {
-            $this->where('g.id_group is null','','');
+            // $this->where('g.id_group is null','','');
             $this->where('cr.id is null','','');
+            $this->where('b.id_barcode is null','','');
             // $this->where('g.del',0);
-            $this->select('cb.`group`');
+            // $this->select('cb.`group`');
+            $this->select('LPAD(cb.`group`, 3, "0")  as `group`');
             $this->join('group g','g.group_code=cb.`group`','LEFT');
+            $this->join('barcode b', 'b.id_group = g.id_group','LEFT');
             $this->join('config_relationship cr','cr.`group` = cb.`group`','LEFT');
+            $this->order_by('ABS(cb.`group`)', 'ASC');
             $query = $this->get('config_barcode cb');
             return $query->rows;
         }

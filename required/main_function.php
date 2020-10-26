@@ -585,6 +585,7 @@
 	}
 	function redirect($route,$para=""){
 		header('location: index.php?route='.$route.$para);
+		exit();
 	}
 	function method_post(){
 		$result = false;

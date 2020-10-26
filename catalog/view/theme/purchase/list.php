@@ -15,7 +15,7 @@
 							<select name="start_group" class="form-control select2start">
 								<?php foreach ($result_group as $val) { ?>
 								<option value="<?php echo $val['group']; ?>" <?php echo ($start_group==$val['group']?'selected':''); ?>>
-									<?php echo $val['group']; ?>
+									<?php echo sprintf('%03d', $val['group']); ?>
 								</option>
 								<?php } ?>
 							</select>
@@ -27,7 +27,7 @@
 							<select name="end_group" class="form-control select2end">
 								<?php foreach ($result_group as $key => $val) { ?>
 								<option value="<?php echo $val['group']; ?>" <?php echo ($end_group==$val['group']?'selected':''); ?>>
-									<?php echo $val['group']; ?>
+									<?php echo sprintf('%03d', $val['group']); ?>
 								</option>
 								<?php } ?>
 							</select>
@@ -94,29 +94,31 @@
 								<tbody>
 									<?php foreach($getMapping as $key => $val){ ?>
 									<tr>
-										<td class="text-center"><?php echo $val['group_code']; ?></td>
-										<td class="text-center"><label for="" class="start"><?php echo sprintf('%06d', $val['barcode_start']); ?></label></td>
-										<td class="text-center"><label for="" class="end"><?php echo sprintf('%06d', $val['barcode_end']); ?></label></td>
+										<td class="text-center"><?php echo sprintf('%03d', $val['group_code']); ?></td>
+										<td class="text-center"><label for="" class="start"><?php echo sprintf('%08d', $val['barcode_start']); ?></label></td>
+										<td class="text-center"><label for="" class="end"><?php echo sprintf('%08d', $val['barcode_end']); ?></label></td>
 										<td class="text-center">
 											<input 
 												type="text" 
 												class="form-control qty_group <?php echo $val['status_id']==0&&$val['remaining_qty']>0?'is-invalid':'';?>" 
 												placeholder="QTY." 
+												data-id="<?php echo $val['group_code'];?>"
 												start="<?php echo $val['barcode_start'];?>"
 												end="<?php echo $val['barcode_end'];?>" 
 												name = "qty[<?php echo $val['group_code']; ?>]"
 												value="<?php echo $val['status_id']==0&&$val['remaining_qty']>0 ? $val['remaining_qty'] : '';?>"
 												<?php echo $val['status_id']==0&&$val['remaining_qty']>0 ? 'disabled="disabled"' : '';?>
+												autocomplete="off"
 											>
 										</td>
-										<td class="text-center"><?php echo $val['barcode_start_year'];?></td>
-										<td class="text-center"><?php echo $val['barcode_end_year'];?></td>
+										<td class="text-center"><?php echo !empty($val['barcode_start_year']) ? sprintf('%08d', $val['barcode_start_year']) : '';?></td>
+										<td class="text-center"><?php echo !empty($val['barcode_end_year']) ? sprintf('%08d', $val['barcode_end_year']) : '';?></td>
 										<td class="text-center">
-											<?php echo $val['default_start'];?>
+											<?php echo sprintf('%08d', $val['default_start']);?>
 											<!-- <input type="text" class="form-control default_start" id_group="<?php echo $val['id_group'];?>" value="<?php echo $val['default_start'];?>"> -->
 										</td>
 										<td class="text-center">
-											<?php echo $val['default_end'];?>
+											<?php echo sprintf('%08d', $val['default_end']);?>
 											<!-- <input type="text" class="form-control default_end" id_group="<?php echo $val['id_group'];?>" value="<?php echo $val['default_end'];?>"> -->
 										</td>
 										<td class="text-center">
@@ -281,23 +283,59 @@ $(document).ready(function(){
 		});
 	});
 	//
+
+
+	
 	$(document).on('keyup','.qty_group',function(e){
 		var ele = $(this);
 
 		var qty = parseInt(ele.val());
 		var start = parseInt(ele.attr('start'));
 		var end = parseInt(ele.attr('end')); // ? Not Use
+		var groupcode = ele.data('id');
 
-		var sum_end_qty = start + qty - 1; // ! Change `End` 
-		var end_string = pad(sum_end_qty,6);
-		if (isNaN(end_string)==false) {
-			ele.parents('tr').find('.end').text(end_string);
+		var sum_end_qty = 0;
+		if (qty>0) {
+			var sum_end_qty = start + qty - 1; // ! Change `End` 
+			var end_string = pad(sum_end_qty,8);
+			if (isNaN(end_string)==false) {
+				ele.parents('tr').find('.end').text(end_string);
+			}
+
+			var dataPost = {
+				start_group: '<?php echo $start_group;?>',
+				end_group: '<?php echo $end_group;?>',
+				group_code: groupcode,
+				change_qty: qty,
+				change_end: end_string
+			}
+
+			$.ajax({
+				type: "POST",
+				url: "<?php echo $action_ajax;?>",
+				data: dataPost,
+				// dataType: "json",
+				success: function (response) {
+					console.log(sum_end_qty);
+					console.log(response);
+				},
+				error: function (xhr, ajaxOptions, thrownError) {
+					console.log(xhr.status);
+					console.log(thrownError);
+				}
+			});
+		} else {
+			ele.parents('tr').find('.end').text('000000');
 		}
-		
 	});
 	function pad(num, size) {
 	    var s = num+"";
 	    while (s.length < size) s = "0" + s;
 	    return s;
 	}
+</script>
+<script type="text/javascript">
+$(document).ready(function () {
+	
+});
 </script>

@@ -54,6 +54,7 @@
 
         // Config Relationship
         public function importRelationship($path_file){
+            $this->query("TRUNCATE mb_master_config_relationship;");
 			$sql = "LOAD DATA LOCAL INFILE '" . $path_file . "' INTO TABLE ".PREFIX."config_relationship FIELDS TERMINATED BY ',' 
 			LINES TERMINATED BY '\n' IGNORE 1 ROWS ( `group`,`size`,`date_added`,`date_modify`)";
             $result = $this->query($sql);
@@ -73,6 +74,7 @@
 
         // Config Barcode Zone
         public function importBarcode($path_file){
+            $this->query("TRUNCATE mb_master_config_barcode;");
 			$sql = "LOAD DATA LOCAL INFILE '" . $path_file . "' INTO TABLE ".PREFIX."config_barcode FIELDS TERMINATED BY ',' 
 			LINES TERMINATED BY '\n' IGNORE 1 ROWS ( `group`,`start`,`end`,`total`,`remaining`,`now`,`date_added`)";
             $result = $this->query($sql);

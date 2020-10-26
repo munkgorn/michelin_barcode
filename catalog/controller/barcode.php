@@ -28,6 +28,14 @@
 			);
 			$data['getImportBarcode'] = array();
 			$barcodes = $barcode->getBarcode($data_select);
+
+
+			$data['getImportBarcode'] = $this->calcurateBarcode($data['date']);
+			// echo '<pre>';
+			// print_r($data['getImportBarcode']);
+			// echo '</pre>';
+
+
 			// $config = $this->model('config');
 			// $default_number_maximum_alert = $config->getConfig('config_maximum_alert'); // ? ค่าที่ตั้งไว้ว่าเกินเท่าไหร่ให้ alert
 			// return $this->calcurateDiffernce($list1, $list2, $default_number_maximum_alert);
@@ -838,14 +846,15 @@
 
 			$list1 = array();
 			$list2 = array();
-
-			$listbarcode = $barcode->getListBarcode($input); // ? ที่จองในระบบ
+			$input['barcode_use'] = 1;
+			$listbarcode = $barcode->getListBarcode($input); // ? ที่จองในระบบทั้งหมด
 			foreach ($listbarcode as $key => $value) {
 				$list1[] = (int)$value['barcode_code'];
 			}
-			$listimport = $barcode->getListImportBarcode($input); // ? ที่ Import เข้ามา
-			foreach ($listimport as $key => $value) {
-				$list2[] = (int)$value['barcode'];
+			$input['barcode_status'] = 1;
+			$listbarcode = $barcode->getListBarcode($input); // ? ที่ใช้ไปแล้ว
+			foreach ($listbarcode as $key => $value) {
+				$list2[] = (int)$value['barcode_code'];
 			}
 
 			// ? get default alert
@@ -863,20 +872,23 @@
 			$count = 0;
 			$first = '';
 			$end = '';
+			$group = '';
 			$save = array();
 			foreach ($list_notfound as $key => $value) {
 				if (isset($list_notfound[$key+1]) && $list_notfound[$key+1] == $value+1) { // ? ในกรณีที่ คียอันถัดไป เท่า ค่า+1 แสดงว่า ส่วนต่างที่ไม่มีนี้กำลังเรียง
 					if (empty($first)) {
 						$save = array();
-						$first = $value;
+						$first = sprintf('%08d',$value);
+						$group = substr(sprintf('%08d', $value), 0 , 3);
 					}
 					$count++; // ? เริ่มนับจำนวนส่วนต่าง
 				} else {
 					if (empty($end)) {
-						$end = $value;
-						$save[] = $value;
+						$end = sprintf('%08d',$value);
+						$save[] = sprintf('%08d',$value);
 					}
 					$diff[] = array(
+						'group' => $group,
 						'name' => "$first - $end",
 						'barcodes' => $save, 
 						'count' => $count + 1 //  ? จำนวนระยะห่างที่หายไป +1 นับตัวแรกด้วย
@@ -884,6 +896,7 @@
 					$first = '';
 					$end = '';
 					$count = 0;
+					$group = '';
 				}
 				if ($count>0) {
 					$save[] = $value;

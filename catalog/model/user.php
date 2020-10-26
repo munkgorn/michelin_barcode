@@ -68,7 +68,7 @@
     		if(!empty($password)){
 				$data_user['password'] = md5($password);
 			}
-    		$this->update('user',$data_user,"id_user = '".$id_user."'");
+    		return $this->update('user',$data_user,"id_user = '".$id_user."'");
 		}
 		public function register($data=array()){
 			// $result = array();
