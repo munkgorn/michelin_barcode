@@ -28,10 +28,12 @@
 						<div class="">
 							<select name="id_user_group" id="" class="select2 form-control">
 								<?php foreach($listUserGroup as $val){?>
+								<?php if ($val['id_user_group']!=1) : ?>
 								<option value="<?php echo $val['id_user_group']; ?>" 
 									<?php echo ($user['id_user_group']==$val['id_user_group']?'selected':'') ?>>
 									<?php echo $val['group_name']; ?>
 								</option>
+								<?php endif; ?>
 								<?php } ?>
 							</select>
 						</div>

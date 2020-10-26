@@ -31,12 +31,14 @@
 							<td><?php echo $val['group_name']; ?></td>
 							<td name="buttons">
 								<div class=" pull-right">
+									<?php if ($val['id_user_group']!=1): ?>
 									<a class="btn btn-sm btn-soft-warning mr-2 btn-circle" href="<?php echo route('user/edit&id_user='.$val['id_user']); ?>">
 										<i class="dripicons-pencil"></i>
 									</a>
 									<a class="btn btn-sm btn-soft-danger btn-circle">
 										<i class="dripicons-trash" aria-hidden="true"></i>
 									</a>
+									<?php endif; ?>
 								</div>
 							</td>
 						</tr>

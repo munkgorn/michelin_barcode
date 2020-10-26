@@ -846,16 +846,30 @@
 
 			$list1 = array();
 			$list2 = array();
-			$input['barcode_use'] = 1;
+			
+			$input = array(
+				'date_wk' => $date_wk,
+				'barcode_use' => 1
+			);
 			$listbarcode = $barcode->getListBarcode($input); // ? ที่จองในระบบทั้งหมด
 			foreach ($listbarcode as $key => $value) {
 				$list1[] = (int)$value['barcode_code'];
 			}
-			$input['barcode_status'] = 1;
+
+			$input = array(
+				'date_wk' => $date_wk,
+				'barcode_use' => 1,
+				'barcode_status' => '0'
+			);
 			$listbarcode = $barcode->getListBarcode($input); // ? ที่ใช้ไปแล้ว
 			foreach ($listbarcode as $key => $value) {
 				$list2[] = (int)$value['barcode_code'];
 			}
+
+			// echo '<pre>';
+			// print_r($list1);
+			// print_r($list2);
+			// echo '</pre>';
 
 			// ? get default alert
 			$config = $this->model('config');
@@ -874,6 +888,7 @@
 			$end = '';
 			$group = '';
 			$save = array();
+			$diff = array();
 			foreach ($list_notfound as $key => $value) {
 				if (isset($list_notfound[$key+1]) && $list_notfound[$key+1] == $value+1) { // ? ในกรณีที่ คียอันถัดไป เท่า ค่า+1 แสดงว่า ส่วนต่างที่ไม่มีนี้กำลังเรียง
 					if (empty($first)) {

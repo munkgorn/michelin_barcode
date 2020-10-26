@@ -22,7 +22,8 @@
 			if($result_user->num_rows > 0){
 				$result = array(
 					'username' 	=> $result_user->row['username'],
-					'id_user' 	=> $result_user->row['id_user']
+					'id_user' 	=> $result_user->row['id_user'],
+					'id_user_group' => $result_user->row['id_user_group']
 				);
 			}
 			return $result;

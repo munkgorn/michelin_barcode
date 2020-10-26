@@ -7,6 +7,13 @@
 				$this->setSession('error', 'Please Login');
 				$this->redirect('home');
 			} 
+
+			if ($this->hasSession('id_user_group')) {
+				if (!in_array($this->getSession('id_user_group'), array(1,2))) {
+					$this->setSession('error', 'Permission fail');
+					$this->redirect('dashboard');
+				}
+			}
 		}
 	    public function index() {
 	    	$data = array();

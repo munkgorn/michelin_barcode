@@ -23,6 +23,12 @@
 			</div>
 			<!--end row-->
 			<!-- end page title end breadcrumb -->
+			<div class="row mt-3">
+                <div class="col-12">
+                    <?php echo !empty($success) ? '<div class="alert alert-success" role="alert">'.$success.'</div>' : ''; ?>
+                    <?php echo !empty($error) ? '<div class="alert alert-danger" role="alert">'.$error.'</div>' : ''; ?>
+                </div>
+            </div>
 			<div class="row justify-content-center">
 				<div class="col-md-6 col-lg-3">
 					<div class="card report-card">

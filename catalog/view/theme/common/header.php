@@ -90,11 +90,12 @@
 									<i class="ti-control-record"></i>Barcode Reception<br>บันทึกบาร์โค้ดที่ได้รับจริง
 								</a>
 							</li>
-							<li>
+							
+							<!-- <li>
 								<a href="<?php echo route('barcode'); ?>" class="<?php echo $_GET['route']=='barcode'?'active':'';?>">
 									<i class="ti-control-record"></i>Ordering History<br>ประวัติการสั่งซื้อบาร์โค้ด
 								</a>
-							</li>
+							</li> -->
 							<li>
 								<a href="<?php echo route('barcode'); ?>" class="<?php echo $_GET['route']=='barcode'?'active':'';?>">
 									<i class="ti-control-record"></i>Recode Consumed Barcode<br>บันทึกบาร์โค้ดที่นำมาใช้งานแล้ว
@@ -124,7 +125,7 @@
 							</li>
 						</ul>
 					</li> -->
-					
+					<?php if (isset($_SESSION['id_user_group'])&&in_array($_SESSION['id_user_group'], array(1,2))) : ?>
 					<li id="config">
 						<a href="javascript: void(0);">
 							<i data-feather="settings" class="align-self-center menu-icon">
@@ -158,6 +159,7 @@
 							
 						</ul>
 					</li>
+					<?php endif;?>
 					<hr class="hr-dashed hr-menu">
 					<li>
 						<a href="<?php echo route('user/resetPassword');?>" class="<?php echo $_GET['route']=='user/resetPassword'?'active':'';?>">

@@ -51,7 +51,7 @@
 			$result = array();
 			$date = isset($data['date'])&&!empty($data['date']) ? $data['date'] : '';
 			$date_wk = isset($date['date_wk'])&&!empty($data['date_wk']) ? $data['date_wk'] : '';
-			$status = isset($data['barcode_status'])&&!empty($data['barcode_status']) ? $data['barcode_status'] : '';
+			$status = isset($data['barcode_status'])&&!empty($data['barcode_status'])||isset($data['barcode_status'])&&$data['barcode_status']==0 ? $data['barcode_status'] : null;
 			$flag = isset($data['barcode_falg'])&&!empty($data['barcode_falg']) ? $data['barcode_falg'] : '';
 			$barcode_use = isset($data['barcode_use'])&&!empty($data['barcode_use']) ? $data['barcode_use'] : '';
 
@@ -62,8 +62,8 @@
 			WHERE id_barcode > 0 ";
 			$sql .= !empty($date) ? "AND DATE(".PREFIX."barcode.date_added) = '".$date."' " : ""; 
 			$sql .= !empty($date_wk) ? "AND DATE(".PREFIX."barcode.date_wk) = '".$date_wk."' " : ""; 
-			$sql .= !empty($status) ? "AND ".PREFIX."barcode.barcode_status = '".(int)$status."' " : ""; 
-			$sql .= !empty($barcode_use) ? "AND ".PREFIX."group.barcode_use = 1 " : "";
+			$sql .= !empty($status)||$status==0&&$status!='' ? "AND ".PREFIX."barcode.barcode_status = '".$status."' " : ""; 
+			$sql .= !empty($barcode_use) ? "AND ".PREFIX."group.barcode_use = '".$barcode_use."' " : "";
 			$sql .= !empty($flag) ? "AND ".PREFIX."barcode.barcode_flag = '".(int)$flag."' " : ""; 
 			$result_group = $this->query($sql);
 			// echo $sql;
@@ -180,7 +180,7 @@
 					$this->where('id_group', $oldgroup['id_group']);
 					$this->where('del', '0');
 					$update = array(
-						'id_user' => isset($data['user']) ? $data['user'] : 0,
+						'id_user' => isset($data['id_user']) ? $data['id_user'] : 0,
 						'remaining_qty' => $val,
 						'start' => (int)$oldgroup['start']+(int)$val,
 						'date_modify' => date('Y-m-d H:i:s'),

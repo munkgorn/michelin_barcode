@@ -26,7 +26,8 @@
 	    	);
 	    	$result_login = $user->login($data_select);
 	    	if($result_login){
-	    		$this->setSession('id_user',$result_login['id_user']);
+				$this->setSession('id_user',$result_login['id_user']);
+				$this->setSession('id_user_group', $result_login['id_user_group']);
 	    		$this->setSession('username',$result_login['username']);
 	    		$this->redirect('dashboard');
 	    	}else{

@@ -16,7 +16,7 @@
 			$data['end_group'] = get('end_group');
 			
 	    	if(method_post()){
-	    		$id_user = getSession('id_user');
+	    		$id_user = $this->getSession('id_user');
 	    		$qty = post('qty');
 	    		$data_post = array(
 	    			'qty' => $qty,

@@ -53,7 +53,7 @@
         public function changeStatus($id, $status) {
             $this->where('id_group', $id);
             $this->where('del',0);
-            return $this->update('group', array('barcode_use'=>(int)$status));
+            return $this->update('group', array('barcode_use'=>(int)$status, 'id_user'=>$_SESSION['id_user']));
         }
 
         public function delGroup($id) {
