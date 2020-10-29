@@ -105,7 +105,10 @@
 												data-id="<?php echo $val['group_code'];?>"
 												start="<?php echo $val['barcode_start'];?>"
 												end="<?php echo $val['barcode_end'];?>" 
+												default_start="<?php echo $val['default_start'];?>"
+												default_end="<?php echo $val['default_end'];?>"
 												name = "qty[<?php echo $val['group_code']; ?>]"
+												maxlength="6"
 												value="<?php echo $val['status_id']==0&&$val['remaining_qty']>0 ? $val['remaining_qty'] : '';?>"
 												<?php echo $val['status_id']==0&&$val['remaining_qty']>0 ? 'disabled="disabled"' : '';?>
 												autocomplete="off"
@@ -292,11 +295,40 @@ $(document).ready(function(){
 		var qty = parseInt(ele.val());
 		var start = parseInt(ele.attr('start'));
 		var end = parseInt(ele.attr('end')); // ? Not Use
+		var default_start = parseInt(ele.attr('default_start'));
+		var default_end = parseInt(ele.attr('default_end'));
 		var groupcode = ele.data('id');
+		// console.log(groupcode);
+		// console.log(groupcode*100000);
+
+		var num1 = start + qty - 1;
+		var newstart = 0;
+		if (num1 > default_end) {
+			var num2 = num1 - default_end;
+			newstart = default_start + num2 - 1;
+		}
+		
+		var barcodeUsed = false;
+		if (newstart>0) {
+			$.post("index.php?route=purchase/checkBarcodeUsed", {barcode: newstart},
+				function (data, textStatus, jqXHR) {
+					var obj = JSON.parse(data);
+					console.log(obj);
+					if (obj.id_barcode > 0) {
+						ele.val('');
+						ele.parents('tr').find('.end').text('00000000');
+						
+						alert('ไม่สามารถใช้ barcode '+pad(newstart, 8)+' ได้ เนื่องจากอยู่ภายใต้เงื่อนไขใช้ซ้ำภายในจำนวน x วัน');
+						
+						barcodeUsed = true;
+					}
+				}, "json"
+			);
+		}
 
 		var sum_end_qty = 0;
-		if (qty>0) {
-			var sum_end_qty = start + qty - 1; // ! Change `End` 
+		if (qty>0 && !barcodeUsed) {
+			var sum_end_qty = newstart > 0 ? newstart : (start + qty - 1); // ! Change `End` 
 			var end_string = pad(sum_end_qty,8);
 			if (isNaN(end_string)==false) {
 				ele.parents('tr').find('.end').text(end_string);
@@ -316,8 +348,8 @@ $(document).ready(function(){
 				data: dataPost,
 				// dataType: "json",
 				success: function (response) {
-					console.log(sum_end_qty);
-					console.log(response);
+					// console.log(sum_end_qty);
+					// console.log(response);
 				},
 				error: function (xhr, ajaxOptions, thrownError) {
 					console.log(xhr.status);
@@ -327,6 +359,8 @@ $(document).ready(function(){
 		} else {
 			ele.parents('tr').find('.end').text('000000');
 		}
+
+		
 	});
 	function pad(num, size) {
 	    var s = num+"";

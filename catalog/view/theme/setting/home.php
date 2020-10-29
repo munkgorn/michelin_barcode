@@ -62,7 +62,7 @@
 					<form action="<?php echo $action_barcode; ?>" method="post" enctype="multipart/form-data">
 						<div class="form-group row">
 							<label for="" class="col-sm-3 col-md-2 col-form-label text-left">Import Excel Config</label>
-							<d	iv class="col-sm-9 col-md-10">
+							<div class="col-sm-9 col-md-10">
 								<div class="input-group">
 									<div class="custom-file">
 										<input type="file" name="import_file" class="custom-file-input" id="inputImportConfigFlexibleGroup" aria-describedby="inputGroupFileAddon04" required accept="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet, application/vnd.ms-excel" />  >
@@ -73,7 +73,7 @@
 									</div>
 								</div>
 								<small>อัพโหลดไฟล์ สำหรับกำหนดเงื่อนไขการใช้ตัวเลข barcode ในสาขานี้</small>
-							</d>
+							</div>
 						</div>
 					</form>
 					<div class="row">
@@ -140,8 +140,9 @@
 								<table class="table table-bordered">
 									<thead >
 										<tr>
-											<th width="50%">Prefix Group</th>
-											<th width="50%">Size</th>
+											<th width="30%">Prefix Group</th>
+											<th width="30%">Size</th>
+											<th>Remark</th>
 										</tr>
 									</thead>
 									<tbody>
@@ -149,6 +150,7 @@
 										<tr>
 											<td><?php echo sprintf('%03d', $val['group']);?></td>
 											<td><?php echo $val['size'];?></td>
+											<td><?php echo $val['comment'];?></td>
 											<!-- <td><input type="text" class="form-control" name="group" value="<?php echo sprintf('%03d',$val['group']); ?>"></td> -->
 											<!-- <td><input type="text" class="form-control" name="size" value="<?php echo $val['size']; ?>"></td> -->
 										</tr>

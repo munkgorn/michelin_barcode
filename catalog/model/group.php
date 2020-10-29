@@ -61,8 +61,16 @@
             $query = $this->get('group');
             $group = $query->row;
 
-            $start = $group['start']-$group['remaining_qty']; // find start number this purchase
-            $end = $group['start']-1; // -1 because this number for next purcharse
+            $num1 = $group['start'] - $group['remaining_qty'] - 1;
+            if ($num1<$group['default_start']) {
+                $num2 = $group['start'] - $group['default_start'];
+                $num3 = $group['default_end'] - ($group['remaining_qty'] - $num2);
+                $start = $num3 + 1;
+            } else {
+                $start = $group['start'] - $group['remaining_qty']; // find start number this purchase
+            }
+            
+            // $end = $group['start']-1; // -1 because this number for next purcharse
 
             $update = array(
                 // 'del'=>1  // เอาออกเพราะว่า group เกิดมาตั้งแต่ association แล้ว ดังนั้นใช้วิธีคืนค่าแทน

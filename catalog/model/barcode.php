@@ -10,6 +10,44 @@
 			$query = $this->get('barcode b');
 			return $query->rows;
 		}
+		public function findAndUpdateBarcode($barcode, $date) {
+			$this->where('barcode_code', $barcode);
+			$this->where('date_modify', $date.'%', 'LIKE');
+			$query = $this->get('barcode');
+			$numrow = $query->num_rows==1?true:false;
+			if ($numrow==true) {
+				$this->where('barcode_code', $barcode);
+				$this->where('date_modify', $date.'%', 'LIKE');
+				$this->update('barcode', array('barcode_status'=>1,'date_modify'=>date('Y-m-d H:i:s')));
+
+				$insert = array(
+					'id_user' => $_SESSION['id_user'],
+					'barcode' => $barcode,
+					'date_wk' => $date,
+					'date_added' => date('Y-m-d H:i:s'),
+					'date_modify' => date('Y-m-d H:i:s'),
+				);
+				$this->insert('import_barcode', $insert);
+			}
+			return $numrow;
+			
+			// $query = $this->get('barcode');
+			// if ($query->num_rows)
+			// return $query->num_rows>0 ? true : false;
+		}
+		public function checkBarcode($barcode) {
+			$this->where('config_key', 'config_date_year');
+			$query = $this->get('config');
+			$config = $query->row['config_value'];
+
+			// $this->where('date_modify', "DATE_ADD(CURDATE(),INTERVAL-".$config." DAY)", '>');
+			// $this->where('barcode_code', $barcode);
+			// $this->order_by('date_modify', 'DESC');
+			// $query = $this->get('barcode');
+
+			$query = $this->query("SELECT * FROM mb_master_barcode WHERE date_modify > DATE_ADD(CURDATE(),INTERVAL-".$config." DAY)   AND  barcode_code = '$barcode'  ORDER BY date_modify DESC");
+			return $query->row;
+		}
 		public function addRowBarcode($data=array()){
 			$result = array();
 			$array_insert = array(
@@ -176,13 +214,20 @@
 				// มีค่าเดิม ของวันนี้อยู่แล้ว ให้อัพเดท
 				if ($query->num_rows==1 && (int)$val>0) {  
 					$oldgroup = $query->row;
+
+					$startupdate = (int)$oldgroup['start']+(int)$val;
+					if ($startupdate > $oldgroup['default_end']) {
+						$cal = $startupdate - (int)$oldgroup['default_end']; // ส่วนต่างที่เกิน
+						$cal2 = (int)$oldgroup['default_start'] + $cal;
+						$startupdate = $cal2 - 1; 
+					} 
 					
 					$this->where('id_group', $oldgroup['id_group']);
 					$this->where('del', '0');
 					$update = array(
 						'id_user' => isset($data['id_user']) ? $data['id_user'] : 0,
 						'remaining_qty' => $val,
-						'start' => (int)$oldgroup['start']+(int)$val,
+						'start' => $startupdate,
 						'date_modify' => date('Y-m-d H:i:s'),
 						'barcode_use' => "0"
 					);
@@ -224,7 +269,19 @@
 
 						$start = $insert['start'];
 					} else {
-						$insert['start'] = (int)$config_barcode['start'] + (int)$val;
+						// if ($config_barcode['start']+$val > $config_barcode['end']) {
+						// 	$insert['start'] = (int)$config_barcode['start'] + (int)$val;
+						// } else {
+							$insert['start'] = (int)$config_barcode['start'] + (int)$val;
+						// }
+
+						// $startupdate = (int)$oldgroup['start']+(int)$val-1;
+						// if ($startupdate > $oldgroup['default_end']) {
+						// 	$cal = $startupdate - (int)$oldgroup['default_end']; // ส่วนต่างที่เกิน
+						// 	$cal2 = (int)$oldgroup['default_start'] + $cal + 1;
+						// 	$startupdate = $cal2 + 1; // +1 is next
+						// } 
+						
 						$start = $config_barcode['start'];
 					}
 

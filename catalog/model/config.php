@@ -56,7 +56,7 @@
         public function importRelationship($path_file){
             $this->query("TRUNCATE mb_master_config_relationship;");
 			$sql = "LOAD DATA LOCAL INFILE '" . $path_file . "' INTO TABLE ".PREFIX."config_relationship FIELDS TERMINATED BY ',' 
-			LINES TERMINATED BY '\n' IGNORE 1 ROWS ( `group`,`size`,`date_added`,`date_modify`)";
+			LINES TERMINATED BY '\n' IGNORE 1 ROWS ( `group`,`size`,`comment`,`date_added`,`date_modify`)";
             $result = $this->query($sql);
             $this->where('date_added', '0000-00-00 00:00:00');
             $this->where('date_modify', '0000-00-00 00:00:00');
@@ -91,6 +91,11 @@
 
             $query = $this->get('config_barcode');
             return $query->rows;
+        }
+        public function getBarcodeByPrefix($prefix) {
+            $this->where('`group`', $prefix);
+            $query = $this->get('config_barcode');
+            return $query->num_rows == 1 ? $query->row : false;
         }
         public function getBarcode($id) {
             $this->where('id', $id);

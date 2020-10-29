@@ -47,7 +47,7 @@
 				$this->redirect('association');
 			}
 
-			$data['end_group'] = end($data['result_group'])['group'];
+			$data['end_group'] = isset($_GET['end_group']) ? get('end_group') : end($data['result_group'])['group'];
 	    	$data['action'] = route('purchase');
 			$data['action_import_excel'] = route('listGroup');
 			$data['export_excel'] = route('export/pattern&start_group='.$data['start_group'].'&end_group='.$data['end_group']);
@@ -64,8 +64,8 @@
 
 			// Get List
 			$filter = array(
-				'start_group' => $data['start_group'],
-				'end_group' => $data['end_group']
+				'start_group' => get('start_group'),
+				'end_group' => get('end_group')
 			);
 			$mapping = $purchase->getPurchases($filter);
 			$data['getMapping'] = array();
@@ -76,14 +76,18 @@
 					$barcode_use = $group->getGroupStatus($value['group_code']);
 					$value['status'] = $barcode_use==="1" ? '<span class="text-primary">Recived</span>' : ($barcode_use==="0" ? '<span class="text-danger">Waiting</span>' : '');
 					$value['status_id'] = $barcode_use;
+
+					// if ($value['start']>$value['default_end']) {
+
+					// }
 	
 					$data['getMapping'][] = $value;
 				}
 			}
 			
 			// 3 year ago
-			$data['date_first_3_year'] = date('Y-m-d', strtotime($purchase->getStartDateOfYearAgo()));
-			$data['date_lasted_order'] = date('Y-m-d', strtotime($purchase->getEndDateOfYearAgo()));
+			$data['date_first_3_year'] = !empty($default_first_3_year) ? date('Y-m-d', strtotime($default_first_3_year)) : '';
+			$data['date_lasted_order'] = !empty($default_end_year) ? date('Y-m-d', strtotime($default_end_year)) : '';
 
  	    	$this->view('purchase/list',$data);
 		}
@@ -128,7 +132,17 @@
 	    public function delete() {
 	    	$data = array();
 	    	$this->view('purchase/form',$data);
-	    }
+		}
+		
+		public function checkBarcodeUsed() {
+			$data = array();
+
+			$barcode = $this->model('barcode');
+			$data = $barcode->checkBarcode(post('barcode'));
+			$data = json_encode($data);
+
+			$this->json($data);	
+		}
 
 	}
 ?>

@@ -34,13 +34,13 @@
 				<div class="col-sm-6">
 					<form action="<?php echo $action_import; ?>" method="post" enctype="multipart/form-data">
 						<div class="form-group row">
-							<label for="" class="col-sm-12 text-left">Import Excel</label>
+							<label for="" class="col-sm-12 text-left">Import CSV</label>
 							<div class="col-sm-12">
 								<div class="input-group">
 									<div class="custom-file">
 										<!-- <input type="hidden" name="date_wk" value="<?php echo $_GET['date_wk']; ?>">-->
-										<input type="file" name="import_file" class="custom-file-input" id="inputImportConfigFlexibleGroup" aria-describedby="inputGroupFileAddon04" required accept="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet, application/vnd.ms-excel" />  >
-										<label class="custom-file-label" for="inputImportConfigFlexibleGroup">Browse Excel File (.xlsx)</label>
+										<input type="file" name="import_file" class="custom-file-input" id="inputImportConfigFlexibleGroup" aria-describedby="inputGroupFileAddon04" required  />  >
+										<label class="custom-file-label" for="inputImportConfigFlexibleGroup">Browse CSV File (.csv)</label>
 									</div>
 									<div class="input-group-append">
 										<button class="btn btn-outline-primary" type="submit" id="">Import</button>
@@ -229,6 +229,12 @@ $(document).ready(function(){
 </script>
 <script>
 $(document).ready(function(){
+
+	$('[type="file"]').on('change', function(e){
+		var fileName = e.target.files[0].name;
+		$(this).next('label.custom-file-label').html('<span class="text-dark">'+fileName+'</span>');
+		console.log(fileName);
+	});
 
 let sprintf = (range, prefix, text) => {
 	let length = text.length;

@@ -1159,13 +1159,13 @@
 		$objWriter->save($pathSave.$filename);
 		return $filename;
 	}
-	function readExcel($path,$first_row=2){
+	function readExcel($path,$first_row=2,$index=0){
 		require_once(DOCUMENT_ROOT.'system/lib/PHPExcel/vendor/autoload.php');
 		$objPHPExcel = new PHPExcel();
 
 		$inputFileName = DOCUMENT_ROOT.$path; 
 	   // Read Excel
-	   $page = 0;
+	   $page = $index;
 
 	   $inputFileType = PHPExcel_IOFactory::identify($inputFileName); 
 	   $objReader = PHPExcel_IOFactory::createReader($inputFileType); 

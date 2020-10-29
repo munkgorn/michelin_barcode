@@ -62,7 +62,7 @@ app.post("/setdate", (req, res) => {
 
 app.post("/getAssociationDate", (req, res) => {
   let text = '';
-  let sql = "SELECT date_wk FROM mb_master_product GROUP BY date_wk;";
+  let sql = "SELECT date_modify FROM mb_master_group GROUP BY date_modify;";
   let query = db.query(sql, (err, results) => {
     if (err) throw err;
     res.send(results);

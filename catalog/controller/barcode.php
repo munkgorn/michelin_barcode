@@ -632,12 +632,17 @@
 				$path_csv = DOCUMENT_ROOT . $dir;
 
 				$file = $_FILES['import_file'];
+
+
+				$this->rmSession('textalert');
+				$this->rmSession('barcodealert');
+				
 				
 				$fileType = strtolower(pathinfo(basename($file["name"]),PATHINFO_EXTENSION));
 				$newname = 'import_barcode_'.date('YmdHis');
 				$file_csv = 'CSV_'.$newname.'.csv';
 				$newname .= '.'.$fileType;
-				$acceptFileType  = array('xlsx');
+				$acceptFileType  = array('csv');
 				// check folder upload
 				if (!file_exists($path)) {
 					$oldmask = umask(0);
@@ -648,49 +653,87 @@
 				// check file
 				if ($file['error']==0 && in_array($fileType, $acceptFileType)) {
 					if (upload($file, $path, $newname)) {
-						$barcode_use = array();
-						$date = (post('date')?post('date'):date('Y-m-d'));
 						$id_user = $this->getSession('id_user');
-						$results = readExcel($dir.$newname, 0); // read excel to csv
-						$csv_file = $path_csv.$file_csv;
-						$fp = fopen($csv_file, 'w');
-						
-						foreach ($results as $key => $result) {
-							if ($key!=0) { $barcode_use[] = $result[0]; }
-							$insert = array(
-								$id_user,
-								$result[0],
-								$date.' 00:00:00',
-								'0000-00-00 00:00:00',
-								'0000-00-00 00:00:00'
-							);
-							fputcsv($fp, $insert,',',chr(0));
-						}	
-						fclose($fp);
+						$date = (post('date')?post('date'):date('Y-m-d'));
+						$insert = array();
+						$row = 1;
 						$barcode = $this->model('barcode');
-						$result_import_barcode_csv = $barcode->import_range_barcode($path_csv.$file_csv, $date);
+						$barcode_use = array();
+						
+						if (($handle = fopen($path.$newname, "r")) !== FALSE) {
+							// $csv_file = $path_csv.$file_csv;
+							// $fp = fopen($csv_file, 'w');
+							while (($data = fgetcsv($handle, 1000, ",")) !== FALSE) {
+								$col = explode(';', $data[0]);
+								if ($row>1) {
+									$result = $barcode->findAndUpdateBarcode($col[9], $date);
+									if ($result) {
+										$barcode_use[] = trim($col[9]);
+									}
 
-						$result_updatebarcode = $barcode->updateBarcodeUse($barcode_use); // ? update ใน barcode ว่า ใช้เลขไหนไปบ้าง
-						$barcode_alert = $this->calcurateBarcode(); // ? ต้องเช็คเลขที่ไม่ถูกใช้งาน ให้ Flag ทิ้ง
-
-						// echo '<pre>';
-						// print_r($barcode_alert);
-						// echo '</pre>';
-						// exit();
-						$textalert = array();
-						foreach ($barcode_alert as $alert) {
-							$textalert[] = $alert['name'];
+									// $insert = array(
+									// 	$id_user,
+									// 	$col[9],
+									// 	$date.' 00:00:00',
+									// 	'0000-00-00 00:00:00',
+									// 	'0000-00-00 00:00:00'
+									// );
+									// fputcsv($fp, $insert,',',chr(0));
+									// echo $barcode = $col[9];
+									// echo '<br>';
+								}
+								$row++;
+							}
+							fclose($handle);
+							// fclose($fp);
 						}
-						$textalert = implode(',<br>' ,$textalert);
-						if (!empty($textalert)) {
-							$this->setSession('textalert', $textalert);
-							$this->setSession('barcodealert', $barcode_alert);
+						// $barcode_use = array();
+						// $date = (post('date')?post('date'):date('Y-m-d'));
+						// $id_user = $this->getSession('id_user');
+						// $results = readExcel($dir.$newname, 0); // read excel to csv
+						// $csv_file = $path_csv.$file_csv;
+						// $fp = fopen($csv_file, 'w');
+						
+						// foreach ($results as $key => $result) {
+						// 	if ($key!=0) { $barcode_use[] = $result[0]; }
+						// 	$insert = array(
+						// 		$id_user,
+						// 		$result[0],
+						// 		$date.' 00:00:00',
+						// 		'0000-00-00 00:00:00',
+						// 		'0000-00-00 00:00:00'
+						// 	);
+						// 	fputcsv($fp, $insert,',',chr(0));
+						// }	
+						// fclose($fp);
+						// $barcode = $this->model('barcode');
+						// $result_import_barcode_csv = $barcode->import_range_barcode($path_csv.$file_csv, $date);
+
+						if(count($barcode_use)>0) {
+							$result_updatebarcode = $barcode->updateBarcodeUse($barcode_use); // ? update ใน barcode ว่า ใช้เลขไหนไปบ้าง
+							$barcode_alert = $this->calcurateBarcode(); // ? ต้องเช็คเลขที่ไม่ถูกใช้งาน ให้ Flag ทิ้ง
+
+							// // echo '<pre>';
+							// // print_r($barcode_alert);
+							// // echo '</pre>';
+							// // exit();
+							$textalert = array();
+							foreach ($barcode_alert as $alert) {
+								$textalert[] = $alert['name'];
+							}
+							$textalert = implode(',<br>' ,$textalert);
+							if (!empty($textalert)) {
+								$this->setSession('textalert', $textalert);
+								$this->setSession('barcodealert', $barcode_alert);
+							}
+						} else {
+							$this->setSession('error', 'ไม่พบ barcode ที่ตรงกัน');
 						}
 						$this->redirect('barcode');
-						// $last_date = $barcode->import_product($csv_file);
-						// $split = explode(' ',$last_date);
-						// print_r($result_import_barcode_csv);
-						// $this->redirect('barcode/association&date_wk='.$split[0]);
+						// // $last_date = $barcode->import_product($csv_file);
+						// // $split = explode(' ',$last_date);
+						// // print_r($result_import_barcode_csv);
+						// // $this->redirect('barcode/association&date_wk='.$split[0]);
 					}
 				}
 
