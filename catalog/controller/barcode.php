@@ -21,16 +21,25 @@
 
 			$barcode = $this->model('barcode');
 
+			$filter = array(
+				'barcode_status' => 1
+			);
+			$data['dates'] = $barcode->getDateBarcode($filter);
+
+			// $data['group'] = 
+
 			// default data
 			$data['date'] = (get('date')?get('date'):'');
 			$data_select = array(
 				'date' => $data['date']
 			);
-			$data['getImportBarcode'] = array();
-			$barcodes = $barcode->getBarcode($data_select);
+			// $data['getImportBarcode'] = array();
+			// $barcodes = $barcode->getBarcode($data_select);
 
-
-			$data['getImportBarcode'] = $this->calcurateBarcode($data['date']);
+			if (isset($_GET['date'])) {
+				// $data['getImportBarcode'] = $this->calcurateBarcode($data['date']);
+			}
+			
 			// echo '<pre>';
 			// print_r($data['getImportBarcode']);
 			// echo '</pre>';
@@ -43,7 +52,7 @@
 
 			// }
 
-			$data['nums_row']	= $barcode->getNumsBarcode($data_select);
+			// $data['nums_row']	= $barcode->getNumsBarcode($data_select);
 
 
 			$data['action'] = route('barcode/listGroup');
@@ -52,7 +61,8 @@
 			$data['action_addmenual'] = route('barcode/addmenual&date='.$data['date']);
 			$data['action_import_excel'] = route('barcode');
 			
-			$data['groups'] = $barcode->getGroupInBarcode($data['date']);
+			// $data['groups'] = $barcode->getGroupInBarcode($data['date']);
+			$data['groups'] = array();
 
 			// modal
 			$data['textalert'] = $this->hasSession('textalert') ? $this->getSession('textalert') : false;
@@ -883,28 +893,34 @@
 			$this->redirect('barcode/listgroup'.(get('date')?'&date='.get('date'):''));
 		}
 
-		public function calcurateBarcode($date_wk='') {
+		public function calcurateBarcode() {
+			$data = array();
+			$barcode = $this->model('barcode');
+			$data = $barcode->getRangeBarcode($_POST['group'], $_POST['status'], $_POST['date']);
+			$this->json($data);
+		}
+		public function calcurateBarcodeBackup($date_wk='') {
 			$input=array();
-			if (!empty($date_wk)) { $input['date_wk'] = $date_wk; }
+			
 			$barcode = $this->model('barcode');
 
 			$list1 = array();
 			$list2 = array();
 			
 			$input = array(
-				'date_wk' => $date_wk,
 				'barcode_use' => 1
 			);
+			if (!empty($date_wk)) { $input['date'] = $date_wk; }
 			$listbarcode = $barcode->getListBarcode($input); // ? ที่จองในระบบทั้งหมด
 			foreach ($listbarcode as $key => $value) {
 				$list1[] = (int)$value['barcode_code'];
 			}
 
 			$input = array(
-				'date_wk' => $date_wk,
 				'barcode_use' => 1,
 				'barcode_status' => '0'
 			);
+			if (!empty($date_wk)) { $input['date'] = $date_wk; }
 			$listbarcode = $barcode->getListBarcode($input); // ? ที่ใช้ไปแล้ว
 			foreach ($listbarcode as $key => $value) {
 				$list2[] = (int)$value['barcode_code'];
@@ -1018,6 +1034,19 @@
 			echo '<pre>';
 			print_r($json);
 			echo '</pre>';
+		}
+
+		public function ajaxGetBarcode() {
+			$data = array();
+			$data = $this->calcurateBarcode($_POST['date']);
+			$this->json($data);
+		}
+
+		public function ajaxGetGroupByDate() {
+			$data = array();
+			$barcode = $this->model('barcode');
+			$data = $barcode->getGroupOnDate($_POST['date']);
+			$this->json($data);
 		}
 	}
 ?>

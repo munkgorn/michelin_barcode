@@ -199,7 +199,6 @@ $(document).ready(function () {
 				$('.load_default_start[data-group='+index+']').html(value.start);
 				$('.load_default_end[data-group='+index+']').html(value.end);
 			});
-
 		},
 		"json"
 	);

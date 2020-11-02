@@ -42,11 +42,12 @@
                 $this->where('remaining_qty', '0', '>=');
             }
             $this->where('g.del',0);
-            $this->where('remaining_qty', 0, '>');
+            // $this->where('remaining_qty', 0, '>');
             $this->group_by('g.group_code');
             $this->join('user u','u.id_user = g.id_user','LEFT');
             $this->select('g.*, u.username');
             $query = $this->get('group g');
+            // echo $this->last_query();
             return $query->rows;
         }
 

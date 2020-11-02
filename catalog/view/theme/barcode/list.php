@@ -13,19 +13,33 @@
 					<form action="<?php echo route('barcode'); ?>" method="GET">
 						<input type="hidden" name="route" value="barcode">
 						<div class="row">
-							<div class="col-6">
-								<label class="mb-3">Find by genarater date</label>
-								<div class="input-group">
+							<div class="col-3">
+								<label class="">Date</label>
+								<select name="date" id="datefilter" class="form-control select2date">
+								<option></option>
+								<?php if (count($dates)>0) : ?>
+								<?php foreach ($dates  as $d) : ?>
+									<option value="<?php echo $d['date_modify'];?>"><?php echo $d['date_modify'];?></option>
+								<?php endforeach; ?>
+								<?php endif; ?>
+								</select>
+								<!-- <div class="input-group">
 									<input type="text" class="form-control datepicker" id="date" name="date" value="<?php echo $date; ?>">
 									<div class="input-group-append">
 										<span class="input-group-text"><i class="dripicons-calendar"></i></span>
 									</div>
-								</div>
+								</div> -->
 							</div>
-							<div class="col-6">
-								<label class="mb-3">&nbsp;</label>
+							<div class="col-3">
+									<label for="">Group Prefix</label>
+									<select name="" id="groupFilter" class="form-control select2group">
+										<option value="">Please select date</option>
+									</select>
+							</div>
+							<div class="col-3">
+								<label class="">&nbsp;</label>
 								<div class="input-group">
-									<button type="submit" class="btn btn-outline-primary"><i class="fas fa-search"></i> Search</button>
+									<button type="button" class="btn btn-outline-primary" id="btnsearch"><i class="fas fa-search"></i> Search</button>
 								</div>
 							</div>
 						</div>
@@ -72,50 +86,19 @@
 		<!--end card-header-->
 		<div class="card-body">
 
-			<?php if (!empty($date)) {?>
 			<div class="table-responsive">
-				<table class="table table-bordered" id="">
+				<table class="table table-bordered" id="table_result">
 					<thead>
 						<tr>
 							<th width="25%">Group Prefix</th>
-							<!-- <th width="25%">Barcode</th> -->
 							<th>Range Barcode</th>
 							<th>Qty</th>
-							<!-- <th>Status</th> -->
-							<!-- <th>Used date</th> -->
-							<!-- <th>Create by</th> -->
-							<!-- <th name="buttons" style="width:50px;"></th> -->
 						</tr>
 					</thead>
 					<tbody>
-						<?php if ($getImportBarcode) {?>
-							<?php foreach ($getImportBarcode as $val) {?>
-							<tr>
-								<td><?php echo $val['group']; ?></td>
-								<td><?php echo $val['name']; ?></td>
-								<!-- <td><span class="text-success">Use</span></td> -->
-								<td><?php echo $val['count']; ?></td>
-								<!-- <td><?php echo $val['username']; ?></td> -->
-								<!-- <td name="buttons">
-									<div class=" pull-right">
-										<button id="bElim" type="button" class="btn btn-sm btn-soft-danger btn-circle" onclick="rowElim(this);">
-										<i class="dripicons-trash" aria-hidden="true">
-										</i>
-										</button>
-									</div>
-								</td> -->
-							</tr>
-							<?php }?>
-						<?php } else {?>
-							<tr>
-								<td colspan="10" class="text-center">Empty</td>
-							</tr>
-						<?php }?>
 					</tbody>
 				</table>
 			</div>
-			<!-- <div>Count row: <?php echo number_format($nums_row); ?></div> -->
-			<?php }?>
 		</div>
 		<!--end card-body-->
 	</div>
@@ -209,26 +192,71 @@
 </div>
 
 
-
-<form
-	action="<?php echo $action_import_excel; ?>"
-	method="POST"
-	id="form-import-excel"
-	enctype="multipart/form-data"
-	style="display:none;"
->
-
-	<input type="file" name="file_import" id="import_file"
-	accept="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet, application/vnd.ms-excel">
-	<input type="text" class="form-control" name="date" value="<?php echo $date; ?>">
-</form>
 <script>
 $(document).ready(function(){
 	$('#barcode').addClass('mm-active').children('ul.mm-collapse').addClass('mm-show');
+
+	$('.select2date').select2({
+		placeholder: "Select date"
+	});
+
+	
+
+	// $.ajaxSetup({async: true}); 
 });
 </script>
 <script>
 $(document).ready(function(){
+	const trnotfound = '<tr><td colspan="3" class="text-center">Not found data</td></tr>';
+	const trloading = '<tr><td colspan="3" class="text-center"><img src="assets/loading.gif" height="30" /><br>Loading...</td></tr>';
+	const table = $('#table_result tbody');
+	const inputDate = $('#datefilter');
+	const inputGroup = $('#groupFilter');
+
+	table.html(trnotfound);
+	$('#btnsearch').click(function(){
+		table.html(trloading);
+		const filterDate = inputDate.val();
+		$.post("index.php?route=barcode/calcurateBarcode", {group: inputGroup.val(), status: 1, date: filterDate},
+			function (data, textStatus, jqXHR) {
+				console.log(data);
+				console.log(data.length);
+				if (data.length > 0) {
+					let html = '';
+					$.each(data, function(index,value) {
+						html += '<tr>';
+						html += '<td>'+value.barcode_prefix+'</td>';
+						html += '<td>'+value.start+' - '+value.end+'</td>';
+						html += '<td>'+value.qty+'</td>';
+						html += '</tr>';
+					});
+					table.html(html);
+				} else {
+					table.html(trnotfound);
+				}
+			},
+			"json"
+		);
+	});
+
+	inputDate.change(function(){
+		const filterDate = $(this).val();
+		table.html(trnotfound);
+		$('#groupFilter').html('<option>Loading...</option>');
+		$.post("index.php?route=barcode/ajaxGetGroupByDate", {date: filterDate},
+			function (data, textStatus, jqXHR) {
+				let option = '';
+				$.each(data, function(index,value) {
+					option += '<option value="'+value.barcode_prefix+'">'+value.barcode_prefix+'</option>';
+					console.log(value);
+				});
+				$('#groupFilter').html(option).select2({
+					placeholder: "Select group"
+				});
+			},
+			"json"
+		);
+	});
 
 	$('[type="file"]').on('change', function(e){
 		var fileName = e.target.files[0].name;

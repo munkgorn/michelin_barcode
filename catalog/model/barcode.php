@@ -93,19 +93,17 @@
 			$flag = isset($data['barcode_falg'])&&!empty($data['barcode_falg']) ? $data['barcode_falg'] : '';
 			$barcode_use = isset($data['barcode_use'])&&!empty($data['barcode_use']) ? $data['barcode_use'] : '';
 
-			$sql = "SELECT *,".PREFIX."barcode.date_added AS date_added 
+			$sql = "SELECT ".PREFIX."barcode.*, ".PREFIX."user.username
 			FROM ".PREFIX."barcode 
 			LEFT JOIN ".PREFIX."user ON ".PREFIX."barcode.id_user = ".PREFIX."user.id_user
 			LEFT JOIN ".PREFIX."group ON ".PREFIX."group.id_group = ".PREFIX."barcode.id_group
 			WHERE id_barcode > 0 ";
-			$sql .= !empty($date) ? "AND DATE(".PREFIX."barcode.date_added) = '".$date."' " : ""; 
+			$sql .= !empty($date) ? "AND ".PREFIX."barcode.date_modify = '".$date."' " : ""; 
 			$sql .= !empty($date_wk) ? "AND DATE(".PREFIX."barcode.date_wk) = '".$date_wk."' " : ""; 
 			$sql .= !empty($status)||$status==0&&$status!='' ? "AND ".PREFIX."barcode.barcode_status = '".$status."' " : ""; 
 			$sql .= !empty($barcode_use) ? "AND ".PREFIX."group.barcode_use = '".$barcode_use."' " : "";
 			$sql .= !empty($flag) ? "AND ".PREFIX."barcode.barcode_flag = '".(int)$flag."' " : ""; 
 			$result_group = $this->query($sql);
-			// echo $sql;
-			// echo '<br>';
 			$result = $result_group->rows;
 			return $result;
 		}
@@ -687,6 +685,59 @@
 			$this->group_by('barcode_prefix');
 			$this->select('barcode_prefix as `group`');
 			$query = $this->get('barcode');
+			return $query->rows;
+		}
+
+
+		public function getDateBarcode($filter=array()) {
+			if (count($filter)>0) {
+				foreach ($filter as $key => $value) {
+					$this->where($key, $value);
+				}
+			}
+			$this->select('date_modify');
+			$this->group_by('date_modify');
+			$this->order_by('date_modify', 'DESC');
+			$query = $this->get('barcode');
+			return $query->rows;
+		}
+
+		public function getGroupOnDate($date) {
+			$sql = "SELECT barcode_prefix FROM mb_master_barcode WHERE date_modify = '$date' GROUP BY barcode_prefix";
+			$query = $this->query($sql);
+			return $query->rows;
+		}
+
+		public function getRangeBarcode($group=0, $status=1, $date='') {
+			$sql = "SELECT a.barcode_status, a.barcode_prefix, (MIN(c.barcode_code) - a.barcode_code) as qty ";
+			$sql .= ", LPAD(a.barcode_code, 8, \"0\") as start ";
+			$sql .= ", LPAD(MIN(c.barcode_code), 8, \"0\") as end "; 
+			$sql .= "FROM (SELECT * FROM mb_master_barcode WHERE barcode_prefix = $group AND barcode_status = $status AND date_modify = '$date') a ";
+			
+			$sql .= "LEFT  ";
+			$sql .= "JOIN (SELECT * FROM mb_master_barcode WHERE barcode_prefix = $group AND barcode_status = $status AND date_modify = '$date') b  ";
+			$sql .= "ON b.barcode_status = a.barcode_status ";
+			$sql .= "AND b.barcode_code = a.barcode_code - 1 ";
+				
+			$sql .= "LEFT  ";
+			$sql .= "JOIN (SELECT * FROM mb_master_barcode WHERE barcode_prefix = $group AND barcode_status = $status AND date_modify = '$date') c  ";
+			$sql .= "ON c.barcode_status = a.barcode_status ";
+			$sql .= "AND c.barcode_code >= a.barcode_code ";
+				
+			$sql .= "LEFT  ";
+			$sql .= "JOIN (SELECT * FROM mb_master_barcode WHERE barcode_prefix = $group AND barcode_status = $status AND date_modify = '$date') d  ";
+			$sql .= "ON d.barcode_status = a.barcode_status ";
+			$sql .= "AND d.barcode_code = c.barcode_code + 1 ";
+				
+			$sql .= "WHERE b.barcode_code IS NULL  ";
+			$sql .= "AND c.barcode_code IS NOT NULL ";
+			$sql .= "AND d.barcode_code IS NULL ";
+				
+			$sql .= "GROUP  ";
+			$sql .= "BY a.barcode_status,a.barcode_code; ";
+			// echo $sql;
+
+			$query = $this->query($sql);
 			return $query->rows;
 		}
 		
