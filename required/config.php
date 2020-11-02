@@ -1,6 +1,7 @@
 <?php
-	 set_time_limit(0);
-	ini_set("memory_limit", -1);
+ini_set("memory_limit", "-1");
+set_time_limit(0);
+
   	define('DEBUG_MODE',false);
 	ini_set('display_errors', 1);
 	ini_set('display_startup_errors', 1);

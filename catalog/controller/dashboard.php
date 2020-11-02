@@ -21,10 +21,15 @@
 			$data['style'] 	= $style;
 			
 			$dashboard = $this->model('dashboard');
-			$data['group'] = $dashboard->countGroup();
-			$data['barcode'] = $dashboard->countBarcode();
-			$data['waiting'] = $dashboard->countBarcodeWaiting();
-			$data['missing'] = $dashboard->countBarcodeMissing();
+			// $data['group'] = $dashboard->countGroup();
+			// $data['barcode'] = $dashboard->countBarcode();
+			// $data['waiting'] = $dashboard->countBarcodeWaiting();
+			// $data['missing'] = $dashboard->countBarcodeMissing();
+
+			$data['group'] = 0;
+			$data['barcode'] = 0;
+			$data['waiting'] = 0;
+			$data['missing'] = 0;
 
 			$data['success'] = $this->hasSession('success') ? $this->getSession('success') : ''; $this->rmSession('success');
 			$data['error'] = $this->hasSession('error') ? $this->getSession('error') : ''; $this->rmSession('error');

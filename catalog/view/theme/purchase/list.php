@@ -75,8 +75,8 @@
 									<tr>
 										<th class="text-center" rowspan="2">Group</th>
 										<th class="text-center" colspan="3">Next Order</th>
-										<th class="text-center"><?php echo $date_first_3_year;?></th>
-										<th class="text-center"><?php echo $date_lasted_order;?></th>
+										<th class="text-center"><span id="default_start_year"></span></th>
+										<th class="text-center"><span id="default_end_year"></span></th>
 										<th class="text-center" colspan="3">Prefix</th>
 										<th rowspan="2">Status</th>
 									</tr>
@@ -114,9 +114,16 @@
 												autocomplete="off"
 											>
 										</td>
-										<td class="text-center"><?php echo !empty($val['barcode_start_year']) ? sprintf('%08d', $val['barcode_start_year']) : '';?></td>
-										<td class="text-center"><?php echo !empty($val['barcode_end_year']) ? sprintf('%08d', $val['barcode_end_year']) : '';?></td>
 										<td class="text-center">
+										<span class="load_default_start" data-group="<?php echo sprintf('%03d', $val['group_code']);?>"></span>
+										<!-- <?php echo !empty($val['barcode_start_year']) ? sprintf('%08d', $val['barcode_start_year']) : '';?> -->
+										</td>
+										<td class="text-center">
+										<span class="load_default_end" data-group="<?php echo sprintf('%03d', $val['group_code']);?>"></span>
+										<!-- <?php echo !empty($val['barcode_end_year']) ? sprintf('%08d', $val['barcode_end_year']) : '';?> -->
+										</td>
+										<td class="text-center">
+											
 											<?php echo sprintf('%08d', $val['default_start']);?>
 											<!-- <input type="text" class="form-control default_start" id_group="<?php echo $val['id_group'];?>" value="<?php echo $val['default_start'];?>"> -->
 										</td>
@@ -163,6 +170,39 @@
 <script>
 $(document).ready(function(){
 	$('#barcode').addClass('mm-active').children('ul.mm-collapse').addClass('mm-show');
+});
+</script>
+<script type="text/javascript">
+$(document).ready(function () {
+	const loading = '<img src="assets/loading.gif" height="30" />';
+	$('#default_start_year').html(loading);
+	$('#default_end_year').html(loading);
+	$.get("index.php?route=purchase/ajaxDefaultDate", {},
+		function (data, textStatus, jqXHR) {
+			const obj = jQuery.parseJSON(data);
+			$('#default_start_year').html(obj.start);
+			$('#default_end_year').html(obj.end);
+		},
+		"json"
+	);
+
+	$('.load_default_start').each(function(){
+		$(this).html(loading);
+	});
+	$('.load_default_end').each(function(){
+		$(this).html(loading);
+	});
+	$.get("index.php?route=purchase/ajaxGroupDefault", {},
+		function (data, textStatus, jqXHR) {
+			const obj = jQuery.parseJSON(data);
+			$.each(obj, function(index, value){
+				$('.load_default_start[data-group='+index+']').html(value.start);
+				$('.load_default_end[data-group='+index+']').html(value.end);
+			});
+
+		},
+		"json"
+	);
 });
 </script>
 <script>

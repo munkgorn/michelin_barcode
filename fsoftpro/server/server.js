@@ -2,6 +2,8 @@ const express = require("express");
 const mysql = require("mysql");
 const bodyParser = require("body-parser");
 const config = require("./db.config");
+var fs = require('fs');
+var path = require('path');
 
 const app = express();
 const port = 5000;
@@ -66,5 +68,41 @@ app.post("/getAssociationDate", (req, res) => {
   let query = db.query(sql, (err, results) => {
     if (err) throw err;
     res.send(results);
+  });
+});
+
+app.post('/removefile', (req, res) => {
+  let pathdir = __dirname + '/../../uploads/';
+  fs.readdir(pathdir, (err, dirs) => {
+    if (err) console.log(err);
+
+    
+      for (const dir of dirs) {
+        // console.log(dir);
+        // const childPath = pathdir + dir + '/';
+        // console.log(childPath);
+        fs.readdir(childPath, (err, files) => {
+          files.forEach(file => {
+            console.log(file);
+          });
+        //   console.log(files);
+        //   // if (typeof files !== 'undefined') {
+        //   //   for (const file of files) {
+        //   //     const filePath = childPath + file;
+        //   //     console.log(filePath);
+        //   //     // fs.unlink(filePath, err => {
+        //   //     //     if (err) console.log(err);
+        //   //     //     res.send("Remove file " + filePath);
+        //   //     // });
+        //   //   }
+        //   // }
+          
+        });
+        // const newLocal = pathdir + file;
+          // fs.unlink(newLocal, err => {
+          //     if (err) console.log(err);
+          //     res.send("Remove file " + newLocal);
+          // });
+      }
   });
 });

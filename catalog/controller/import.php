@@ -56,7 +56,7 @@
                         $config = $this->model('config');
                         $group = $this->model('group');
                         
-                        $results = readExcel($dir.$newname, 0, 1);
+                        $results = readExcel($dir.$newname, 0, 0);
                         $results2 = readExcel($dir.$newname, 0, 1);
 
 
@@ -71,26 +71,28 @@
                         $fp = fopen($csv_file, 'w');
                         foreach ($results as $value) {
                             if ($row>0) {
-                                $config_info = $config->getBarcodeByPrefix($value[0]);
-                                $default_start = 0;
-                                $default_end = 0;
-                                $default_range = 0;
-                                if ($config_info!=false) {
-                                    $default_start = !empty($config_info['default_start']) ? $config_info['default_start'] : '';
-                                    $default_end = !empty($config_info['default_end']) ? $config_info['default_end'] : '';
-                                    $default_range = !empty($config_info['default_range']) ? $config_info['default_range'] : '';
-                                }
+                                // $config_info = $config->getBarcodeByPrefix($value[0]);
+                                // $default_start = 0;
+                                // $default_end = 0;
+                                // $default_range = 0;
+                                // if ($config_info!=false) {
+                                //     $default_start = !empty($config_info['default_start']) ? $config_info['default_start'] : '';
+                                //     $default_end = !empty($config_info['default_end']) ? $config_info['default_end'] : '';
+                                //     $default_range = !empty($config_info['default_range']) ? $config_info['default_range'] : '';
+                                // }
+
                                 
                                 // $sql = "INSERT INTO mb_master_group SET ";
                                 $insert = array(
                                     $this->getSession('id_user'),
                                     $value[0],
                                     $value[1],
-                                    $default_start,
-                                    $default_end,
-                                    $default_range,
-                                    $value[2].' 00:00:00',
-                                    $value[2].' 00:00:00',
+                                    // $default_start,
+                                    // $default_end,
+                                    // $default_range,
+                                    $value[2],
+                                    $value[2],
+                                    $value[2],
                                     $value[3],
                                 );
                                 fputcsv($fp, $insert,',',chr(0));
@@ -98,17 +100,18 @@
                             $row++;
                         }
                         fclose($fp);
-                        $import->loadCSVGroup($csv_file);
+                        $result = $import->loadCSVGroup($csv_file);
+                        // var_dump($result);
 
 
                         $col = array();
                         $row=0;
-                        $dir = 'uploads/import_cutbarcode/';
+                        $dir = 'uploads/';
                         $path = DOCUMENT_ROOT . $dir;
                         $path_csv = DOCUMENT_ROOT . $dir;
-                        $newname = 'import_defaultbarcode_'.date('YmdHis');
-                        $file_csv = 'CSV_'.$newname.'.csv';
-                        $csv_file = $path_csv.$file_csv;
+                        $file_csv = 'barcode';
+                        $json = array();
+                        $csv_file = $path_csv.$file_csv.'.csv';
                         $fp = fopen($csv_file, 'w');
                         foreach ($results2 as $value) {
                             if ($row>0) {
@@ -121,15 +124,20 @@
                                         $value[0],
                                         $i,
                                         $value[5],
-                                        $value[4].' 00:00:00',
-                                        $value[4].' 00:00:00',
+                                        0,
+                                        $value[4],
+                                        $value[4],
                                     );
+                                    $json[] = $insert;
+
+
                                     fputcsv($fp, $insert,',',chr(0));
                                 }
                             }
                             $row++;
                         }
-                        fclose($fp);
+                        // fwrite($fp, json_encode($json));
+                        // fclose($fp);
                         $import->loadCSVBarcode($csv_file);
 
                         // print_r(post('column'));

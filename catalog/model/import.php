@@ -21,13 +21,23 @@
 
         public function loadCSVGroup($path) {
 			$sql = "LOAD DATA LOCAL INFILE '" . $path . "' INTO TABLE ".PREFIX."group FIELDS TERMINATED BY ',' 
-			LINES TERMINATED BY '\n' ( id_user, group_code, start, default_start, default_end, default_range, date_added, date_modify, barcode_use);";
-			$result = $this->query($sql);
+			LINES TERMINATED BY '\n' ( id_user, group_code, start, date_wk, date_added, date_modify, barcode_use);";
+            $result = $this->query($sql);
+            
+            $sql = "UPDATE mb_master_group g ";
+            $sql .= "LEFT JOIN mb_master_config_barcode b ON b.`group` = g.group_code ";
+            $sql .= "SET g.default_start = b.`start`, ";
+            $sql .= "g.default_end = b.`end`, ";
+            $sql .= "g.default_range = b.`total` ";
+            $sql .= "WHERE g.default_start = 0 AND g.default_end = 0 AND g.default_range = 0 ";
+            $this->query($sql);
+
+            return $result;
         }
 
         public function loadCSVBarcode($path) {
 			$sql = "LOAD DATA LOCAL INFILE '" . $path . "' INTO TABLE ".PREFIX."barcode FIELDS TERMINATED BY ',' 
-			LINES TERMINATED BY '\n' ( id_user,id_group,barcode_prefix,barcode_code,date_added,date_modify);";
+			LINES TERMINATED BY '\n' ( id_user,id_group,barcode_prefix,barcode_code,barcode_status,date_added,date_modify);";
 			$result = $this->query($sql);
         }
     }

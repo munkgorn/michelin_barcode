@@ -71,20 +71,18 @@
 			$data['getMapping'] = array();
 			if ($mapping!=false) {
 				foreach ($mapping as $key => $value) {
-					$value['barcode_start_year'] = $purchase->getStartBarcodeOfYearAgo($value['group_code']);
-					$value['barcode_end_year'] = $purchase->getEndBarcodeOfYearAgo($value['group_code']);
+					// $value['barcode_start_year'] = $purchase->getStartBarcodeOfYearAgo($value['group_code']);
+					// $value['barcode_start_year'] = '';
+					// $value['barcode_end_year'] = $purchase->getEndBarcodeOfYearAgo($value['group_code']);
+					// $value['barcode_end_year'] = '';
 					$barcode_use = $group->getGroupStatus($value['group_code']);
 					$value['status'] = $barcode_use==="1" ? '<span class="text-primary">Recived</span>' : ($barcode_use==="0" ? '<span class="text-danger">Waiting</span>' : '');
 					$value['status_id'] = $barcode_use;
-
-					// if ($value['start']>$value['default_end']) {
-
-					// }
 	
 					$data['getMapping'][] = $value;
 				}
 			}
-			
+
 			// 3 year ago
 			$data['date_first_3_year'] = !empty($default_first_3_year) ? date('Y-m-d', strtotime($default_first_3_year)) : '';
 			$data['date_lasted_order'] = !empty($default_end_year) ? date('Y-m-d', strtotime($default_end_year)) : '';
@@ -142,6 +140,82 @@
 			$data = json_encode($data);
 
 			$this->json($data);	
+		}
+
+
+		public function ajaxDefaultDate() {
+			$data = array();
+			$data = $this->jsonDefaultYear();
+			$this->json($data);
+		}
+		public function jsonDefaultYear($header=true) {
+			$json = array();
+			if (!file_exists(DOCUMENT_ROOT . 'uploads/default_year.json')) {
+				$this->generateJsonDefaultYear();
+			}
+			$file_handle = fopen(DOCUMENT_ROOT . 'uploads/default_year.json', "r");
+			while(!feof($file_handle)){
+				$line_of_text = fgets($file_handle);
+				$json[] = $line_of_text;
+			}
+			fclose($file_handle);
+			if ($header) {
+				$this->json($json);
+			} else {
+				return json_encode($json);
+			}
+		}
+		public function generateJsonDefaultYear() {
+			$data = array();
+			$purchase = $this->model('purchase');
+			$data['start'] = $purchase->getStartDateOfYearAgo();
+			$data['end'] = $purchase->getEndDateOfYearAgo();
+			$fp = fopen(DOCUMENT_ROOT . 'uploads/default_year.json', 'w');
+			fwrite($fp, json_encode($data));
+			fclose($fp);
+			return $data;
+		}
+
+
+		public function ajaxGroupDefault() {
+			$data = array();
+			$data = $this->jsonGroupDefaultBarcode();
+			$this->json($data);
+		}
+		public function jsonGroupDefaultBarcode($header=true) {
+			$json = array();
+			if (!file_exists(DOCUMENT_ROOT . 'uploads/default_purchase.json')) {
+				$this->generateJsonDefaultYear();
+			}
+			$file_handle = fopen(DOCUMENT_ROOT . 'uploads/default_purchase.json', "r");
+			while(!feof($file_handle)){
+				$line_of_text = fgets($file_handle);
+				$json[] = $line_of_text;
+			}
+			fclose($file_handle);
+			if ($header) {
+				$this->json($json);
+			} else {
+				return json_encode($json);
+			}
+		}
+		public function generateJsonDefaultBarcode() {
+			$data = array();
+			$purchase = $this->model('purchase');
+			$config = $this->model('config');
+			$groups = $config->getBarcodes();
+			foreach ($groups as $value) {
+				$data[$value['group']] = array(
+					'start' => '',
+					'end' => '',
+				);
+				$data[$value['group']]['start'] = $purchase->getStartBarcodeOfYearAgo($value['group']);
+				$data[$value['group']]['end'] = $purchase->getEndBarcodeOfYearAgo($value['group']);
+			}
+			$fp = fopen(DOCUMENT_ROOT . 'uploads/default_purchase.json', 'w');
+			fwrite($fp, json_encode($data));
+			fclose($fp);
+			return $data;
 		}
 
 	}

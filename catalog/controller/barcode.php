@@ -666,6 +666,7 @@
 							while (($data = fgetcsv($handle, 1000, ",")) !== FALSE) {
 								$col = explode(';', $data[0]);
 								if ($row>1) {
+									$col[9] = str_replace('"','',$col[9]);
 									$result = $barcode->findAndUpdateBarcode($col[9], $date);
 									if ($result) {
 										$barcode_use[] = trim($col[9]);
@@ -1006,6 +1007,16 @@
 			}
 			echo '<pre>';
 			print_r($diff);
+			echo '</pre>';
+		}
+
+		public function getjson() {
+
+			$dir = 'uploads/';
+			$file = file_get_contents($dir.'/json_barcode.json');
+			$json = json_decode($file, true);
+			echo '<pre>';
+			print_r($json);
 			echo '</pre>';
 		}
 	}
