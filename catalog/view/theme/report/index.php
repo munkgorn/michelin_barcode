@@ -5,7 +5,22 @@
 			<p class="text-muted mb-0">this list barcode received and you can use.</p>
 		</div>
 		<!--end card-header-->
-		<div class="card-body bootstrap-select-1 py-0">
+		<div class="card-body bootstrap-select-1">
+			<form>
+				<div class="row">
+					<div class="col-3">
+							<label for="">Group Prefix</label>
+							<select name="" id="groupFilter" class="form-control select2group">
+							</select>
+					</div>
+					<div class="col-3">
+						<label class="">&nbsp;</label>
+						<div class="input-group">
+							<button type="button" class="btn btn-outline-primary" id="btnsearch"><i class="fas fa-search"></i> Search</button>
+						</div>
+					</div>
+				</div>
+			</form>
 		</div>
 	</div>
 	<div class="card">
@@ -22,28 +37,16 @@
 		<!--end card-header-->
 		<div class="card-body">
 			<div class="table-responsive">
-				<table class="table table-bordered" id="makeEditable">
+				<table class="table table-bordered" id="table_result">
 					<thead>
 						<tr>
-							<th class="text-center" width="30%">Group prefix</th>
+							<th class="text-center" width="25%">Group prefix</th>
 							<th class="text-center" width="50%">Range barcode</th>
-                            <th class="text-center" width="20%">Remaining QTY</th>
+                            <th class="text-center">Remaining QTY</th>
 						</tr>
 					</thead>
 					<tbody>
-                    <?php if (count($barcodes)>0) : ?>
-                    <?php foreach ($barcodes as $barcode): ?>
-                    <tr>
-                        <td class="text-center"><?php echo $barcode['group'];?></td>
-                        <td class="text-center"><?php echo $barcode['name'];?></td>
-                        <td class="text-center"><?php echo number_format($barcode['count'],0);?></td>
-                    </tr>
-                    <?php endforeach;?>
-                    <?php else: ?>
-                    <tr>
-                    <td colspan="8" class="text-center">Not found barcode ready to use.</td>
-                    </tr>
-                    <?php endif; ?>
+                   
 					</tbody>
 				</table>
 			</div>
@@ -57,5 +60,55 @@
 <script>
 $(document).ready(function(){
 	$('#barcode').addClass('mm-active').children('ul.mm-collapse').addClass('mm-show');
+});
+
+$(document).ready(function(){
+	const trnotfound = '<tr><td colspan="3" class="text-center">Please select group</td></tr>';
+	const trloading = '<tr><td colspan="3" class="text-center"><img src="assets/loading.gif" height="30" /><br>Loading...</td></tr>';
+	const table = $('#table_result tbody');
+	const inputDate = $('#datefilter');
+	const inputGroup = $('#groupFilter');
+
+	$.post("index.php?route=barcode/ajaxGetGroupByDate", {},
+		function (data, textStatus, jqXHR) {
+			let option = '<option></option>';
+			$.each(data, function(index,value) {
+				option += '<option value="'+value.barcode_prefix+'">'+value.barcode_prefix+'</option>';
+				console.log(value);
+			});
+			$('#groupFilter').html(option).select2({
+				placeholder: "Select group"
+			});
+		},
+		"json"
+	);
+
+	table.html(trnotfound);
+	$('#btnsearch').click(function(){
+		table.html(trloading);
+		const filterDate = inputDate.val();
+		$.post("index.php?route=barcode/calcurateBarcode", {group: inputGroup.val(), status: 0},
+			function (data, textStatus, jqXHR) {
+				console.log(data);
+				console.log(data.length);
+				if (data.length > 0) {
+					let html = '';
+					$.each(data, function(index,value) {
+						html += '<tr>';
+						html += '<td class="text-center">'+value.barcode_prefix+'</td>';
+						html += '<td class="text-center">'+value.start+' - '+value.end+'</td>';
+						html += '<td class="text-center">'+value.qty+'</td>';
+						html += '</tr>';
+					});
+					table.html(html);
+				} else {
+					table.html('<tr><td colspan="3" class="text-center">Not found data in group '+inputGroup.val()+'</td></tr>');
+				}
+			},
+			"json"
+		);
+	});
+
+		
 });
 </script>

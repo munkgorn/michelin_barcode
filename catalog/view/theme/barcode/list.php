@@ -9,26 +9,15 @@
 		<!--end card-header-->
 		<div class="card-body bootstrap-select-1">
 			<div class="row">
-				<div class="col-sm-6">
-					<form action="<?php echo route('barcode'); ?>" method="GET">
+				<div class="col-sm-8">
+					<form>
 						<input type="hidden" name="route" value="barcode">
 						<div class="row">
 							<div class="col-3">
 								<label class="">Date</label>
 								<select name="date" id="datefilter" class="form-control select2date">
 								<option></option>
-								<?php if (count($dates)>0) : ?>
-								<?php foreach ($dates  as $d) : ?>
-									<option value="<?php echo $d['date_modify'];?>"><?php echo $d['date_modify'];?></option>
-								<?php endforeach; ?>
-								<?php endif; ?>
 								</select>
-								<!-- <div class="input-group">
-									<input type="text" class="form-control datepicker" id="date" name="date" value="<?php echo $date; ?>">
-									<div class="input-group-append">
-										<span class="input-group-text"><i class="dripicons-calendar"></i></span>
-									</div>
-								</div> -->
 							</div>
 							<div class="col-3">
 									<label for="">Group Prefix</label>
@@ -45,7 +34,7 @@
 						</div>
 					</form>
 				</div>
-				<div class="col-sm-6">
+				<div class="col-sm-4">
 					<form action="<?php echo $action_import; ?>" method="post" enctype="multipart/form-data">
 						<div class="form-group row">
 							<label for="" class="col-sm-12 text-left">Import CSV</label>
@@ -196,9 +185,7 @@
 $(document).ready(function(){
 	$('#barcode').addClass('mm-active').children('ul.mm-collapse').addClass('mm-show');
 
-	$('.select2date').select2({
-		placeholder: "Select date"
-	});
+	
 
 	
 
@@ -207,11 +194,30 @@ $(document).ready(function(){
 </script>
 <script>
 $(document).ready(function(){
-	const trnotfound = '<tr><td colspan="3" class="text-center">Not found data</td></tr>';
+	const trnotfound = '<tr><td colspan="3" class="text-center">Please filter date and group</td></tr>';
 	const trloading = '<tr><td colspan="3" class="text-center"><img src="assets/loading.gif" height="30" /><br>Loading...</td></tr>';
 	const table = $('#table_result tbody');
 	const inputDate = $('#datefilter');
 	const inputGroup = $('#groupFilter');
+
+	inputGroup.select2({placeholder: "Please select date."});
+	$('#btnsearch').attr('disabled','disabled');
+
+	$.post("index.php?route=barcode/ajaxDateBarcode", {},
+		function (data, textStatus, jqXHR) {
+			const result = jQuery.parseJSON(data);
+			if (result.length>0) {
+				let option = '<option></option>';
+				$.each(result, function(index, value){
+					option += '<option value="'+value.date_modify+'">'+value.date_modify+'</option>';
+				});
+				inputDate.html(option).select2({
+					placeholder: "Select date"
+				});
+			}
+		},
+		"json"
+	);
 
 	table.html(trnotfound);
 	$('#btnsearch').click(function(){
@@ -225,9 +231,9 @@ $(document).ready(function(){
 					let html = '';
 					$.each(data, function(index,value) {
 						html += '<tr>';
-						html += '<td>'+value.barcode_prefix+'</td>';
-						html += '<td>'+value.start+' - '+value.end+'</td>';
-						html += '<td>'+value.qty+'</td>';
+						html += '<td class="text-center">'+value.barcode_prefix+'</td>';
+						html += '<td class="text-center">'+value.start+' - '+value.end+'</td>';
+						html += '<td class="text-center">'+value.qty+'</td>';
 						html += '</tr>';
 					});
 					table.html(html);
@@ -242,17 +248,18 @@ $(document).ready(function(){
 	inputDate.change(function(){
 		const filterDate = $(this).val();
 		table.html(trnotfound);
-		$('#groupFilter').html('<option>Loading...</option>');
+		$('#btnsearch').attr('disabled','disabled');
+		inputGroup.select2('destroy').html('<option>Loading...</option>');
 		$.post("index.php?route=barcode/ajaxGetGroupByDate", {date: filterDate},
 			function (data, textStatus, jqXHR) {
 				let option = '';
 				$.each(data, function(index,value) {
 					option += '<option value="'+value.barcode_prefix+'">'+value.barcode_prefix+'</option>';
-					console.log(value);
 				});
 				$('#groupFilter').html(option).select2({
 					placeholder: "Select group"
 				});
+				$('#btnsearch').removeAttr('disabled');
 			},
 			"json"
 		);

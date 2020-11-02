@@ -19,13 +19,6 @@
 			$data['style'] 	= $style;
 
 
-			$barcode = $this->model('barcode');
-
-			$filter = array(
-				'barcode_status' => 1
-			);
-			$data['dates'] = $barcode->getDateBarcode($filter);
-
 			// $data['group'] = 
 
 			// default data
@@ -722,15 +715,12 @@
 
 						if(count($barcode_use)>0) {
 							$result_updatebarcode = $barcode->updateBarcodeUse($barcode_use); // ? update ใน barcode ว่า ใช้เลขไหนไปบ้าง
-							$barcode_alert = $this->calcurateBarcode(); // ? ต้องเช็คเลขที่ไม่ถูกใช้งาน ให้ Flag ทิ้ง
+							$json = $this->calcurateBarcode(false); // ? ต้องเช็คเลขที่ไม่ถูกใช้งาน ให้ Flag ทิ้ง
+							$barcode_alert = json_decode($json);
 
-							// // echo '<pre>';
-							// // print_r($barcode_alert);
-							// // echo '</pre>';
-							// // exit();
 							$textalert = array();
 							foreach ($barcode_alert as $alert) {
-								$textalert[] = $alert['name'];
+								$textalert[] = $alert['start'].' - '.$alert['end'];
 							}
 							$textalert = implode(',<br>' ,$textalert);
 							if (!empty($textalert)) {
@@ -893,11 +883,16 @@
 			$this->redirect('barcode/listgroup'.(get('date')?'&date='.get('date'):''));
 		}
 
-		public function calcurateBarcode() {
+		public function calcurateBarcode($header=true) {
 			$data = array();
 			$barcode = $this->model('barcode');
-			$data = $barcode->getRangeBarcode($_POST['group'], $_POST['status'], $_POST['date']);
-			$this->json($data);
+			$date = isset($_POST['date']) ? $_POST['date'] : '';
+			$data = $barcode->getRangeBarcode($_POST['group'], $_POST['status'], $date);
+			if ($header) {
+				$this->json($data);
+			} else {
+				return json_encode($data);
+			}
 		}
 		public function calcurateBarcodeBackup($date_wk='') {
 			$input=array();
@@ -1044,9 +1039,47 @@
 
 		public function ajaxGetGroupByDate() {
 			$data = array();
+			$date = isset($_POST['date']) ? $_POST['date'] : '';
 			$barcode = $this->model('barcode');
-			$data = $barcode->getGroupOnDate($_POST['date']);
+			$data = $barcode->getGroupOnDate($date);
 			$this->json($data);
+		}
+
+
+
+		public function ajaxDateBarcode() {
+			$data = array();
+			$data = $this->jsonDateBarcode();
+			$this->json($data);
+		}
+		public function jsonDateBarcode($header=true) {
+			$json = array();
+			if (!file_exists(DOCUMENT_ROOT . 'uploads/default_datebarcode.json')) {
+				$this->generateJsonDateBarcode();
+			}
+			$file_handle = fopen(DOCUMENT_ROOT . 'uploads/default_datebarcode.json', "r");
+			while(!feof($file_handle)){
+				$line_of_text = fgets($file_handle);
+				$json[] = $line_of_text;
+			}
+			fclose($file_handle);
+			if ($header) {
+				$this->json($json);
+			} else {
+				return json_encode($json);
+			}
+		}
+		public function generateJsonDateBarcode() {
+			$data = array();
+			$barcode = $this->model('barcode');
+			$filter = array(
+				'barcode_status' => 1
+			);
+			$data = $barcode->getDateBarcode($filter);
+			$fp = fopen(DOCUMENT_ROOT . 'uploads/default_datebarcode.json', 'w');
+			fwrite($fp, json_encode($data));
+			fclose($fp);
+			return $data;
 		}
 	}
 ?>

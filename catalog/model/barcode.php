@@ -690,20 +690,26 @@
 
 
 		public function getDateBarcode($filter=array()) {
+			$where = array();
 			if (count($filter)>0) {
 				foreach ($filter as $key => $value) {
-					$this->where($key, $value);
+					$where[] = "`$key` = '$value'";
 				}
 			}
-			$this->select('date_modify');
-			$this->group_by('date_modify');
-			$this->order_by('date_modify', 'DESC');
-			$query = $this->get('barcode');
+			if (count($where)>0) {
+				$where = "WHERE " . implode(' AND ', $where);
+			} else {
+				$where = "";
+			}
+			$sql = "SELECT date_modify FROM mb_master_barcode $where GROUP BY date_modify ORDER BY date_modify DESC;";
+			$query = $this->query($sql);
 			return $query->rows;
 		}
 
-		public function getGroupOnDate($date) {
-			$sql = "SELECT barcode_prefix FROM mb_master_barcode WHERE date_modify = '$date' GROUP BY barcode_prefix";
+		public function getGroupOnDate($date='') {
+			$sql = "SELECT barcode_prefix FROM mb_master_barcode ";
+			$sql .= !empty($date) ? "WHERE date_modify = '$date' " : '';
+			$sql .= "GROUP BY barcode_prefix ";
 			$query = $this->query($sql);
 			return $query->rows;
 		}
@@ -712,20 +718,28 @@
 			$sql = "SELECT a.barcode_status, a.barcode_prefix, (MIN(c.barcode_code) - a.barcode_code) as qty ";
 			$sql .= ", LPAD(a.barcode_code, 8, \"0\") as start ";
 			$sql .= ", LPAD(MIN(c.barcode_code), 8, \"0\") as end "; 
-			$sql .= "FROM (SELECT * FROM mb_master_barcode WHERE barcode_prefix = $group AND barcode_status = $status AND date_modify = '$date') a ";
+			$sql .= "FROM (SELECT * FROM mb_master_barcode WHERE barcode_prefix = $group AND barcode_status = $status ";
+			$sql .= !empty($date) ? "AND date_modify = '$date'" : "";
+			$sql .= ") a ";
 			
 			$sql .= "LEFT  ";
-			$sql .= "JOIN (SELECT * FROM mb_master_barcode WHERE barcode_prefix = $group AND barcode_status = $status AND date_modify = '$date') b  ";
+			$sql .= "JOIN (SELECT * FROM mb_master_barcode WHERE barcode_prefix = $group AND barcode_status = $status ";
+			$sql .= !empty($date) ? "AND date_modify = '$date'" : "";
+			$sql .= ") b  ";
 			$sql .= "ON b.barcode_status = a.barcode_status ";
 			$sql .= "AND b.barcode_code = a.barcode_code - 1 ";
 				
 			$sql .= "LEFT  ";
-			$sql .= "JOIN (SELECT * FROM mb_master_barcode WHERE barcode_prefix = $group AND barcode_status = $status AND date_modify = '$date') c  ";
+			$sql .= "JOIN (SELECT * FROM mb_master_barcode WHERE barcode_prefix = $group AND barcode_status = $status ";
+			$sql .= !empty($date) ? "AND date_modify = '$date'" : "";
+			$sql .= ") c  ";
 			$sql .= "ON c.barcode_status = a.barcode_status ";
 			$sql .= "AND c.barcode_code >= a.barcode_code ";
 				
 			$sql .= "LEFT  ";
-			$sql .= "JOIN (SELECT * FROM mb_master_barcode WHERE barcode_prefix = $group AND barcode_status = $status AND date_modify = '$date') d  ";
+			$sql .= "JOIN (SELECT * FROM mb_master_barcode WHERE barcode_prefix = $group AND barcode_status = $status ";
+			$sql .= !empty($date) ? "AND date_modify = '$date'" : "";
+			$sql .= ") d  ";
 			$sql .= "ON d.barcode_status = a.barcode_status ";
 			$sql .= "AND d.barcode_code = c.barcode_code + 1 ";
 				

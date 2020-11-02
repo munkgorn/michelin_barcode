@@ -20,7 +20,7 @@
 			$data['style'] 	= $style;
 
 			
-			$data['barcodes'] = $this->calcurateBarcode();
+			// $data['barcodes'] = $this->calcurateBarcode();
 
 			$data['action'] = '';
 			$data['export_excel'] = route('export/report');
