@@ -56,6 +56,11 @@
 			
 			// $data['groups'] = $barcode->getGroupInBarcode($data['date']);
 			$data['groups'] = array();
+			$config = $this->model('config');
+			$config_barcode = $config->getBarcodes();
+			foreach ($config_barcode as $value) {
+				$data['groups'][]['group'] = $value['group'];
+			}
 
 			// modal
 			$data['textalert'] = $this->hasSession('textalert') ? $this->getSession('textalert') : false;
@@ -86,6 +91,8 @@
 
 			$result = $barcode->updateBarcodeUse($range);
 			if ($result) {
+				// $this->jsonFreeGroup();
+				$this->generateJsonDateBarcode();
 				$this->setSession('success', 'Success add range barcode is used <b>'.$start.' - '.$end.'</b>');
 			} else {
 				$this->setSession('error', 'Cannot add range barcode');

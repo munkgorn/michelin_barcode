@@ -76,8 +76,9 @@
         public function importBarcode($path_file){
             $this->query("TRUNCATE mb_master_config_barcode;");
 			$sql = "LOAD DATA LOCAL INFILE '" . $path_file . "' INTO TABLE ".PREFIX."config_barcode FIELDS TERMINATED BY ',' 
-			LINES TERMINATED BY '\n' IGNORE 1 ROWS ( `group`,`start`,`end`,`total`,`remaining`,`now`,`date_added`)";
+            LINES TERMINATED BY '\n' IGNORE 1 ROWS ( `group`,`start`,`end`,`total`,`remaining`,`now`)";
             $result = $this->query($sql);
+
             $this->where('date_added', '0000-00-00 00:00:00');
             $this->update('config_barcode', array('date_added'=>date('Y-m-d H:i:s')));
             return $result;

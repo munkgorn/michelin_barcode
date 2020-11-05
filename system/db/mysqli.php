@@ -22,6 +22,7 @@ class db{
 		    exit();
 		}
 		$this->db = new mysqli(DB_HOST,DB_USER,DB_PASS,DB_DB);
+		// $this->db->option(MYSQLI_OPT_LOCAL_INFILE, true);
 		$this->db->query('SET NAMES utf8');
 		if (mysqli_connect_errno()) {
 		    printf("Connect failed: %s\n", mysqli_connect_error());

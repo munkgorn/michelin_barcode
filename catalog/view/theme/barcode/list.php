@@ -206,7 +206,9 @@ $(document).ready(function(){
 
 	$.post("index.php?route=barcode/ajaxDateBarcode", {},
 		function (data, textStatus, jqXHR) {
+			console.log("Loadding barcode success");
 			const result = jQuery.parseJSON(data);
+			console.log(result);
 			if (result.length>0) {
 				let option = '<option></option>';
 				$.each(result, function(index, value){
@@ -214,6 +216,11 @@ $(document).ready(function(){
 				});
 				inputDate.html(option).select2({
 					placeholder: "Select date"
+				});
+			} else {
+				option = '<option></option>';
+				inputDate.html(option).select2({
+					placeholder: "Not found date barcode used"
 				});
 			}
 		},

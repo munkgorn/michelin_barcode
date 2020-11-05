@@ -179,6 +179,7 @@ $(document).ready(function () {
 	$('#default_end_year').html(loading);
 	$.get("index.php?route=purchase/ajaxDefaultDate", {},
 		function (data, textStatus, jqXHR) {
+			console.log("Loading date success");
 			const obj = jQuery.parseJSON(data);
 			$('#default_start_year').html(obj.start);
 			$('#default_end_year').html(obj.end);
@@ -194,7 +195,9 @@ $(document).ready(function () {
 	});
 	$.get("index.php?route=purchase/ajaxGroupDefault", {},
 		function (data, textStatus, jqXHR) {
+			console.log("Loading group success");
 			const obj = jQuery.parseJSON(data);
+			// console.log(obj);
 			$.each(obj, function(index, value){
 				$('.load_default_start[data-group='+index+']').html(value.start);
 				$('.load_default_end[data-group='+index+']').html(value.end);

@@ -29,7 +29,7 @@
 	    	$data_select_date_wk = array(
 	    		'date' => ''
 	    	);
-			$data['listPrefixBarcode'] = $barcode->listPrefixBarcode($data_select_date_wk);
+			// $data['listPrefixBarcode'] = $barcode->listPrefixBarcode($data_select_date_wk);
 
 			$data['tab'] = isset($_GET['tab']) ? get('tab') : 'config_default';
 
@@ -170,8 +170,8 @@
 				$file = $_FILES['import_file'];
 				
 				$fileType = strtolower(pathinfo(basename($file["name"]),PATHINFO_EXTENSION));
-				$newname = 'import_barcode_'.date('YmdHis');
-				$file_csv = 'CSV_'.$newname.'.csv';
+				$newname = 'import_configbarcode';
+				$file_csv = 'csv_'.$newname.'.csv';
 				$newname .= '.'.$fileType;
 				$acceptFileType  = array('xlsx');
 
@@ -192,28 +192,18 @@
 						$csv_file = $path_csv.$file_csv;
 						$fp = fopen($csv_file, 'w');
 						foreach ($results as $key => $result) {
-							// $text_range = $result[1];
-							// $trim = str_replace(" ", "", trim($text_range));
-							// $split = explode('-', $trim);
-
 							$rowcsv = array(
-								$result[0],
-								$result[1],
-								// $split[0],
-								// $split[1],
-								// $result[2],
-								$result[2],
+								sprintf('%03d',$result[0]),
+								sprintf('%08d',$result[1]),
+								sprintf('%08d',$result[2]),
 								$result[3],
 								$result[3],
-								$result[1],
-								// $split[0],
-								'0000-00-00 00:00:00',
+								(int)$result[1],
 							);
-							fputcsv($fp, $rowcsv,',',chr(0));
+							fputcsv($fp, $rowcsv);
 						}	
-
 						fclose($fp);
-						$config_barcode->importBarcode($csv_file);
+						$config_barcode->importBarcode($path_csv.$file_csv);
 
 						$this->generateJsonFreeGroup();
 
