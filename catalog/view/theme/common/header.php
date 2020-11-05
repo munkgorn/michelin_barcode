@@ -19,27 +19,12 @@
 		<link rel="stylesheet" href="assets/plugins/daterangepicker/daterangepicker.css" />
 		<link rel="stylesheet" href="assets/css/app.min.css" />
 		
-		<noscript id="deferred-styles">
-			<link rel="stylesheet" href="assets/plugins/sweet-alert2/sweetalert2.min.css" />
-			<link rel="stylesheet" href="assets/fontawesome-free-5.15.0-web/css/all.min.css" />
-			<link rel="stylesheet" href="assets/fontawesome-free-5.15.0-web/css/fontawesome.min.css" />
-		</noscript>
+		<link rel="stylesheet" href="assets/plugins/sweet-alert2/sweetalert2.min.css" />
+		<link rel="stylesheet" href="assets/fontawesome-free-5.15.0-web/css/all.min.css" />
+		<link rel="stylesheet" href="assets/fontawesome-free-5.15.0-web/css/fontawesome.min.css" />
 
 		<link rel="stylesheet" href="assets/css/custom.css">
 
-		<script>
-		var loadDeferredStyles = function() {
-			var addStylesNode = document.getElementById("deferred-styles");
-			var replacement = document.createElement("div");
-			replacement.innerHTML = addStylesNode.textContent;
-			document.body.appendChild(replacement)
-			addStylesNode.parentElement.removeChild(addStylesNode);
-		};
-		var raf = window.requestAnimationFrame || window.mozRequestAnimationFrame ||
-			window.webkitRequestAnimationFrame || window.msRequestAnimationFrame;
-		if (raf) raf(function() { window.setTimeout(loadDeferredStyles, 0); });
-		else window.addEventListener('load', loadDeferredStyles);
-		</script>
 
 		<script type="text/javascript" src="assets/js/jquery.min.js"></script>
 		<script type="text/javascript" src="assets/js/bootstrap.bundle.min.js"></script>
