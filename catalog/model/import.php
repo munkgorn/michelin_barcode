@@ -44,7 +44,15 @@
 
         public function loadCSVBarcode($path) {
 			$sql = "LOAD DATA LOCAL INFILE '" . $path . "' INTO TABLE ".PREFIX."barcode FIELDS TERMINATED BY ',' 
-			LINES TERMINATED BY '\n' ( id_user,id_group,barcode_prefix,barcode_code,barcode_status,date_added,date_modify);";
+			LINES TERMINATED BY '\n' ( id_user,id_group,barcode_prefix,barcode_code,barcode_status,group_received,date_added,date_modify);";
 			$result = $this->query($sql);
+        }
+
+        public function loadCSVAssociation($path) {
+            $sql = "LOAD DATA LOCAL INFILE '" . $path . "' INTO TABLE ".PREFIX."product FIELDS TERMINATED BY ',' 
+            LINES TERMINATED BY '\n' IGNORE 1 ROWS ( id_user,size_product_code,sum_product,product_name,date_wk);";
+            $result = $this->query($sql);
+
+            $this->query("UPDATE ".PREFIX."product p LEFT JOIN mb_master_group g ON g.`group_code`=p.product_name SET p.id_group = g.id_group, p.product_name = null WHERE p.product_name is not null");
         }
     }

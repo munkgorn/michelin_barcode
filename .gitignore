@@ -10,3 +10,5 @@
 /uploads/default_year.json
 /uploads/*
 /fsoftpro/*
+system/lib/*
+system/lib/PHPExcel/

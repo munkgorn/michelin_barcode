@@ -25,13 +25,80 @@ class ImportController extends Controller
             $import->insertBarcode($i, $date);
         }
     }
+
+    public function importAssociation() {
+        $import = $this->model('import');
+
+        if (method_post()) {
+            $dir = 'uploads/import/';
+            $path = DOCUMENT_ROOT . $dir;
+            $path_csv = DOCUMENT_ROOT . $dir;
+
+            $file = $_FILES['import_file'];
+
+            $fileType = strtolower(pathinfo(basename($file["name"]), PATHINFO_EXTENSION));
+            $newname = 'import_relationship_' . date('YmdHis');
+            $file_csv = 'CSV_' . $newname . '.csv';
+            $newname .= '.' . $fileType;
+            $acceptFileType = array('xlsx');
+
+            // check folder upload
+            if (!file_exists($path)) {
+                $oldmask = umask(0);
+                mkdir($path, 0777);
+                umask($oldmask);
+            }
+
+            // check file
+            if ($file['error'] == 0 && in_array($fileType, $acceptFileType)) {
+                if (upload($file, $path, $newname)) {
+                    // Read file to insert database
+                    $config = $this->model('config');
+                    $group = $this->model('group');
+
+                    $results = readExcel($dir . $newname, 0, 0);
+
+                    $dir = 'uploads/mockupdata/';
+                    $path = DOCUMENT_ROOT . $dir;
+                    $path_csv = DOCUMENT_ROOT . $dir;
+                    $newname = 'import_group';
+                    $file_csv = 'CSV_' . $newname . '.csv';
+                    $csv_file = $path_csv . $file_csv;
+                    $col = array();
+                    $row = 0;
+                    $fp = fopen($csv_file, 'w');
+
+                    // DATE
+                    $date = $_POST['date'];
+
+                    foreach ($results as $value) {
+                        if ($row>0) {
+                            $insert = array(
+                                $this->getSession('id_user'),
+                                $value[0],
+                                (int)$value[1],
+                                $value[2],
+                                $date
+                            );
+                            fputcsv($fp, $insert, ',', chr(0));
+                        }
+                        $row++;
+                    }
+
+                    fclose($fp);
+                    $import->loadCSVAssociation($csv_file);
+                    $this->generateJsonFreeGroup();
+                }
+            }
+
+            redirect('import&successAss');
+        }
+    }
     public function index()
     {
         $data = array();
 
         $import = $this->model('import');
-
-        $data['get_table'] = get('table');
 
         if (method_post()) {
             $dir = 'uploads/import/';
@@ -91,40 +158,41 @@ class ImportController extends Controller
                     fclose($fp);
                     $result = $import->loadCSVGroup($csv_file);
 
-                    // $col = array();
-                    // $row = 0;
-                    // $dir = 'uploads/mockupdata/';
-                    // $path = DOCUMENT_ROOT . $dir;
-                    // $path_csv = DOCUMENT_ROOT . $dir;
-                    // $file_csv = 'import_barcode';
-                    // $json = array();
-                    // $csv_file = $path_csv . $file_csv . '.csv';
-                    // $fp = fopen($csv_file, 'w');
-                    // foreach ($results2 as $value) {
-                    //     if ($row > 0) {
-                    //         $id_group = $group->findIdGroup($value[0]);
+                    $col = array();
+                    $row = 0;
+                    $dir = 'uploads/mockupdata/';
+                    $path = DOCUMENT_ROOT . $dir;
+                    $path_csv = DOCUMENT_ROOT . $dir;
+                    $file_csv = 'import_barcode';
+                    $json = array();
+                    $csv_file = $path_csv . $file_csv . '.csv';
+                    $fp = fopen($csv_file, 'w');
+                    foreach ($results2 as $value) {
+                        if ($row > 0) {
+                            $id_group = $group->findIdGroup($value[0]);
 
-                    //         for ($i = (int) $value[1]; $i <= $value[2]; $i++) {
-                    //             $insert = array(
-                    //                 $this->getSession('id_user'),
-                    //                 $id_group,
-                    //                 $value[0],
-                    //                 $i,
-                    //                 (int) $value[5],
-                    //                 $value[4],
-                    //                 $value[4],
-                    //             );
-                    //             fputcsv($fp, $insert, ',', chr(0));
-                    //         }
-                    //     }
-                    //     $row++;
-                    // }
-                    // fclose($fp);
-                    // $import->loadCSVBarcode($csv_file);
+                            for ($i = (int) $value[1]; $i <= $value[2]; $i++) {
+                                $insert = array(
+                                    $this->getSession('id_user'),
+                                    $id_group,
+                                    $value[0],
+                                    $i,
+                                    (int) $value[5],
+                                    1,
+                                    $value[4],
+                                    $value[4],
+                                );
+                                fputcsv($fp, $insert, ',', chr(0));
+                            }
+                        }
+                        $row++;
+                    }
+                    fclose($fp);
+                    $import->loadCSVBarcode($csv_file);
 
                     $group->addDefaultGroup();
 
-                    redirect('import');
+                    redirect('import&success');
                     exit();
 
                 }
@@ -154,5 +222,17 @@ class ImportController extends Controller
     {
         $group = $this->model('group');
         $group->addDefaultGroup();
+    }
+    public function generateJsonFreeGroup() {
+        $association = $this->model('association');
+        $lists = $association->getFreeGroup();
+        $json = array();
+        foreach ($lists as $value) {
+            $json[] = $value['group'];
+        }
+        $fp = fopen(DOCUMENT_ROOT . 'uploads/freegroup.json', 'w');
+        fwrite($fp, json_encode($json));
+        fclose($fp);
+        return $json;
     }
 }
