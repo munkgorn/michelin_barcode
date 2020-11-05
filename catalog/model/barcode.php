@@ -12,12 +12,14 @@
 		}
 		public function findAndUpdateBarcode($barcode, $date) {
 			$this->where('barcode_code', $barcode);
-			$this->where('date_modify', $date.'%', 'LIKE');
+			// $this->where('date_modify', $date.'%', 'LIKE');
 			$query = $this->get('barcode');
-			$numrow = $query->num_rows==1?true:false;
+			$numrow = $query->num_rows>0?true:false;
 			if ($numrow==true) {
-				$this->where('barcode_code', $barcode);
-				$this->where('date_modify', $date.'%', 'LIKE');
+				$result = $query->row;
+				$this->where('id_barcode', $result['id_barcode']);
+				// $this->where('barcode_code', $barcode);
+				// $this->where('date_modify', $date.'%', 'LIKE');
 				$this->update('barcode', array('barcode_status'=>1,'date_modify'=>date('Y-m-d H:i:s')));
 
 				$insert = array(
@@ -226,6 +228,7 @@
 						'id_user' => isset($data['id_user']) ? $data['id_user'] : 0,
 						'remaining_qty' => $val,
 						'start' => $startupdate,
+						'date_purchase' => date('Y-m-d H:i:s'),
 						'date_modify' => date('Y-m-d H:i:s'),
 						'barcode_use' => "0"
 					);
@@ -235,6 +238,7 @@
 					$start = $oldgroup['start'];
 				}
 				// ไม่เคยมีค่า ของวันนี้
+				// จะไม่มีทางเกิดเคสนี้ ขึ้นแล้ว เพราะ เรา insert default group ทุกอันที่มี
 				else {
 					// หาค่า default barcode
 					$this->where('`group`', $group_code, 'LIKE');
@@ -256,6 +260,7 @@
 						'default_range' => $config_barcode['total'],
 						'barcode_use' => 0,
 						'config_remaining' => $config_barcode['remaining'], // ค่าคงเหลือเฉยๆ เก็บไว้ในระบบดูว่า ใช้ไปเท่าไหร่
+						'date_purchase' => date('Y-m-d H:i:s'),
 						'date_added' => date('Y-m-d H:i:s'),
 						'date_modify' => date('Y-m-d H:i:s')
 					);
@@ -715,30 +720,38 @@
 		}
 
 		public function getRangeBarcode($group=0, $status=1, $date='') {
-			$sql = "SELECT a.barcode_status, a.barcode_prefix, (MIN(c.barcode_code) - a.barcode_code) as qty ";
+			$sql = "SELECT a.barcode_status, a.barcode_prefix, (MIN(c.barcode_code) - a.barcode_code) + 1 as qty ";
 			$sql .= ", LPAD(a.barcode_code, 8, \"0\") as start ";
 			$sql .= ", LPAD(MIN(c.barcode_code), 8, \"0\") as end "; 
-			$sql .= "FROM (SELECT * FROM mb_master_barcode WHERE barcode_prefix = $group AND barcode_status = $status ";
-			$sql .= !empty($date) ? "AND date_modify = '$date'" : "";
+			$sql .= "FROM (SELECT b.* FROM mb_master_barcode b LEFT JOIN mb_master_group g ON g.group_code = b.barcode_prefix WHERE b.barcode_status = $status ";
+			$sql .= $group > 0 ? "AND b.barcode_prefix = $group " : "";
+			$sql .= "AND g.id_group is not null AND g.barcode_use = 1 ";
+			$sql .= !empty($date) ? "AND b.date_modify = '$date'" : "";
 			$sql .= ") a ";
 			
 			$sql .= "LEFT  ";
-			$sql .= "JOIN (SELECT * FROM mb_master_barcode WHERE barcode_prefix = $group AND barcode_status = $status ";
-			$sql .= !empty($date) ? "AND date_modify = '$date'" : "";
+			$sql .= "JOIN (SELECT b.* FROM mb_master_barcode b LEFT JOIN mb_master_group g ON g.group_code = b.barcode_prefix WHERE b.barcode_status = $status ";
+			$sql .= $group > 0 ? "AND b.barcode_prefix = $group " : "";
+			$sql .= "AND g.id_group is not null AND g.barcode_use = 1 ";
+			$sql .= !empty($date) ? "AND b.date_modify = '$date'" : "";
 			$sql .= ") b  ";
 			$sql .= "ON b.barcode_status = a.barcode_status ";
 			$sql .= "AND b.barcode_code = a.barcode_code - 1 ";
 				
 			$sql .= "LEFT  ";
-			$sql .= "JOIN (SELECT * FROM mb_master_barcode WHERE barcode_prefix = $group AND barcode_status = $status ";
-			$sql .= !empty($date) ? "AND date_modify = '$date'" : "";
+			$sql .= "JOIN (SELECT b.* FROM mb_master_barcode b LEFT JOIN mb_master_group g ON g.group_code = b.barcode_prefix WHERE b.barcode_status = $status ";
+			$sql .= $group > 0 ? "AND b.barcode_prefix = $group " : "";
+			$sql .= "AND g.id_group is not null AND g.barcode_use = 1 ";
+			$sql .= !empty($date) ? "AND b.date_modify = '$date'" : "";
 			$sql .= ") c  ";
 			$sql .= "ON c.barcode_status = a.barcode_status ";
 			$sql .= "AND c.barcode_code >= a.barcode_code ";
 				
 			$sql .= "LEFT  ";
-			$sql .= "JOIN (SELECT * FROM mb_master_barcode WHERE barcode_prefix = $group AND barcode_status = $status ";
-			$sql .= !empty($date) ? "AND date_modify = '$date'" : "";
+			$sql .= "JOIN (SELECT b.* FROM mb_master_barcode b LEFT JOIN mb_master_group g ON g.group_code = b.barcode_prefix WHERE b.barcode_status = $status ";
+			$sql .= $group > 0 ? "AND b.barcode_prefix = $group " : "";
+			$sql .= "AND g.id_group is not null AND g.barcode_use = 1 ";
+			$sql .= !empty($date) ? "AND b.date_modify = '$date'" : "";
 			$sql .= ") d  ";
 			$sql .= "ON d.barcode_status = a.barcode_status ";
 			$sql .= "AND d.barcode_code = c.barcode_code + 1 ";

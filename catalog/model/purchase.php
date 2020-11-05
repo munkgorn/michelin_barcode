@@ -81,6 +81,7 @@
             return $query->num_rows > 0 ? $query->rows : false;
         }
 
+        
         public function updatePurchase($group_code, $data=array()) {
             $this->where('group_code', $group_code);
             $result = $this->update('group', $data);

@@ -273,6 +273,9 @@ class ExportController extends Controller {
         );
 
 
+
+        $json = $this->jsonGroupDefaultBarcode(false);
+        $json = json_decode($json, true);
         // Get List
         $filter = array(
             'start_group' => $start_group,
@@ -281,8 +284,10 @@ class ExportController extends Controller {
         $i=1;
         $mapping = $purchase->getPurchases($filter);
         foreach ($mapping as $key => $value) {
-            $value['barcode_start_year'] = $purchase->getStartBarcodeOfYearAgo($value['group_code']);
-            $value['barcode_end_year'] = $purchase->getEndBarcodeOfYearAgo($value['group_code']);
+            $value['barcode_start_year'] = $json[$value['group_code']]['start'];
+            $value['barcode_end_year'] = $json[$value['group_code']]['end'];
+            // $value['barcode_start_year'] = $purchase->getStartBarcodeOfYearAgo($value['group_code']);
+            // $value['barcode_end_year'] = $purchase->getEndBarcodeOfYearAgo($value['group_code']);
             $barcode_use = $group->getGroupStatus($value['group_code']);
             $value['status'] = $barcode_use==="1" ? 'Recived' : ($barcode_use==="0" ? 'Waiting' : '');
             $value['status_id'] = $barcode_use;
@@ -292,8 +297,8 @@ class ExportController extends Controller {
                     '',
                     $i++,
                     // $value['group_code'],
-                    sprintf('%06d', $value['barcode_start']),
-                    '="'.sprintf('%06d', $value['change_end']).'"',
+                    sprintf('%08d', $value['barcode_start']),
+                    '="'.sprintf('%08d', $value['change_end']).'"',
                     ($value['change_qty']>0 ? $value['change_qty'] : ''),
                     // $value['barcode_start_year'],
                     // $value['barcode_end_year'],
@@ -443,20 +448,22 @@ class ExportController extends Controller {
         );
 
         $temp = array();
-        $datas = $this->calcurateBarcode();
+        // $datas = $this->calcurateBarcode();
+        $datas = $this->calcurateBarcode($_GET['group']);
+
         foreach ($datas as $val) {
-            $ex = explode('-', $val['name']);
-            if (!isset($temp[$val['group']])) {
-                $temp[$val['group']]['start'] = trim($ex[0]);
-                $temp[$val['group']]['count'] = 0;
+            if (!isset($temp[$val['barcode_prefix']])) {
+                $temp[$val['barcode_prefix']]['start'] = $val['start'];
+                $temp[$val['barcode_prefix']]['qty'] = 0;
             }
-            $temp[$val['group']]['end'] = trim($ex[1]);
-            $temp[$val['group']]['count'] += (int)$val['count'];
+            $temp[$val['barcode_prefix']]['end'] = $val['end'];
+            $temp[$val['barcode_prefix']]['qty'] += (int)$val['qty'];
+
             $excel[] = array(
-                $val['group'],
-                trim($ex[0]),
-                trim($ex[1]),
-                $val['count'],
+                $val['barcode_prefix'],
+                $val['start'],
+                $val['end'],
+                $val['qty'],
             );
         }
 
@@ -465,7 +472,7 @@ class ExportController extends Controller {
                 $key,
                 $val['start'],
                 $val['end'],
-                $val['count']
+                $val['qty']
             );
         }
 
@@ -590,6 +597,13 @@ class ExportController extends Controller {
         exit();
     }
 
+    private function calcurateBarcode($group) {
+        $data = array();
+        $barcode = $this->model('barcode');
+        $date = '';
+        $data = $barcode->getRangeBarcode($group, 0, $date);
+        return $data;
+    }
     private function calcurateBarcode2($date_wk='') {
         $input=array();
         if (!empty($date_wk)) { $input['date_wk'] = $date_wk; }
@@ -613,7 +627,7 @@ class ExportController extends Controller {
         $default_number_maximum_alert = $config->getConfig('config_maximum_alert'); // ? ค่าที่ตั้งไว้ว่าเกินเท่าไหร่ให้ alert
         return $this->calcurateDiffernce($list1, $list2, $default_number_maximum_alert);
     }
-    private function calcurateBarcode() {
+    private function calcurateBarcode3() {
         $input=array();
         $barcode = $this->model('barcode');
 
@@ -691,5 +705,42 @@ class ExportController extends Controller {
         }
 
         return $text;
+    }
+
+
+    public function jsonGroupDefaultBarcode($header=true) {
+        $json = array();
+        if (!file_exists(DOCUMENT_ROOT . 'uploads/default_purchase.json')) {
+            $this->generateJsonDefaultBarcode();
+        }
+        $file_handle = fopen(DOCUMENT_ROOT . 'uploads/default_purchase.json', "r");
+        while(!feof($file_handle)){
+            $line_of_text = fgets($file_handle);
+            $json[] = $line_of_text;
+        }
+        fclose($file_handle);
+        if ($header) {
+            $this->json($json);
+        } else {
+            return json_encode($json);
+        }
+    }
+    public function generateJsonDefaultBarcode() {
+        $data = array();
+        $purchase = $this->model('purchase');
+        $config = $this->model('config');
+        $groups = $config->getBarcodes();
+        foreach ($groups as $value) {
+            $data[$value['group']] = array(
+                'start' => '',
+                'end' => '',
+            );
+            $data[$value['group']]['start'] = $purchase->getStartBarcodeOfYearAgo($value['group']);
+            $data[$value['group']]['end'] = $purchase->getEndBarcodeOfYearAgo($value['group']);
+        }
+        $fp = fopen(DOCUMENT_ROOT . 'uploads/default_purchase.json', 'w');
+        fwrite($fp, json_encode($data));
+        fclose($fp);
+        return $data;
     }
 }

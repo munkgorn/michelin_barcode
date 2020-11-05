@@ -201,6 +201,7 @@ $(document).ready(function(){
 	const inputGroup = $('#groupFilter');
 
 	inputGroup.select2({placeholder: "Please select date."});
+	inputDate.html('<option>Loading...</option>');
 	$('#btnsearch').attr('disabled','disabled');
 
 	$.post("index.php?route=barcode/ajaxDateBarcode", {},

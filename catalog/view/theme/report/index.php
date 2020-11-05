@@ -28,7 +28,7 @@
 		<div class="card-header">
             <div class="row">
                 <div class="col-sm-6">
-					<a href="<?php echo $export_excel; ?>" target="new" class="btn btn-outline-success"><i class="fas fa-file-excel"></i> Export Excel</a>
+					<a href="<?php echo $export_excel; ?>" id="linkexport" target="new" class="btn btn-outline-success"><i class="fas fa-file-excel"></i> Export Excel</a>
                 </div>
                 <div class="col-sm-6 text-right">
                 </div>
@@ -68,10 +68,14 @@ $(document).ready(function(){
 	const table = $('#table_result tbody');
 	const inputDate = $('#datefilter');
 	const inputGroup = $('#groupFilter');
+	const linkexport = $('#linkexport');
+
+	linkexport.attr('disabled','disabled').addClass('disabled');
 
 	$.post("index.php?route=barcode/ajaxGetGroupByDate", {},
 		function (data, textStatus, jqXHR) {
 			let option = '<option></option>';
+			option += '<option value="0">All Group</option>';
 			$.each(data, function(index,value) {
 				option += '<option value="'+value.barcode_prefix+'">'+value.barcode_prefix+'</option>';
 				console.log(value);
@@ -85,28 +89,56 @@ $(document).ready(function(){
 
 	table.html(trnotfound);
 	$('#btnsearch').click(function(){
+		linkexport.attr('disabled','disabled').addClass('disabled');
 		table.html(trloading);
-		const filterDate = inputDate.val();
-		$.post("index.php?route=barcode/calcurateBarcode", {group: inputGroup.val(), status: 0},
-			function (data, textStatus, jqXHR) {
-				console.log(data);
-				console.log(data.length);
-				if (data.length > 0) {
-					let html = '';
-					$.each(data, function(index,value) {
+		// const filterDate = inputDate.val();
+		const filterGroup = inputGroup.val();
+		$break = false;
+		if (filterGroup==0) {
+			$confirm = confirm('Loading data all group is so many data and slowly, Are you sure loading?');
+			if ($confirm==false) {
+				$break = true;
+				table.html(trnotfound);
+				linkexport.attr('disabled','disabled').addClass('disabled');
+			}
+		}
+		if ($break==false) {
+			$.post("index.php?route=barcode/calcurateBarcode", {group: filterGroup, status: 0},
+				function (data, textStatus, jqXHR) {
+					if (data.length > 0) {
+						let sum = 0;
+						let start = '';
+						let end = '';
+						let prefix = '';
+						let html = '';
+						$.each(data, function(index,value) {
+							if (start=='') {
+								start = value.start;
+							}
+							prefix = value.barcode_prefix;
+							end = value.end;
+							html += '<tr>';
+							html += '<td class="text-center">'+value.barcode_prefix+'</td>';
+							html += '<td class="text-center">'+value.start+' - '+value.end+'</td>';
+							html += '<td class="text-center">'+value.qty+'</td>';
+							html += '</tr>';
+							sum += parseInt(value.qty);
+						});
+
 						html += '<tr>';
-						html += '<td class="text-center">'+value.barcode_prefix+'</td>';
-						html += '<td class="text-center">'+value.start+' - '+value.end+'</td>';
-						html += '<td class="text-center">'+value.qty+'</td>';
+						html += '<td class="text-right" colspan="2">Total</td>';
+						html += '<td class="text-center">'+sum+'</td>';
 						html += '</tr>';
-					});
-					table.html(html);
-				} else {
-					table.html('<tr><td colspan="3" class="text-center">Not found data in group '+inputGroup.val()+'</td></tr>');
-				}
-			},
-			"json"
-		);
+						table.html(html);
+						linkexport.removeAttr('disabled').removeClass('disabled').attr('href', "index.php?route=export/report&group=" + inputGroup.val());
+					} else {
+						linkexport.attr('disabled','disabled').addClass('disabled');
+						table.html('<tr><td colspan="3" class="text-center">Not found data in group '+inputGroup.val()+'</td></tr>');
+					}
+				},
+				"json"
+			);
+		}
 	});
 
 		

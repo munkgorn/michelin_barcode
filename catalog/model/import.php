@@ -21,15 +21,22 @@
 
         public function loadCSVGroup($path) {
 			$sql = "LOAD DATA LOCAL INFILE '" . $path . "' INTO TABLE ".PREFIX."group FIELDS TERMINATED BY ',' 
-			LINES TERMINATED BY '\n' ( id_user, group_code, start, date_wk, date_added, date_modify, barcode_use);";
+			LINES TERMINATED BY '\n' ( id_user, group_code, start, date_purchase, date_added, date_modify, barcode_use, remaining_qty);";
             $result = $this->query($sql);
             
+            // update default start default end in group table for speed query
             $sql = "UPDATE mb_master_group g ";
             $sql .= "LEFT JOIN mb_master_config_barcode b ON b.`group` = g.group_code ";
-            $sql .= "SET g.default_start = b.`start`, ";
+            $sql .= "SET g.start = g.start+1, ";
+            $sql .= "g.default_start = b.`start`, ";
             $sql .= "g.default_end = b.`end`, ";
             $sql .= "g.default_range = b.`total` ";
             $sql .= "WHERE g.default_start = 0 AND g.default_end = 0 AND g.default_range = 0 ";
+            $this->query($sql);
+
+            // update barcode now for ready next purchase condition is standby start+1 
+            $sql = "UPDATE mb_master_group g ";
+            $sql .= "SET g.`start` = (CASE WHEN g.`start` + 1 > g.default_end THEN g.default_start ELSE g.`start`+1 END) ";
             $this->query($sql);
 
             return $result;

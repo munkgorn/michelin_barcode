@@ -670,6 +670,7 @@
 								$col = explode(';', $data[0]);
 								if ($row>1) {
 									$col[9] = str_replace('"','',$col[9]);
+
 									$result = $barcode->findAndUpdateBarcode($col[9], $date);
 									if ($result) {
 										$barcode_use[] = trim($col[9]);

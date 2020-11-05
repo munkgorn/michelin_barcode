@@ -25,51 +25,8 @@
                         </div>
                     </div>
                 </div>
-                <div class="form-group">
-                    <label for="">Table</label>
-                    <select name="table" class="form-control">
-                        <option></option>
-                        <?php foreach ($table as $value) : ?>
-                        <option value="<?php echo $value;?>" <?php echo $get_table==$value?'selected':'';?>><?php echo $value;?></option>
-                        <?php endforeach; ?>
-                    </select>
-                </div>
-                <div class="form-group">
-                    <label for="">Column</label>
-                    <div class="inputadded">
-                        <select name="column[]" class="form-control column">
-                            <option></option>
-                            <?php foreach ($column as $value) : ?>
-                            <option value="<?php echo $value;?>"><?php echo $value;?></option>
-                            <?php endforeach; ?>
-                        </select>
-                    </div>
-                </div>
+                
             </form>
 		</div>
 	</div>
 </div>
-
-<script>
-$(document).ready(function () {
-    $('[name=table]').change(function(){
-        window.location.href = 'index.php?route=import&table=' + $(this).val();
-    });
-
-    $('.inputadded').on('change','.column',function(){
-        var html = getSelectColumn();
-        console.log(html);
-        $('.inputadded').append(html);
-    });
-
-    function getSelectColumn() {
-        var html = '<select name="column[]" class="form-control column">';
-        html += '<option></option>';
-        <?php foreach ($column as $value) : ?>
-        html += '<option value="<?php echo $value;?>"><?php echo $value;?></option>';
-        <?php endforeach; ?>
-        html += '</select>';
-        return html;
-    }
-});
-</script>

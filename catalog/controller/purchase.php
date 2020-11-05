@@ -24,8 +24,9 @@
 	    		);
 	    		$barcode->updateGroupCreateBarcode($data_post);
 	    		$data['start_group'] 	= post('start_group');
-	    		$data['end_group'] 		= post('end_group');
-	    		// $this->redirect('purchase&start_group='.$data['start_group'].'&end_group='.$data['end_group'].'&result=success');
+				$data['end_group'] 		= post('end_group');
+				$this->setSession('success', 'Purchase order successful');
+	    		$this->redirect('purchase&start_group='.$data['start_group'].'&end_group='.$data['end_group']);
 			}
 			
 	    	$data['result'] = get('result');
@@ -87,6 +88,10 @@
 			$data['date_first_3_year'] = !empty($default_first_3_year) ? date('Y-m-d', strtotime($default_first_3_year)) : '';
 			$data['date_lasted_order'] = !empty($default_end_year) ? date('Y-m-d', strtotime($default_end_year)) : '';
 
+			$data['success'] = $this->hasSession('success') ? $this->getSession('success') : ''; $this->rmSession('success');
+			$data['error'] = $this->hasSession('error') ? $this->getSession('error') : ''; $this->rmSession('error');
+		
+
  	    	$this->view('purchase/list',$data);
 		}
 		public function ajax() {
@@ -98,7 +103,7 @@
 			);
 			$purchase = $this->model('purchase');
 			
-			$result = $purchase->updatePurchase($post['group_code'], $update);
+			$result = $purchase->updatePurchase((int)$post['group_code'], $update);
 			if ($result) {
 				echo 'success';
 			} else {
@@ -185,7 +190,7 @@
 		public function jsonGroupDefaultBarcode($header=true) {
 			$json = array();
 			if (!file_exists(DOCUMENT_ROOT . 'uploads/default_purchase.json')) {
-				$this->generateJsonDefaultYear();
+				$this->generateJsonDefaultBarcode();
 			}
 			$file_handle = fopen(DOCUMENT_ROOT . 'uploads/default_purchase.json', "r");
 			while(!feof($file_handle)){
@@ -209,8 +214,10 @@
 					'start' => '',
 					'end' => '',
 				);
-				$data[$value['group']]['start'] = $purchase->getStartBarcodeOfYearAgo($value['group']);
-				$data[$value['group']]['end'] = $purchase->getEndBarcodeOfYearAgo($value['group']);
+				$s = $purchase->getStartBarcodeOfYearAgo($value['group']);
+				$e = $purchase->getEndBarcodeOfYearAgo($value['group']);
+				$data[$value['group']]['start'] = !empty($s) ? sprintf('%08d', $s) : ''; 
+				$data[$value['group']]['end'] = !empty($e) ? sprintf('%08d', $e) : '';
 			}
 			$fp = fopen(DOCUMENT_ROOT . 'uploads/default_purchase.json', 'w');
 			fwrite($fp, json_encode($data));

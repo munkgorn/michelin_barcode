@@ -174,7 +174,7 @@ $(document).ready(function(){
 </script>
 <script type="text/javascript">
 $(document).ready(function () {
-	const loading = '<img src="assets/loading.gif" height="30" />';
+	const loading = '<img src="assets/loading.gif" height="30" /> Loading...';
 	$('#default_start_year').html(loading);
 	$('#default_end_year').html(loading);
 	$.get("index.php?route=purchase/ajaxDefaultDate", {},
@@ -388,7 +388,7 @@ $(document).ready(function () {
 				// dataType: "json",
 				success: function (response) {
 					// console.log(sum_end_qty);
-					// console.log(response);
+					console.log(response);
 				},
 				error: function (xhr, ajaxOptions, thrownError) {
 					console.log(xhr.status);

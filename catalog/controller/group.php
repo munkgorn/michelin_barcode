@@ -79,7 +79,7 @@
             }
             // echo $status;
             $filter = array(
-                'date_modify' => !empty(get('date')) ? get('date') : '',
+                'date_purchase' => !empty(get('date')) ? get('date') : '',
                 'group_code' => get('group'),
                 // 'barcode_use' => $status,
                 'has_remainingqty' => true
