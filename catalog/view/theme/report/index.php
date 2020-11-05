@@ -77,7 +77,8 @@ $(document).ready(function(){
 			let option = '<option></option>';
 			option += '<option value="0">All Group</option>';
 			$.each(data, function(index,value) {
-				option += '<option value="'+value.barcode_prefix+'">'+value.barcode_prefix+'</option>';
+				// option += '<option value="'+value.barcode_prefix+'">'+value.barcode_prefix+'</option>';
+				option += '<option value="'+value.group_code+'">'+value.group_code+'</option>';
 				console.log(value);
 			});
 			$('#groupFilter').html(option).select2({

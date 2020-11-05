@@ -262,7 +262,8 @@ $(document).ready(function(){
 			function (data, textStatus, jqXHR) {
 				let option = '';
 				$.each(data, function(index,value) {
-					option += '<option value="'+value.barcode_prefix+'">'+value.barcode_prefix+'</option>';
+					// option += '<option value="'+value.barcode_prefix+'">'+value.barcode_prefix+'</option>';
+					option += '<option value="'+value.group_code+'">'+value.group_code+'</option>';
 				});
 				$('#groupFilter').html(option).select2({
 					placeholder: "Select group"
