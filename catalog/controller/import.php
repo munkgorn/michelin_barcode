@@ -191,7 +191,7 @@ class ImportController extends Controller
                     fclose($fp);
                     $import->loadCSVBarcode($csv_file);
 
-                    $group->addDefaultGroup();
+                    // $group->addDefaultGroup();
 
                     redirect('import&success');
                     exit();
