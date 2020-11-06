@@ -26,7 +26,8 @@ class ImportController extends Controller
         }
     }
 
-    public function importAssociation() {
+    public function importAssociation()
+    {
         $import = $this->model('import');
 
         if (method_post()) {
@@ -72,16 +73,16 @@ class ImportController extends Controller
                     $date = $_POST['date'];
 
                     foreach ($results as $value) {
-                        if ($row>0) {
-                            $insert = array(
-                                $this->getSession('id_user'),
-                                $value[0],
-                                (int)$value[1],
-                                $value[2],
-                                $date
-                            );
-                            fputcsv($fp, $insert, ',', chr(0));
-                        }
+                        // if ($row > 0) {
+                        $insert = array(
+                            $this->getSession('id_user'),
+                            $value[0],
+                            (int) $value[1],
+                            $value[2],
+                            $date,
+                        );
+                        fputcsv($fp, $insert, ',', chr(0));
+                        // }
                         $row++;
                     }
 
@@ -223,7 +224,8 @@ class ImportController extends Controller
         $group = $this->model('group');
         $group->addDefaultGroup();
     }
-    public function generateJsonFreeGroup() {
+    public function generateJsonFreeGroup()
+    {
         $association = $this->model('association');
         $lists = $association->getFreeGroup();
         $json = array();

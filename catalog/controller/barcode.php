@@ -723,7 +723,7 @@
 
 						if(count($barcode_use)>0) {
 							$result_updatebarcode = $barcode->updateBarcodeUse($barcode_use); // ? update ใน barcode ว่า ใช้เลขไหนไปบ้าง
-							$json = $this->calcurateBarcode(false); // ? ต้องเช็คเลขที่ไม่ถูกใช้งาน ให้ Flag ทิ้ง
+							$json = $this->calcurateBarcode(false ); // ? ต้องเช็คเลขที่ไม่ถูกใช้งาน ให้ Flag ทิ้ง
 							$barcode_alert = json_decode($json);
 
 							$textalert = array();
@@ -891,11 +891,21 @@
 			$this->redirect('barcode/listgroup'.(get('date')?'&date='.get('date'):''));
 		}
 
-		public function calcurateBarcode($header=true) {
+		public function calcurateBarcode($header=true, $group='', $status='') {
 			$data = array();
 			$barcode = $this->model('barcode');
-			$date = isset($_POST['date']) ? $_POST['date'] : '';
-			$data = $barcode->getRangeBarcode($_POST['group'], $_POST['status'], $date);
+			if (isset($_POST['date'])) {
+				$date = $_POST['date'];
+			} else {
+				$date = '';
+			}
+			if (isset($_POST['group'])) {
+				$group = $_POST['group'];
+			}
+			if (isset($_POST['status'])) {
+				$status = $_POST['status'];
+			}
+			$data = $barcode->getRangeBarcode($group, $status, $date);
 			if ($header) {
 				$this->json($data);
 			} else {
