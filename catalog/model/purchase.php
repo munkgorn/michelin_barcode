@@ -1,31 +1,60 @@
 <?php 
 	class PurchaseModel extends db {
-        public function getStartDateOfYearAgo() {
-            $this->where('config_key', 'config_date_year');
-            $query = $this->get('config');
-            $dayofyear = $query->row['config_value'];
 
-            $this->where('config_key', 'config_date_size');
-            $query = $this->get('config');
-            $beforeusesize = $query->row['config_value'];
+        public function getStartEndDateOfYearAgo($datestart, $dateend) {
+            $sql = "SELECT min(date_modify) as date_start, max(date_modify) as date_end FROM mb_master_barcode WHERE date_modify BETWEEN '$datestart' AND '$dateend' LIMIT 0,1";
+            $query = $this->query($sql);
+            return isset($query->row['date_start'])&&isset($query->row['date_end']) ? $query->row : array('date_start'=>'','date_end'=>'') ;
+        }
+
+        public function getBarcodeStartEndOfGroup($datestart, $dateend) {
+            $sql = "SELECT  ";
+            $sql .= "cb.`group`,  ";
+            $sql .= "(SELECT b.barcode_code FROM mb_master_barcode b WHERE cb.`group` = b.barcode_prefix AND (b.date_modify BETWEEN '$datestart' AND '$dateend') ORDER BY b.id_barcode ASC LIMIT 0,1) as barcode_start, ";
+            $sql .= "(SELECT b.barcode_code FROM mb_master_barcode b WHERE cb.`group` = b.barcode_prefix AND (b.date_modify BETWEEN '$datestart' AND '$dateend') ORDER BY b.id_barcode DESC LIMIT 0,1) as barcode_end ";
+            $sql .= "FROM mb_master_config_barcode cb ";
+
+            // $sql = "SELECT barcode_prefix, min(barcode_code) as barcode_start, max(barcode_code) as barcode_end FROM mb_master_barcode WHERE date_modify BETWEEN '$datestart' AND '$dateend' AND barcode_prefix = $group LIMIT 0,1";
+            $query = $this->query($sql);
+            return $query->rows;
+        }
+
+        public function getStartDateOfYearAgo($dayofyear = 0 , $beforeusesize = 0) {
+            if ($dayofyear==0){
+                $this->where('config_key', 'config_date_year');
+                $query = $this->get('config');
+                $dayofyear = $query->row['config_value'];
+            }
+
+            if ($beforeusesize==0) {
+                $this->where('config_key', 'config_date_size');
+                $query = $this->get('config');
+                $beforeusesize = $query->row['config_value'];
+            }
 
             // $sql = "SELECT date_modify FROM ".PREFIX."barcode WHERE date_added BETWEEN STR_TO_DATE(DATE_ADD(CURDATE(),INTERVAL-".$dayofyear." DAY),'%Y-%m-%d %H:%i:%s') AND STR_TO_DATE(DATE_ADD(CURDATE(),INTERVAL-".$beforeusesize." DAY),'%Y-%m-%d %H:%i:%s') GROUP BY date_added ORDER BY date_added ASC LIMIT 0,1;";
-            $sql = "SELECT date_modify FROM mb_master_barcode WHERE date_modify BETWEEN DATE_ADD(CURDATE(),INTERVAL-".$dayofyear." DAY) AND DATE_ADD(CURDATE(),INTERVAL-".$beforeusesize." DAY) GROUP BY date_modify ORDER BY date_modify ASC LIMIT 0,1;";
+            // $sql = "SELECT date_modify FROM mb_master_barcode WHERE date_modify BETWEEN DATE_ADD(CURDATE(),INTERVAL-".$dayofyear." DAY) AND DATE_ADD(CURDATE(),INTERVAL-".$beforeusesize." DAY) GROUP BY date_modify ORDER BY date_modify ASC LIMIT 0,1;";
+            $sql = "SELECT date_modify FROM mb_master_barcode WHERE date_modify >= " . date('Y-m-d',strtotime('-'.$dayofyear.' days')) . " AND date_modify <= " . date('Y-m-d',strtotime('-'.$beforeusesize.' days'))." GROUP BY date_modify ORDER BY date_modify ASC LIMIT 0,1;";
             $query = $this->query($sql);
             return isset($query->row['date_modify']) ? $query->row['date_modify'] : '';
         }
 
-        public function getEndDateOfYearAgo() {
-            $this->where('config_key', 'config_date_year');
-            $query = $this->get('config');
-            $dayofyear = $query->row['config_value'];
+        public function getEndDateOfYearAgo($dayofyear = 0 , $beforeusesize = 0) {
+            if ($dayofyear==0){
+                $this->where('config_key', 'config_date_year');
+                $query = $this->get('config');
+                $dayofyear = $query->row['config_value'];
+            }
 
-            $this->where('config_key', 'config_date_size');
-            $query = $this->get('config');
-            $beforeusesize = $query->row['config_value'];
+            if ($beforeusesize==0) {
+                $this->where('config_key', 'config_date_size');
+                $query = $this->get('config');
+                $beforeusesize = $query->row['config_value'];
+            }
 
             // $sql = "SELECT date_added FROM ".PREFIX."barcode WHERE date_added BETWEEN STR_TO_DATE(DATE_ADD(CURDATE(),INTERVAL-".$dayofyear." DAY),'%Y-%m-%d %H:%i:%s') AND STR_TO_DATE(DATE_ADD(CURDATE(),INTERVAL-".$beforeusesize." DAY),'%Y-%m-%d %H:%i:%s') GROUP BY date_added ORDER BY date_added DESC LIMIT 0,1;";
-            $sql = "SELECT date_modify FROM mb_master_barcode WHERE date_modify BETWEEN DATE_ADD(CURDATE(),INTERVAL-".$dayofyear." DAY) AND DATE_ADD(CURDATE(),INTERVAL-".$beforeusesize." DAY) GROUP BY date_modify ORDER BY date_modify DESC LIMIT 0,1;";
+            // $sql = "SELECT date_modify FROM mb_master_barcode WHERE date_modify BETWEEN DATE_ADD(CURDATE(),INTERVAL-".$dayofyear." DAY) AND DATE_ADD(CURDATE(),INTERVAL-".$beforeusesize." DAY) GROUP BY date_modify ORDER BY date_modify DESC LIMIT 0,1;";
+            $sql = "SELECT date_modify FROM mb_master_barcode WHERE date_modify >= " . date('Y-m-d',strtotime('-'.$dayofyear.' days')) . " AND date_modify <= " . date('Y-m-d',strtotime('-'.$beforeusesize.' days'))." GROUP BY date_modify ORDER BY date_modify DESC LIMIT 0,1;";
             $query = $this->query($sql);
             return isset($query->row['date_modify']) ? $query->row['date_modify'] : '';
         }

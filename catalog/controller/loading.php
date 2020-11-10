@@ -10,10 +10,10 @@ class LoadingController extends Controller
         $data['redirect'] = isset($_GET['redirect']) ? $_GET['redirect'] : 'dashboard';
 
         $data['loading'] = array();
-        $data['loading'][] = array(
-            'name' => 'Free Group',
-            'url' => 'index.php?route=association/generateJsonFreeGroup',
-        );
+        // $data['loading'][] = array(
+        //     'name' => 'Free Group',
+        //     'url' => 'index.php?route=association/generateJsonFreeGroup',
+        // );
         $data['loading'][] = array(
             'name' => 'Default Year',
             'url' => 'index.php?route=purchase/generateJsonDefaultYear',
@@ -33,13 +33,16 @@ class LoadingController extends Controller
     public function trash() 
     {
         $files = array(
-            'default_purchase.json',
             'default_year.json',
-            'freegroup.json',
+            'default_purchase.json',
+            // 'freegroup.json',
             'default_datebarcode.json'
         );
         foreach ($files as $file) {
-            unlink(DOCUMENT_ROOT . '/uploads/'. $file);
+            $path = DOCUMENT_ROOT . 'uploads/'. $file;
+            if (file_exists($path)) {
+                unlink($path);
+            }
         }
     }
 }

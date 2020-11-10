@@ -723,12 +723,23 @@
 
 						if(count($barcode_use)>0) {
 							$result_updatebarcode = $barcode->updateBarcodeUse($barcode_use); // ? update ใน barcode ว่า ใช้เลขไหนไปบ้าง
-							$json = $this->calcurateBarcode(false ); // ? ต้องเช็คเลขที่ไม่ถูกใช้งาน ให้ Flag ทิ้ง
+
+							$config = $this->model('config');
+							$maximum = $config->getConfig('config_maximum_alert');
+							$json = $this->calcurateBarcode(false); // ? ต้องเช็คเลขที่ไม่ถูกใช้งาน ให้ Flag ทิ้ง
+							// foreach ($json as $v) {
+							// 	if ($v['qty']>=$maximum) {
+
+							// 	}
+							// }
+							
 							$barcode_alert = json_decode($json);
 
 							$textalert = array();
 							foreach ($barcode_alert as $alert) {
-								$textalert[] = $alert['start'].' - '.$alert['end'];
+								if ($alert['qty']>=$maximum) {
+									$textalert[] = $alert['start'].' - '.$alert['end'];
+								}
 							}
 							$textalert = implode(',<br>' ,$textalert);
 							if (!empty($textalert)) {

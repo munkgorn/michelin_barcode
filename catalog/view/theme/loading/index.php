@@ -35,7 +35,15 @@ $(document).ready(function () {
     <?php foreach ($loading as $key => $load) : ?>
     $.ajax({
         xhr: function() {
-            var xhr = new window.XMLHttpRequest();
+            var xhr = new window.XMLHttpRequest();// Upload progress
+            xhr.upload.addEventListener("progress", function(evt){
+                if (evt.lengthComputable) {
+                    var percentComplete = (evt.loaded / evt.total) * 100;
+                    //Do something with upload progress
+                    console.log(percentComplete);
+                    $('.progress.load<?php echo $key;?> > .progress-bar').attr('aria-valuenow', percentComplete).css('width', percentComplete+'%');
+                }
+            }, false);
             xhr.addEventListener("progress", function(evt){
                 if (evt.lengthComputable) {
                     var percentComplete = (evt.loaded / evt.total) * 100;
@@ -56,17 +64,15 @@ $(document).ready(function () {
         let arr = new Array();
         $('.progress').each(function(){
             let bar = $(this).children('.progress-bar').attr('aria-valuenow');
-            console.log(bar);
             if (bar==100) {
-                arr.push(true);
+                arr.push(1);
             }
         });
-        if ($.inArray(false, arr)===-1) {
-            console.log("redirect");
+        if (arr.length == <?php echo count($loading);?> && $.inArray(false, arr)===-1) {
             clearTimeout(tid);
             setTimeout(function () {
                 window.location.href = "index.php?route=<?php echo $redirect;?>";
-            }, 2000); //
+            }, 1000); //
             
         } else {
             tid = setTimeout(checkCompleted, 1000);

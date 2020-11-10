@@ -173,9 +173,19 @@
 		}
 		public function generateJsonDefaultYear() {
 			$data = array();
+
 			$purchase = $this->model('purchase');
-			$data['start'] = $purchase->getStartDateOfYearAgo();
-			$data['end'] = $purchase->getEndDateOfYearAgo();
+			$config = $this->model('config');
+			$dayofyear = $config->getConfig('config_date_year');
+			$beforeusesize = $config->getConfig('config_date_size');
+
+			$year = $purchase->getStartEndDateOfYearAgo(date('Y-m-d', strtotime('-'.$dayofyear.'day')), date('Y-m-d', strtotime('-'.$beforeusesize.'day')));
+			$data['start'] = $year['date_start'];
+			$data['end'] = $year['date_end'];
+
+			// $data['start'] = $purchase->getStartDateOfYearAgo($dayofyear, $beforeusesize);
+			// $data['end'] = $purchase->getEndDateOfYearAgo($dayofyear, $beforeusesize);
+
 			$fp = fopen(DOCUMENT_ROOT . 'uploads/default_year.json', 'w');
 			fwrite($fp, json_encode($data));
 			fclose($fp);
@@ -209,17 +219,32 @@
 			$data = array();
 			$purchase = $this->model('purchase');
 			$config = $this->model('config');
-			$groups = $config->getBarcodes();
-			foreach ($groups as $value) {
+
+			$config = $this->model('config');
+			$dayofyear = $config->getConfig('config_date_year');
+			$beforeusesize = $config->getConfig('config_date_size');
+			$results = $purchase->getBarcodeStartEndOfGroup(date('Y-m-d', strtotime('-'.$dayofyear.'day')), date('Y-m-d', strtotime('-'.$beforeusesize.'day')));
+			foreach ($results as $value) {
 				$data[$value['group']] = array(
-					'start' => '',
-					'end' => '',
+					'start' => $value['barcode_start'],
+					'end' => $value['barcode_end'],
 				);
-				$s = $purchase->getStartBarcodeOfYearAgo($value['group']);
-				$e = $purchase->getEndBarcodeOfYearAgo($value['group']);
-				$data[$value['group']]['start'] = !empty($s) ? sprintf('%08d', $s) : ''; 
-				$data[$value['group']]['end'] = !empty($e) ? sprintf('%08d', $e) : '';
 			}
+
+			// $groups = $config->getBarcodes();
+			// foreach ($groups as $value) {
+			// 	$data[$value['group']] = array(
+			// 		'start' => '',
+			// 		'end' => '',
+			// 	);
+			// 	$year = $purchase->getBarcodeStartEndOfGroup($value['group'], date('Y-m-d', strtotime('-'.$dayofyear.'day')), date('Y-m-d', strtotime('-'.$beforeusesize.'day')));
+			// 	$s = $year['barcode_start'];
+			// 	$e = $year['barcode_end'];
+			// 	// $s = $purchase->getStartBarcodeOfYearAgo($value['group']);
+			// 	// $e = $purchase->getEndBarcodeOfYearAgo($value['group']);
+			// 	$data[$value['group']]['start'] = !empty($s) ? sprintf('%08d', $s) : ''; 
+			// 	$data[$value['group']]['end'] = !empty($e) ? sprintf('%08d', $e) : '';
+			// }
 			$fp = fopen(DOCUMENT_ROOT . 'uploads/default_purchase.json', 'w');
 			fwrite($fp, json_encode($data));
 			fclose($fp);
