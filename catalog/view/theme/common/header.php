@@ -41,7 +41,7 @@
 
 	</head>
 	<body class="dark-sidenav">
-		<?php if (get('route') != 'home' and get('route') != '') {?>
+		<?php if (get('route') != 'home' && get('route') != 'loading' && get('route') != '') {?>
 		<!-- Left Sidenav -->
 		<div class="left-sidenav">
 			<!-- LOGO -->
@@ -167,7 +167,7 @@
 			</div>
 		</div>
 		<!-- end left-sidenav-->
-	<?php }?>
+		<?php }?>
 
 	<script>
 		$("#sa-logout").click(function(){
