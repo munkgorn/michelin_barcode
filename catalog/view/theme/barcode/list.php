@@ -35,6 +35,7 @@
 					</form>
 				</div>
 				<div class="col-sm-4">
+				<a href="index.php?route=barcode/import">Import</a>
 					<form action="<?php echo $action_import; ?>" method="post" enctype="multipart/form-data">
 						<div class="form-group row">
 							<label for="" class="col-sm-12 text-left">Import CSV</label>

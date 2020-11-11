@@ -9,6 +9,92 @@
 				$this->redirect('home');
 			} 
 		}
+		public function ajaxRemoveRange() {
+			$group_code = $_POST['group'];
+			$barcode_range = json_decode($_POST['barcode'], true);
+
+			$barcode = $this->model('barcode');
+			$barcode->removeBarcodeRange($group_code, $barcode_range);
+		}
+		public function ajaxGetRange() {
+			$data = array();
+			$barcode = $this->model('barcode');
+			$data = $barcode->getRangeBarcode($_POST['group'], 0, '', 0);
+			$this->json($data);
+		}
+		public function import() {
+			$data = array();
+
+			$data['action_import'] = route('barcode/import');
+			$barcode = $this->model('barcode');
+			$group = $this->model('group');
+			$config = $this->model('config');
+			$data['maximum'] = $config->getConfig('config_maximum_alert');
+
+			$data['group'] = array();
+			if(method_post()){
+				$this->importCSV();
+				$file = $this->getSession('import');
+				$row = 0;
+				$file = fopen($file, 'r');
+				while (($line = fgetcsv($file)) !== FALSE) {
+					if ($row>0) {
+						$col = explode(';', $line[0]);
+						$thisbarcode = (int)sprintf('%08d', str_replace('"','',$col[9]));
+						$groupcode = (int)substr($thisbarcode, 0, 3);
+						$findgroup = $group->findIdGroup($groupcode);
+						if (!empty($findgroup)) {
+							$res = $barcode->findAndUpdateBarcode($groupcode, $thisbarcode);
+							if ($res==true && in_array($groupcode, $data['group'])==false) {
+								$data['group'][] = $groupcode;
+							}
+						}
+					}
+					$row++;
+				}
+				fclose($file);
+			}
+			sort($data['group']);
+			if (count($data['group'])>0) {
+				$this->setSession('import_group', $data['group']);
+				redirect('barcode/import');
+			} else if ($this->hasSession('import_group')) {
+				$data['group'] = $this->getSession('import_group');
+			}
+
+			$this->view('barcode/import', $data);
+		}
+		public function importCSV() {
+			$returnfilename = '';
+
+			$dir = 'uploads/import_cutbarcode/';
+			$path = DOCUMENT_ROOT . $dir;
+			$path_csv = DOCUMENT_ROOT . $dir;
+
+			$file = $_FILES['import_file'];
+			
+			$fileType = strtolower(pathinfo(basename($file["name"]),PATHINFO_EXTENSION));
+			$newname = 'import_barcode_'.date('YmdHis');
+			$file_csv = 'CSV_'.$newname.'.csv';
+			$newname .= '.'.$fileType;
+			$acceptFileType  = array('csv');
+			// check folder upload
+			if (!file_exists($path)) {
+				$oldmask = umask(0);
+				mkdir($path, 0777);
+				umask($oldmask);
+			}
+			
+			// check file
+			if ($file['error']==0 && in_array($fileType, $acceptFileType)) {
+				if (upload($file, $path, $newname)) {
+					$returnfilename = $path.$newname;
+					$this->setSession('import', $returnfilename);
+				}
+			}
+
+			return $returnfilename;
+		}
 	    public function index() {
 	    	$data = array();
 	    
@@ -669,6 +755,7 @@
 						$row = 1;
 						$barcode = $this->model('barcode');
 						$barcode_use = array();
+						$group_barcode = array();
 						
 						if (($handle = fopen($path.$newname, "r")) !== FALSE) {
 							// $csv_file = $path_csv.$file_csv;
@@ -680,80 +767,62 @@
 
 									$result = $barcode->findAndUpdateBarcode($col[9], $date);
 									if ($result) {
-										$barcode_use[] = trim($col[9]);
+										// $barcode->updateOneBarcodeUse((int)$col[9]);
+										$tempGroup = substr(sprintf('%08d', (int)$col[9]), 0, 3);
+										if (!in_array($tempGroup, $group_barcode)) {
+											$group_barcode[] = (int)$tempGroup;
+										}
 									}
-
-									// $insert = array(
-									// 	$id_user,
-									// 	$col[9],
-									// 	$date.' 00:00:00',
-									// 	'0000-00-00 00:00:00',
-									// 	'0000-00-00 00:00:00'
-									// );
-									// fputcsv($fp, $insert,',',chr(0));
-									// echo $barcode = $col[9];
-									// echo '<br>';
 								}
 								$row++;
 							}
 							fclose($handle);
 							// fclose($fp);
 						}
-						// $barcode_use = array();
-						// $date = (post('date')?post('date'):date('Y-m-d'));
-						// $id_user = $this->getSession('id_user');
-						// $results = readExcel($dir.$newname, 0); // read excel to csv
-						// $csv_file = $path_csv.$file_csv;
-						// $fp = fopen($csv_file, 'w');
-						
-						// foreach ($results as $key => $result) {
-						// 	if ($key!=0) { $barcode_use[] = $result[0]; }
-						// 	$insert = array(
-						// 		$id_user,
-						// 		$result[0],
-						// 		$date.' 00:00:00',
-						// 		'0000-00-00 00:00:00',
-						// 		'0000-00-00 00:00:00'
-						// 	);
-						// 	fputcsv($fp, $insert,',',chr(0));
-						// }	
-						// fclose($fp);
-						// $barcode = $this->model('barcode');
-						// $result_import_barcode_csv = $barcode->import_range_barcode($path_csv.$file_csv, $date);
 
-						if(count($barcode_use)>0) {
-							$result_updatebarcode = $barcode->updateBarcodeUse($barcode_use); // ? update ใน barcode ว่า ใช้เลขไหนไปบ้าง
+						sort($group_barcode);
 
-							$config = $this->model('config');
-							$maximum = $config->getConfig('config_maximum_alert');
-							$json = $this->calcurateBarcode(false); // ? ต้องเช็คเลขที่ไม่ถูกใช้งาน ให้ Flag ทิ้ง
-							// foreach ($json as $v) {
-							// 	if ($v['qty']>=$maximum) {
+						$config = $this->model('config');
+						$maximum = $config->getConfig('config_maximum_alert');
+						$json = array();
 
-							// 	}
-							// }
-							
-							$barcode_alert = json_decode($json);
-
-							$textalert = array();
-							foreach ($barcode_alert as $alert) {
-								if ($alert['qty']>=$maximum) {
-									$textalert[] = $alert['start'].' - '.$alert['end'];
-								}
-							}
-							$textalert = implode(',<br>' ,$textalert);
-							if (!empty($textalert)) {
-								$this->setSession('textalert', $textalert);
-								$this->setSession('barcodealert', $barcode_alert);
-							}
-						} else {
-							$this->setSession('error', 'ไม่พบ barcode ที่ตรงกัน');
+						$filter = array(
+							'barcode_status'=>0,
+							'group_received'=>1
+						);
+						$tmp = $barcode->getListBarcodeForCalcurate($filter);
+						$tempbarcode = array();
+						foreach ($tmp as $v) {
+							$tempbarcode[] = $v['barcode_code'];
 						}
-						$this->redirect('barcode');
-						// // $last_date = $barcode->import_product($csv_file);
-						// // $split = explode(' ',$last_date);
-						// // print_r($result_import_barcode_csv);
-						// // $this->redirect('barcode/association&date_wk='.$split[0]);
+						$this->test2($tempbarcode);
+						// $temp = $this->calcurateBarcode(false, $group_barcode, 0); // ? ต้องเช็คเลขที่ไม่ถูกใช้งาน ให้ Flag ทิ้ง
+						// foreach ($temp as $v) {
+							// array_push($json, $v);	
+						// }
+
+
+						// echo '<pre>';
+						// print_r($json);
+						// echo '</pre>';
+						
+
+						exit();
+						
+						$barcode_alert = json_decode($json, true);
+
+						$textalert = array();
+						foreach ($barcode_alert as $alert) {
+							if ($alert['qty']>=$maximum) {
+								$textalert[] = $alert['start'].' - '.$alert['end'];
+							}
+						}
+						$textalert = implode(',<br>' ,$textalert);
+						echo $textalert;
+						if (!empty($textalert)) {
+							$this->setSession('textalert', $textalert);
+							$this->setSession('barcodealert', $barcode_alert);
+						}
 					}
 				}
 
@@ -932,10 +1001,11 @@
 			$list2 = array();
 			
 			$input = array(
-				'barcode_use' => 1
+				'barcode_status' => 0
 			);
 			if (!empty($date_wk)) { $input['date'] = $date_wk; }
-			$listbarcode = $barcode->getListBarcode($input); // ? ที่จองในระบบทั้งหมด
+			// $listbarcode = $barcode->getListBarcode($input); // ? ที่จองในระบบทั้งหมด
+			$listbarcode = $barcode->getListBarcodeForCalcurate($input);
 			foreach ($listbarcode as $key => $value) {
 				$list1[] = (int)$value['barcode_code'];
 			}
@@ -1010,6 +1080,45 @@
 			}
 
 			return $text;
+		}
+		public function test2($number) {
+
+			// $number = array(10100000, 10100009, 10100010, 10100013, 10100014, 10100015, 10100016, 10100017, 10100018, 10100019, 10100020, 10100021, 10100022, 10100023, 10100024, 10100025, 10100026, 10100027, 10100028, 10100029, 10100030, 10100031, 10100032, 10100033, 10100034, 10100035, 10100036, 10100037, 10100038, 10100046, 10100047, 10100048, 10100049, 10100050, 10100051, 10100052, 10100053, 10100054, 10100055, 10100056, 10100079, 10100080, 10100081, 10100082, 10100083, 10100084, 10100085, 10100086, 10100087, 10100088, 10100089, 10100090, 10100091, 10100092, 10100093, 10100094, 10100095, 10100096, 10100097, 10100098, 10100099);
+			$result = array();
+			$tempRange = array();
+
+			foreach ($number as $k => $v) {
+				if (isset($number[$k-1]) && $number[$k-1]==$v-1) {
+					if (!in_array($v, $tempRange)) {
+						$tempRange[] = $v;
+					}
+
+				}
+				if (isset($number[$k+1]) && $number[$k+1]==$v+1) {
+					if (!in_array($v, $tempRange)) {
+						$tempRange[] = $v;
+					}
+
+				} else {
+					if (count($tempRange)>0) {
+						$result[]['row'] = $tempRange;
+					}
+					$tempRange = array();
+				}
+			}
+
+			if (count($result)>0) {
+				foreach ($result as $key => $value) {
+					if (count($value['row'])>0) {
+						$result[$key]['name'] = $value['row'][0].' - '.end($value['row']);
+						$result[$key]['qty'] = count($value['row']);
+					}
+				}
+			}
+
+			echo '<pre>';
+			print_r($result);
+			echo '</pre>';
 		}
 		public function test() {
 

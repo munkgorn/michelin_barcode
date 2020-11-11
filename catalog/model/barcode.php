@@ -10,28 +10,33 @@
 			$query = $this->get('barcode b');
 			return $query->rows;
 		}
-		public function findAndUpdateBarcode($barcode, $date) {
-			$this->where('barcode_code', $barcode);
-			// $this->where('date_modify', $date.'%', 'LIKE');
-			$query = $this->get('barcode');
-			$numrow = $query->num_rows>0?true:false;
-			if ($numrow==true) {
-				$result = $query->row;
-				$this->where('id_barcode', $result['id_barcode']);
-				// $this->where('barcode_code', $barcode);
-				// $this->where('date_modify', $date.'%', 'LIKE');
-				$this->update('barcode', array('barcode_status'=>1,'date_modify'=>date('Y-m-d H:i:s')));
+		public function findAndUpdateBarcode($group, $barcode, $date='') {
 
-				$insert = array(
-					'id_user' => $_SESSION['id_user'],
-					'barcode' => $barcode,
-					'date_wk' => $date,
-					'date_added' => date('Y-m-d H:i:s'),
-					'date_modify' => date('Y-m-d H:i:s'),
-				);
-				$this->insert('import_barcode', $insert);
-			}
-			return $numrow;
+			$sql = "UPDATE mb_master_barcode SET barcode_status = 1, date_modify = '" . date('Y-m-d') . "' WHERE barcode_prefix = $group AND barcode_code = $barcode";
+			return $this->query($sql);
+
+			
+			// $this->where('barcode_code', $barcode);
+			// $this->where('date_modify', $date.'%', 'LIKE');
+			// $query = $this->update('barcode', array('barcode_status'=>1,'date_modify'=>date('Y-m-d H:i:s')));
+			// $numrow = $query->num_rows>0?true:false;
+			// if ($numrow==true) {
+			// 	$result = $query->row;
+			// 	$this->where('id_barcode', $result['id_barcode']);
+			// 	// $this->where('barcode_code', $barcode);
+			// 	// $this->where('date_modify', $date.'%', 'LIKE');
+			// 	$this->update('barcode', array('barcode_status'=>1,'date_modify'=>date('Y-m-d H:i:s')));
+
+			// 	// $insert = array(
+			// 	// 	'id_user' => $_SESSION['id_user'],
+			// 	// 	'barcode' => $barcode,
+			// 	// 	'date_wk' => $date,
+			// 	// 	'date_added' => date('Y-m-d H:i:s'),
+			// 	// 	'date_modify' => date('Y-m-d H:i:s'),
+			// 	// );
+			// 	// $this->insert('import_barcode', $insert);
+			// }
+			// return $numrow;
 			
 			// $query = $this->get('barcode');
 			// if ($query->num_rows)
@@ -85,6 +90,16 @@
 				$sql .= "AND data_wk LIKE '".$data['date_wk']."%'";
 			}
 			$query = $this->query($sql);
+			return $query->rows;
+		}
+		public function getListBarcodeForCalcurate($filter=array()) {
+			if (count($filter)>0) {
+				foreach ($filter as $key => $value) {
+					$this->where($key, $value);
+				}
+			}
+			$this->select('barcode_code');
+			$query = $this->get('barcode');
 			return $query->rows;
 		}
 		public function getListBarcode($data = array()){
@@ -166,6 +181,10 @@
 
 			// return $result;
 			return $date_now;
+		}
+		public function updateOneBarcodeUse($barcode) {
+			$this->where('barcode_code', $barcode);
+			$query = $this->update('barcode', array('barcode_status'=>1));
 		}
 		public function updateBarcodeUse($barcodes=array()) {
 			$sql = "UPDATE mb_master_barcode SET barcode_status = 1 WHERE barcode_code IN (".implode(',', $barcodes).")";
@@ -724,39 +743,61 @@
 			return $query->rows;
 		}
 
-		public function getRangeBarcode($group=0, $status=1, $date='') {
+		public function removeBarcodeRange($group, $range = array()) {
+			$where = array();
+			if (count($range)>0) {
+				foreach ($range as $v) {
+					// $where[] = 
+					$temp = explode('-', $v);
+					if (count($temp)==2) {
+						$where[] = (count($where)==0?'':' OR ')." (barcode_code >= $temp[0] AND barcode_code <= $temp[1]) ";
+					}
+				}
+
+				$sql = "UPDATE mb_master_barcode SET barcode_flag = 1 WHERE barcode_status = 0 AND barcode_flag = 0 AND group_received = 1 AND barcode_prefix = $group AND (".implode(' ',$where).")";
+				$query = $this->query($sql);
+				echo $query;
+			}
+			
+		}
+
+		public function getRangeBarcode($group=0, $status=1, $date='', $flag = false) {
 			$sql = "SELECT a.barcode_status, a.barcode_prefix, (MIN(c.barcode_code) - a.barcode_code) + 1 as qty ";
 			$sql .= ", LPAD(a.barcode_code, 8, \"0\") as start ";
 			$sql .= ", LPAD(MIN(c.barcode_code), 8, \"0\") as end "; 
-			$sql .= "FROM (SELECT b.* FROM mb_master_barcode b WHERE b.barcode_status = $status ";
-			$sql .= $group > 0 ? "AND b.barcode_prefix = $group " : "";
-			$sql .= "AND b.group_received = 1 ";
-			$sql .= !empty($date) ? "AND b.date_modify = '$date'" : "";
+			$sql .= "FROM (SELECT * FROM mb_master_barcode WHERE barcode_status = ".(int)$status." ";
+			$sql .= $flag!==false ? "AND barcode_flag = $flag " : '';
+			$sql .= $group > 0 && !is_array($group) ? "AND barcode_prefix = $group " : (is_array($group) ? " AND barcode_prefix IN (".implode(',', $group).") " : '') ;
+			$sql .= "AND group_received = 1 ";
+			$sql .= !empty($date) ? "AND date_modify = '$date'" : "";
 			$sql .= ") a ";
 			
 			$sql .= "LEFT  ";
-			$sql .= "JOIN (SELECT b.* FROM mb_master_barcode b WHERE b.barcode_status = $status ";
-			$sql .= $group > 0 ? "AND b.barcode_prefix = $group " : "";
-			$sql .= "AND b.group_received = 1 ";
-			$sql .= !empty($date) ? "AND b.date_modify = '$date'" : "";
+			$sql .= "JOIN (SELECT * FROM mb_master_barcode WHERE barcode_status = ".(int)$status." ";
+			$sql .= $flag!==false ? "AND barcode_flag = $flag " : '';
+			$sql .= $group > 0 && !is_array($group) ? "AND barcode_prefix = $group " : (is_array($group) ? " AND barcode_prefix IN (".implode(',', $group).") " : '') ;
+			$sql .= "AND group_received = 1 ";
+			$sql .= !empty($date) ? "AND date_modify = '$date'" : "";
 			$sql .= ") b  ";
 			$sql .= "ON b.barcode_status = a.barcode_status ";
 			$sql .= "AND b.barcode_code = a.barcode_code - 1 ";
 				
 			$sql .= "LEFT  ";
-			$sql .= "JOIN (SELECT b.* FROM mb_master_barcode b WHERE b.barcode_status = $status ";
-			$sql .= $group > 0 ? "AND b.barcode_prefix = $group " : "";
-			$sql .= "AND b.group_received = 1 ";
-			$sql .= !empty($date) ? "AND b.date_modify = '$date'" : "";
+			$sql .= "JOIN (SELECT * FROM mb_master_barcode WHERE barcode_status = ".(int)$status." ";
+			$sql .= $flag!==false ? "AND barcode_flag = $flag " : '';
+			$sql .= $group > 0 && !is_array($group) ? "AND barcode_prefix = $group " : (is_array($group) ? " AND barcode_prefix IN (".implode(',', $group).") " : '') ;
+			$sql .= "AND group_received = 1 ";
+			$sql .= !empty($date) ? "AND date_modify = '$date'" : "";
 			$sql .= ") c  ";
 			$sql .= "ON c.barcode_status = a.barcode_status ";
 			$sql .= "AND c.barcode_code >= a.barcode_code ";
 				
 			$sql .= "LEFT  ";
-			$sql .= "JOIN (SELECT b.* FROM mb_master_barcode b WHERE b.barcode_status = $status ";
-			$sql .= $group > 0 ? "AND b.barcode_prefix = $group " : "";
-			$sql .= "AND b.group_received = 1 ";
-			$sql .= !empty($date) ? "AND b.date_modify = '$date'" : "";
+			$sql .= "JOIN (SELECT * FROM mb_master_barcode WHERE barcode_status = ".(int)$status." ";
+			$sql .= $flag!==false ? "AND barcode_flag = $flag " : '';
+			$sql .= $group > 0 && !is_array($group) ? "AND barcode_prefix = $group " : (is_array($group) ? " AND barcode_prefix IN (".implode(',', $group).") " : '') ;
+			$sql .= "AND group_received = 1 ";
+			$sql .= !empty($date) ? "AND date_modify = '$date'" : "";
 			$sql .= ") d  ";
 			$sql .= "ON d.barcode_status = a.barcode_status ";
 			$sql .= "AND d.barcode_code = c.barcode_code + 1 ";
