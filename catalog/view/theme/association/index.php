@@ -91,10 +91,10 @@
 									<th width="10%" class="text-center">Size Product</th>
 									<th width="10%" class="text-center">Sum Product</th>
 									<th width="10%" >Last Wk Mapping</th>
-									<th width="10%" class="text-center">Last Wk Remaining Qty</th>
+									<th width="10%" class="text-center">Remaining Qty</th>
 									<th width="10%" class="text-center">Propose Wk0</th>
-									<th width="10%" class="text-center">Propose Wk0 Remaining Qty</th>
-									<th width="10%" class="text-center">Propose Wk0 Message</th>
+									<th width="10%" class="text-center">Remaining Qty</th>
+									<th width="10%" class="text-center">Message</th>
 									<th class="text-center">Validate Wk0</th>
 								</tr>
 							</thead>

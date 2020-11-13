@@ -84,24 +84,7 @@ class AssociationController extends Controller
             if (!empty($last_week)) {
                 $remaining_qty = $association->getNotUseBarcode($last_week);
 
-                // $groupReceived = $association->getGroupReceived($last_week);
-                // $barcodeUse = $association->getBarcodeUse($last_week);
-                // if ($groupReceived !== false) {
-                //     if ($barcodeUse == 0) {
-                //         $remaining_qty = $groupReceived;
-                //     } else {
-                //         // if ($groupReceived - $barcodeUse < 0) {
-                //             // $remaining_qty = 100000 - $barcodeUse;
-                //         // } else {
-                //             // $remaining_qty = $groupReceived - $barcodeUse;
-                //         // }
-
-                //     }
-                // }
             }
-
-            // exit();
-            // $remaining_qty = !empty($last_week) ? $association->getRemainingByGroup($last_week) : 0;
 
             $relation_group = $association->getRelationshipBySize($value['size'], $value['sum_prod']);
 
@@ -111,32 +94,34 @@ class AssociationController extends Controller
             $propose_remaining_qty = '';
             $message = '';
 
-            if (!empty($relation_group['group']) && !empty($relation_group['qty'])) {
-                $propose = $relation_group['group'];
-                $propose_remaining_qty = $relation_group['qty'];
-                $message = '<span class="text-primary">Relationship</span>';
-            } else if ($remaining_qty >= $value['sum_prod']) {
-                $propose = $last_week;
-                $propose_remaining_qty = $remaining_qty;
-                $message = 'Last Weeek';
-            } else {
-                $free = '';
-                $free_qty = '';
-
-                foreach ($temp_freegroup as $k => $fg) {
-                    if ($fg['qty']>=$value['sum_prod'] && !in_array($fg['group'], $config_relation)) {
-                        $free = $fg['group'];
-                        $free_qty = $fg['qty'];
-                        unset($temp_freegroup[$k]);
-                        $temp_freegroup = array_values($temp_freegroup);
-                        break;
-                    }
-                }
+            if ($value['sum_prod']>0) {
+                if (!empty($relation_group['group']) && !empty($relation_group['qty'])) {
+                    $propose = $relation_group['group'];
+                    $propose_remaining_qty = $relation_group['qty'];
+                    $message = '<span class="text-primary">Relationship</span>';
+                } else if ($remaining_qty >= $value['sum_prod']) {
+                    $propose = $last_week;
+                    $propose_remaining_qty = $remaining_qty;
+                    $message = 'Last Weeek';
+                } else {
+                    $free = '';
+                    $free_qty = '';
     
-                if (!empty($free)&&!empty($free_qty)) {
-                    $propose = $free;
-                    $propose_remaining_qty = $free_qty;
-                    $message = !empty($free) ? '<span class="text-danger">Free Group</span>' : '';
+                    foreach ($temp_freegroup as $k => $fg) {
+                        if (isset($fg['qty'])&&$fg['qty']>=$value['sum_prod'] && !in_array($fg['group'], $config_relation)) {
+                            $free = $fg['group'];
+                            $free_qty = $fg['qty'];
+                            unset($temp_freegroup[$k]);
+                            $temp_freegroup = array_values($temp_freegroup);
+                            break;
+                        }
+                    }
+        
+                    if (!empty($free)&&!empty($free_qty)) {
+                        $propose = $free;
+                        $propose_remaining_qty = $free_qty;
+                        $message = !empty($free) ? '<span class="text-danger">Free Group</span>' : '';
+                    }
                 }
             }
 
@@ -147,8 +132,8 @@ class AssociationController extends Controller
                 'sum_prod' => $value['sum_prod'],
                 'last_wk0' => !empty($last_week) ? sprintf('%03d', $last_week) : '',
                 'remaining_qty' => number_format((int) $remaining_qty, 0),
-                'propose' => !empty(strip_tags($propose)) ? sprintf('%03d', $propose) : '',
-                'propose_remaining_qty' => $propose_remaining_qty > 0 ? number_format((int) $propose_remaining_qty, 0) : '',
+                'propose' => !empty(strip_tags($propose)) ? ($propose!=$last_week?'<span class="text-danger">'.sprintf('%03d', $propose).'</span>':sprintf('%03d', $propose)) : '',
+                'propose_remaining_qty' => $propose_remaining_qty > 0 ? ($propose!=$last_week?'<span class="text-danger">'.number_format((int) $propose_remaining_qty, 0).'</span>':number_format((int) $propose_remaining_qty, 0)) : '',
                 'message' => $text,
                 'save' => !empty($value['group_code']) ? sprintf('%03d', $value['group_code']) : '',
             );

@@ -157,7 +157,7 @@ class AssociationModel extends db
         }
     }
     public function getNotUseBarcode($group_code) {
-        $sql = "SELECT count(*) as qty  FROM mb_master_barcode WHERE barcode_prefix = $group_code AND group_received = 1 AND barcode_status = 0 ";
+        $sql = "SELECT count(*) as qty  FROM mb_master_barcode WHERE barcode_prefix = $group_code AND barcode_flag = 0 AND group_received = 1 AND barcode_status = 0 ";
         $query = $this->query($sql);
         return $query->row['qty'];
     }
