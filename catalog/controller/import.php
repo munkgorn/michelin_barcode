@@ -182,6 +182,8 @@ class ImportController extends Controller
                                     1,
                                     $value[4],
                                     $value[4],
+                                    // date('Y-m-d H:i:s', strtotime($value[4].' 00:00:00')),
+                                    // date('Y-m-d H:i:s', strtotime($value[4].' 00:00:00')),
                                 );
                                 fputcsv($fp, $insert, ',', chr(0));
                             }

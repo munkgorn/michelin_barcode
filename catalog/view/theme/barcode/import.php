@@ -52,8 +52,8 @@
 				<table class="table table-bordered" id="table_result">
 					<thead>
 						<tr>
-							<th width="25%">Group Prefix</th>
-							<th></th>
+							<th>Group Prefix</th>
+							<th width="25%"></th>
 						</tr>
 					</thead>
 					<tbody>
@@ -110,6 +110,12 @@
 
 <script>
 $(document).ready(function () {
+	$('[type="file"]').on('change', function(e){
+		var fileName = e.target.files[0].name;
+		$(this).next('label.custom-file-label').html('<span class="text-dark">'+fileName+'</span>');
+		console.log(fileName);
+	});
+
 	function addCommas(nStr) {
 		nStr += '';
 		x = nStr.split('.');
