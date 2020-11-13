@@ -34,15 +34,14 @@
 						</div>
 					</form>
 				</div>
-				<div class="col-sm-4">
-				<a href="index.php?route=barcode/import">Import</a>
-					<form action="<?php echo $action_import; ?>" method="post" enctype="multipart/form-data">
+				<div class="col-sm-4 text-right">
+						<div><a href="index.php?route=barcode/import" class="btn btn-outline-primary">Import</a></div>
+					<!-- <form action="<?php echo $action_import; ?>" method="post" enctype="multipart/form-data">
 						<div class="form-group row">
 							<label for="" class="col-sm-12 text-left">Import CSV</label>
 							<div class="col-sm-12">
 								<div class="input-group">
 									<div class="custom-file">
-										<!-- <input type="hidden" name="date_wk" value="<?php echo $_GET['date_wk']; ?>">-->
 										<input type="file" name="import_file" class="custom-file-input" id="inputImportConfigFlexibleGroup" aria-describedby="inputGroupFileAddon04" required  />  >
 										<label class="custom-file-label" for="inputImportConfigFlexibleGroup">Browse CSV File (.csv)</label>
 									</div>
@@ -52,7 +51,7 @@
 								</div>
 							</div>
 						</div>
-					</form>
+					</form> -->
 				</div>
 			</div>
 

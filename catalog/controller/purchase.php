@@ -226,8 +226,8 @@
 			$results = $purchase->getBarcodeStartEndOfGroup(date('Y-m-d', strtotime('-'.$dayofyear.'day')), date('Y-m-d', strtotime('-'.$beforeusesize.'day')));
 			foreach ($results as $value) {
 				$data[$value['group']] = array(
-					'start' => $value['barcode_start'],
-					'end' => $value['barcode_end'],
+					'start' => (int)$value['barcode_start']>0 ? sprintf('%08d', $value['barcode_start']) : '',
+					'end' => (int)$value['barcode_end']>0 ? sprintf('%08d', $value['barcode_end']) : '',
 				);
 			}
 
