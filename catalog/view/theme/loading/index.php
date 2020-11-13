@@ -54,6 +54,8 @@ $(document).ready(function () {
             }, false);
             return xhr;
         },
+        // async: false,
+        cache: true,
         type: 'POST',
         url: "<?php echo $load['url'];?>",
     });
