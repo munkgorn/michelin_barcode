@@ -235,6 +235,18 @@
 <script>
 $(document).ready(function () {
 
+	function addCommas(nStr) {
+		nStr += '';
+		x = nStr.split('.');
+		x1 = x[0];
+		x2 = x.length > 1 ? '.' + x[1] : '';
+		var rgx = /(\d+)(\d{3})/;
+		while (rgx.test(x1)) {
+			x1 = x1.replace(rgx, '$1' + ',' + '$2');
+		}
+		return x1 + x2;
+	}
+
 	$('[type="file"]').on('change', function(e){
 		var fileName = e.target.files[0].name;
 		$(this).next('label.custom-file-label').html('<span class="text-dark">'+fileName+'</span>');
@@ -246,27 +258,36 @@ $(document).ready(function () {
 		allowClear: true
 	});
 
-	$.get('index.php?route=barcode/jsonFreeGroup', function(data){
-		var json = JSON.parse(data);
-		// console.log(json);
-		var i = 0;
-		$('.propose').each(function(index,value){
-			var thishtml = parseInt($(this).html());
-			var row = $(this).attr('row');
-			var last_wk = parseInt($('.last_wk[row="'+row+'"]').html());
+	// $.get('index.php?route=barcode/jsonFreeGroup', function(data){
+	// 	var json = JSON.parse(data);
+	// 	var temp = json;
+	// 	console.log(json);
+	// 	var i = 0;
+	// 	$('.propose').each(function(index,value){
+	// 		var thishtml = parseInt($(this).html());
+	// 		var row = $(this).attr('row');
+	// 		var last_wk = parseInt($('.last_wk[row="'+row+'"]').html());
 
-			if (last_wk!=$(this).html()) {
-				$(this).addClass('text-danger');
-			}
-			if (isNaN(thishtml)) {
-				$(this).html(json[i]).parent('td').next('td').next('td').html('Free Group');
-				if (last_wk!=json[i]) {
-					$(this).addClass('text-danger');
-				}
-				i++;
-			}
-		});
-	},'json');
+	// 		if (last_wk!=$(this).html()) {
+	// 			$(this).addClass('text-danger');
+	// 		}
+	// 		if (isNaN(thishtml)) {
+	// 			var oldqty = $(this).parent('td').prev('td').prev('td').prev('td').html();
+	// 			console.log(oldqty);
+	// 			// i=0;
+	// 			// while(temp[i].qty>) {
+
+	// 			// }
+	// 			$(this).html(temp[i].group).parent('td').next('td').html(addCommas(temp[i].qty)).next('td').html('Free Group');
+	// 			if (last_wk!=temp[i].group) {
+	// 				$(this).addClass('text-danger');
+	// 				$(this).parent('td').next('td').addClass('text-danger');
+	// 			}
+				
+	// 			i++;
+	// 		}
+	// 	});
+	// },'json');
 
 	$('#check_all').change(function(){
 		if ($(this).is(':checked')) {

@@ -156,6 +156,11 @@ class AssociationModel extends db
             return '';
         }
     }
+    public function getNotUseBarcode($group_code) {
+        $sql = "SELECT count(*) as qty  FROM mb_master_barcode WHERE barcode_prefix = $group_code AND group_received = 1 AND barcode_status = 0 ";
+        $query = $this->query($sql);
+        return $query->row['qty'];
+    }
     public function getGroupReceived($group_code)
     {
         $this->select('remaining_qty as barcode_received');
@@ -170,13 +175,14 @@ class AssociationModel extends db
     }
     public function getBarcodeUse($group_code)
     {
-        $this->select('count(b.id_barcode) as barcode');
-        $this->join('barcode b', 'b.id_group = g.id_group', 'LEFT');
-        $this->where('g.group_code', $group_code);
-        $this->where('g.barcode_use', 1);
-        $this->where('b.barcode_status', 1);
-        $this->where('g.del', 0);
-        $query = $this->get('group g');
+        // $this->select('count(b.id_barcode) as barcode');
+        // $this->join('barcode b', 'b.id_group = g.id_group', 'LEFT');
+        // $this->where('g.group_code', $group_code);
+        // $this->where('g.barcode_use', 1);
+        // $this->where('b.barcode_status', 1);
+        // $this->where('g.del', 0);
+        // $query = $this->get('group g');
+        
         return $query->row['barcode'];
     }
     public function getRemainingByGroup($group_code)
@@ -191,18 +197,58 @@ class AssociationModel extends db
         // echo $this->last_query();
         return !empty($query->row['remaining_qty']) ? $query->row['remaining_qty'] : '';
     }
-    public function getRelationshipBySize($size)
+    public function getRelationshipBySize($size, $sumprod=0)
     {
-        $this->where('cr.size', $size);
-        $this->where('cr.`group` is not null', '', '');
-        $this->where('g.date_added <= DATE_ADD(CURDATE(),INTERVAL-3 DAY)', '', '');
-        $this->where('g.del', 0);
-        $this->select('cr.`group`');
-        $this->join('group g', 'g.group_code = cr.`group`', 'LEFT');
-        $query = $this->get('config_relationship cr');
-        return !empty($query->row['group']) ? $query->row['group'] : '';
+        $day1 = $this->query("SELECT config_value FROM mb_master_config WHERE config_key = 'config_date_size';")->row['config_value'];
+        $day1 = date('Y-m-d', strtotime('-'.$day1.'day'));
+
+        $day2 = $this->query("SELECT config_value FROM mb_master_config WHERE config_key = 'config_date_year';")->row['config_value'];
+        $day2 = date('Y-m-d', strtotime('-'.$day2.'day'));
+
+        $sql = "SELECT * FROM  ";
+        $sql .= "(  ";
+        $sql .= "SELECT cr.`group`, ";
+        $sql .= "(SELECT count(b.id_barcode) as qty FROM mb_master_barcode b WHERE b.barcode_prefix = cr.`group` AND b.group_received = 1 AND b.barcode_status = 0 AND b.date_modify BETWEEN '$day2' AND '$day1' GROUP BY b.id_group, b.barcode_prefix ORDER BY b.id_barcode ASC,b.id_group ASC,b.date_modify DESC) as qty  ";
+        $sql .= "FROM mb_master_config_relationship cr ";
+        $sql .= "WHERE cr.size != '' AND cr.size is not null AND cr.size = $size";
+        $sql .= ") t WHERE t.qty is not null AND t.qty >= $sumprod LIMIT 0,1";
+
+        $query = $this->query($sql);
+        return $query->row;
+
+        // $this->where('cr.size', $size);
+        // $this->where('cr.`group` is not null', '', '');
+        // $this->where("g.date_purchase <= '".$day1."'", '', '');
+        // $this->where('g.del', 0);
+        // $this->select('cr.`group`');
+        // $this->join('group g', 'g.group_code = cr.`group`', 'LEFT');
+        // $query = $this->get('config_relationship cr');
+        // return !empty($query->row['group']) ? $query->row['group'] : '';
     }
-    public function getFreeGroup()
+    public function getFreeGroup() {
+        $day1 = $this->query("SELECT config_value FROM mb_master_config WHERE config_key = 'config_date_size';")->row['config_value'];
+        $day1 = date('Y-m-d', strtotime('-'.$day1.'day'));
+
+        $day2 = $this->query("SELECT config_value FROM mb_master_config WHERE config_key = 'config_date_year';")->row['config_value'];
+        $day2 = date('Y-m-d', strtotime('-'.$day2.'day'));
+
+        // $sqlbarcode = "SELECT count(b.id_barcode) as qty FROM mb_master_barcode b WHERE b.barcode_prefix = 192 AND group_received = 1 AND barcode_status = 0 AND b.date_modify BETWEEN '$day2' AND '$day1' GROUP BY b.id_group, b.barcode_prefix ORDER BY b.id_barcode ASC,b.id_group ASC,b.date_modify DESC";
+
+        $sql = "SELECT * FROM ( ";
+            $sql .= "SELECT  ";
+            $sql .= "g.group_code as `group`, ";
+            $sql .= "(SELECT count(b.id_barcode) as qty FROM mb_master_barcode b WHERE b.barcode_prefix = g.group_code AND group_received = 1 AND barcode_status = 0 AND b.date_modify BETWEEN '$day2' AND '$day1' GROUP BY b.id_group, b.barcode_prefix ORDER BY b.id_barcode,b.id_group) as qty ";
+            $sql .= "FROM mb_master_group g ";
+            $sql .= "WHERE ";
+            $sql .= "g.barcode_use = 1 ";
+        $sql .= ") t ";
+        $sql .= "WHERE t.qty is not null ";
+        // echo $sql;
+
+        $query = $this->query($sql);
+        return $query->rows;
+    }
+    public function getFreeGroup2()
     {
         // $this->where('g.id_group is null','','');
         $this->where('cr.id is null', '', '');

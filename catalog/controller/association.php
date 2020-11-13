@@ -50,12 +50,27 @@ class AssociationController extends Controller
         $data = array();
 
         $association = $this->model('association');
+        $config = $this->model('config');
         $data['list'] = array();
 
         if (empty($date_wk)) {
             $this->setSession('error', 'Not found date WK');
             $this->redirect('association');
         }
+
+        $free_group = $this->jsonFreeGroup(false);
+        $temp_freegroup = json_decode($free_group, true);
+        $temp_freegroup = json_decode($temp_freegroup[0], true);
+        // echo '<pre>';
+        // print_r($temp_freegroup);
+        // echo '</pre>';
+        // exit();
+        $config_relation = array();
+        $temprelation = $config->getRelationship();
+        foreach ($temprelation as $tr) {
+            $config_relation[] = $tr['group'];
+        }
+        
 
         $lists = $association->getProducts($date_wk);
         $date_lastweek = $association->getDateLastWeek();
@@ -65,54 +80,63 @@ class AssociationController extends Controller
             $last_week = ($date_lastweek != false) ? $association->getGroupLastWeek($value['size'], $date_lastweek) : '';
             $remaining_qty = 0;
 
-            if ($value['size'] == 250) {
-                echo $last_week;
-            }
 
             if (!empty($last_week)) {
+                $remaining_qty = $association->getNotUseBarcode($last_week);
 
-                $groupReceived = $association->getGroupReceived($last_week);
-                $barcodeUse = $association->getBarcodeUse($last_week);
-                if ($value['size'] == 250) {
-                    // echo $last_week;
-                    echo 'this has last wk';
-                    echo $groupReceived;
-                    echo ' ';
-                    echo $barcode_use;
-                }
-                if ($groupReceived !== false) {
-                    if ($barcodeUse == 0) {
-                        $remaining_qty = $groupReceived;
-                    } else {
-                        if ($groupReceived - $barcodeUse < 0) {
-                            $remaining_qty = 100000 - $barcodeUse;
-                        } else {
-                            $remaining_qty = $groupReceived - $barcodeUse;
-                        }
+                // $groupReceived = $association->getGroupReceived($last_week);
+                // $barcodeUse = $association->getBarcodeUse($last_week);
+                // if ($groupReceived !== false) {
+                //     if ($barcodeUse == 0) {
+                //         $remaining_qty = $groupReceived;
+                //     } else {
+                //         // if ($groupReceived - $barcodeUse < 0) {
+                //             // $remaining_qty = 100000 - $barcodeUse;
+                //         // } else {
+                //             // $remaining_qty = $groupReceived - $barcodeUse;
+                //         // }
 
-                    }
-                }
+                //     }
+                // }
             }
 
             // exit();
             // $remaining_qty = !empty($last_week) ? $association->getRemainingByGroup($last_week) : 0;
 
-            $relation_group = $association->getRelationshipBySize($value['size']);
+            $relation_group = $association->getRelationshipBySize($value['size'], $value['sum_prod']);
+
+            
 
             $propose = '';
             $propose_remaining_qty = '';
             $message = '';
 
-            if ($remaining_qty >= $value['sum_prod']) {
+            if (!empty($relation_group['group']) && !empty($relation_group['qty'])) {
+                $propose = $relation_group['group'];
+                $propose_remaining_qty = $relation_group['qty'];
+                $message = '<span class="text-primary">Relationship</span>';
+            } else if ($remaining_qty >= $value['sum_prod']) {
                 $propose = $last_week;
                 $propose_remaining_qty = $remaining_qty;
                 $message = 'Last Weeek';
-            } else if (!empty($relation_group)) {
-                $qty = $association->getRemainingByGroup($relation_group);
-                if ($propose_remaining_qty >= $value['sum_prod']) {
-                    $propose = $relation_group;
-                    $propose_remaining_qty = $qty;
-                    $message = 'Relationship';
+            } else {
+                $free = '';
+                $free_qty = '';
+
+                foreach ($temp_freegroup as $k => $fg) {
+                    if ($fg['qty']>=$value['sum_prod'] && !in_array($fg['group'], $config_relation)) {
+                        $free = $fg['group'];
+                        $free_qty = $fg['qty'];
+                        unset($temp_freegroup[$k]);
+                        $temp_freegroup = array_values($temp_freegroup);
+                        break;
+                    }
+                }
+    
+                if (!empty($free)&&!empty($free_qty)) {
+                    $propose = $free;
+                    $propose_remaining_qty = $free_qty;
+                    $message = !empty($free) ? '<span class="text-danger">Free Group</span>' : '';
                 }
             }
 
@@ -123,8 +147,8 @@ class AssociationController extends Controller
                 'sum_prod' => $value['sum_prod'],
                 'last_wk0' => !empty($last_week) ? sprintf('%03d', $last_week) : '',
                 'remaining_qty' => number_format((int) $remaining_qty, 0),
-                'propose' => !empty($propose) ? sprintf('%03d', $propose) : '',
-                'propose_remaining_qty' => number_format((int) $propose_remaining_qty, 0),
+                'propose' => !empty(strip_tags($propose)) ? sprintf('%03d', $propose) : '',
+                'propose_remaining_qty' => $propose_remaining_qty > 0 ? number_format((int) $propose_remaining_qty, 0) : '',
                 'message' => $text,
                 'save' => !empty($value['group_code']) ? sprintf('%03d', $value['group_code']) : '',
             );
@@ -347,7 +371,7 @@ class AssociationController extends Controller
         $lists = $association->getFreeGroup();
         $json = array();
         foreach ($lists as $value) {
-            $json[] = $value['group'];
+            $json[] = $value;
         }
         $fp = fopen(DOCUMENT_ROOT . 'uploads/freegroup.json', 'w');
         fwrite($fp, json_encode($json));
