@@ -17,6 +17,35 @@ class ImportController extends Controller
             }
         }
     }
+
+    private function linkIndex() {
+        echo '<br><hr><br><a href="index.php?route=import">Back</a>';
+        exit();
+    }
+
+    public function removeData() {
+        $import = $this->model('import');
+
+        $table = array(
+            'mb_master_barcode',
+            'mb_master_group',
+            'mb_master_product'
+        );
+        
+        $listtable = $_POST['listtable'];
+        foreach ($listtable as $t) {
+            if (in_array($t, $table)) {
+                $result = $import->removeTable($t);
+                echo 'Truncate '.$t.' : '.($result==1?'success':'fail').'<br>';
+            }
+        }
+
+        $this->linkIndex();
+
+        
+
+        // $this->redirect('import&successRemove');
+    }
     public function menual()
     {
         $import = $this->model('import');
@@ -31,6 +60,11 @@ class ImportController extends Controller
         $import = $this->model('import');
 
         if (method_post()) {
+
+
+            $this->rmSession('import_group');
+
+
             $dir = 'uploads/import/';
             $path = DOCUMENT_ROOT . $dir;
             $path_csv = DOCUMENT_ROOT . $dir;
@@ -87,20 +121,19 @@ class ImportController extends Controller
                     }
 
                     fclose($fp);
-                    $import->loadCSVAssociation($csv_file);
+                    $result = $import->loadCSVAssociation($csv_file);
+                    echo 'Import association with date '.($result?'success':'fail').'<br>';
                     $this->generateJsonFreeGroup();
                 }
             }
 
-            redirect('import&successAss');
+            // redirect('import&successAss');
+            $this->linkIndex();
         }
     }
-    public function index()
-    {
-        $data = array();
 
+    public function importAll() {
         $import = $this->model('import');
-
         if (method_post()) {
             $dir = 'uploads/import/';
             $path = DOCUMENT_ROOT . $dir;
@@ -123,7 +156,11 @@ class ImportController extends Controller
 
             // check file
             if ($file['error'] == 0 && in_array($fileType, $acceptFileType)) {
-                if (upload($file, $path, $newname)) {
+                $resultupload = upload($file, $path, $newname);
+                if ($resultupload) {
+
+                    echo 'Upload file : '.($resultupload==1?'success':'fail').'<br>';
+
                     // Read file to insert database
                     $config = $this->model('config');
                     $group = $this->model('group');
@@ -158,6 +195,7 @@ class ImportController extends Controller
                     }
                     fclose($fp);
                     $result = $import->loadCSVGroup($csv_file);
+                    echo 'Load table group : '.($result==1?'success':'fail').'<br>';
 
                     $col = array();
                     $row = 0;
@@ -192,16 +230,29 @@ class ImportController extends Controller
                     }
                     fclose($fp);
                     $import->loadCSVBarcode($csv_file);
-
-                    // $group->addDefaultGroup();
-
-                    redirect('import&success');
+                    echo 'Load table barcode : '.($result==1?'success':'fail').'<br>';
+                    echo $this->linkIndex();
                     exit();
 
                 }
 
             }
         }
+    }
+
+    public function index()
+    {
+        $data = array();
+
+        $import = $this->model('import');
+
+        $data['tablerm'] = array(
+            'mb_master_barcode',
+            'mb_master_group',
+            'mb_master_product'
+        );
+
+       
 
         $table = $import->getTables();
         $data['table'] = array();
@@ -232,7 +283,7 @@ class ImportController extends Controller
         $lists = $association->getFreeGroup();
         $json = array();
         foreach ($lists as $value) {
-            $json[] = $value['group'];
+            $json[] = $value;
         }
         $fp = fopen(DOCUMENT_ROOT . 'uploads/freegroup.json', 'w');
         fwrite($fp, json_encode($json));

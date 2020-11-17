@@ -9,6 +9,9 @@
 				$this->redirect('home');
 			} 
 		}
+		public function clearSession() {
+			$this->rmSession('import_group');
+		}
 		public function ajaxRemoveRange() {
 			$group_code = $_POST['group'];
 			$barcode_range = json_decode($_POST['barcode'], true);
@@ -33,6 +36,7 @@
 
 			$data['group'] = array();
 			if(method_post()){
+				$this->rmSession('import_group');
 				$this->importCSV();
 				$file = $this->getSession('import');
 				$row = 0;
@@ -47,6 +51,8 @@
 							$res = $barcode->findAndUpdateBarcode($groupcode, $thisbarcode);
 							if ($res==true && in_array($groupcode, $data['group'])==false) {
 								$data['group'][] = $groupcode;
+
+
 							}
 						}
 					}
@@ -54,6 +60,7 @@
 				}
 				fclose($file);
 			}
+
 			sort($data['group']);
 			if (count($data['group'])>0) {
 				$this->setSession('import_group', $data['group']);

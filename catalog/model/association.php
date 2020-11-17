@@ -122,13 +122,74 @@ class AssociationModel extends db
     {
         return $this->insert('product', $data);
     }
+
+    
+
+    public function getCountBarcode($group_code) {
+        $sql = "SELECT count(b.id_barcode) AS countqty FROM mb_master_barcode b WHERE b.barcode_prefix=$group_code AND b.barcode_flag=0 AND b.barcode_status=0 AND b.group_received=1 GROUP BY b.id_group ORDER BY b.id_barcode,b.id_group,b.barcode_flag,b.barcode_status,b.group_received";
+        $query = $this->query($sql);
+        return $query->row['countqty'];
+    }
     public function getProducts($date_wk)
     {
-        $this->select('p.id_product, p.size_product_code as size, p.sum_product as sum_prod, g.group_code');
-        $this->where("p.date_wk ", $date_wk . '%', 'LIKE');
-        $this->order_by('ABS(p.size_product_code)', 'ASC');
-        $this->join('group g', 'g.id_group=p.id_group', 'LEFT');
-        $query = $this->get('product p');
+//         SELECT 
+// p.size_product_code,
+// p.sum_product,
+// g.group_code,
+// (select count(*) as qty from mb_master_barcode b WHERE b.barcode_prefix = g.group_code AND b.barcode_status = 0 AND b.group_received = 1 AND b.barcode_flag = 0) as qty
+// FROM mb_master_product p
+// LEFT JOIN mb_master_group g ON g.id_group = p.id_group
+// WHERE p.date_wk = '2020-10-16'
+        // $this->select('p.id_product, p.size_product_code as size, p.sum_product as sum_prod, g.group_code');
+        // $this->where("p.date_wk ", $date_wk . '%', 'LIKE');
+        // $this->order_by('ABS(p.size_product_code)', 'ASC');
+        // $this->join('group g', 'g.id_group=p.id_group', 'LEFT');
+        // $query = $this->get('product p');
+        // $sql = "SELECT ";
+        //     $sql .= "p.id_product, ";
+        //     $sql .= "p.size_product_code AS size, ";
+        //     $sql .= "p.sum_product AS sum_prod, ";
+        //     $sql .= "g.group_code AS `last_week`, ";
+        //     $sql .= "(SELECT group_code FROM mb_master_group g2 WHERE g2.id_group = p.id_group) as save ";
+        //     // $sql .= "g2.group_code as save ";
+        //     // $sql .= "-- ,(SELECT count(b.id_barcode) AS countqty FROM mb_master_barcode b WHERE b.id_group=g.id_group AND b.barcode_flag=0 AND b.barcode_status=0 AND b.group_received=1 GROUP BY b.id_group ORDER BY b.id_barcode,b.id_group,b.barcode_flag,b.barcode_status,b.group_received) AS qty ";
+        // $sql .= "FROM ";
+        // $sql .= "mb_master_product p ";
+        //     $sql .= "INNER JOIN mb_master_product p2 ON p2.size_product_code = p.size_product_code ";
+        //     $sql .= "LEFT JOIN mb_master_group g ON g.id_group = p2.id_group  ";
+        //     // $sql .= "LEFT JOIN mb_master_group g2 ON g.id_group = p.id_group  ";
+        //     $sql .= "WHERE ";
+        //         $sql .= "p.date_wk = '$date_wk' ";
+        //         $sql .= "AND p.id_product != p2.id_product ";
+        // $sql .= "ORDER BY p.size_product_code ASC ";
+        // echo $sql;
+        // echo '<br>';
+
+        $sql = "SELECT ";
+        $sql .= "p.id_product, ";
+        $sql .= "p.size_product_code AS size, ";
+        $sql .= "p.sum_product AS sum_prod, ";
+        $sql .= "g.group_code AS `last_week`, ";
+        $sql .= "(SELECT count(*) as qty FROM mb_master_barcode b WHERE b.id_group = g.id_group AND b.group_received=1 AND b.barcode_status=0 AND b.barcode_flag=0) as remaining_qty, ";
+        $sql .= "(SELECT group_code FROM mb_master_group g2 WHERE g2.id_group = p.id_group) as save ";
+        $sql .= "FROM mb_master_product p ";
+        $sql .= "INNER JOIN mb_master_product p2 ON p2.size_product_code = p.size_product_code ";
+        $sql .= "LEFT JOIN mb_master_group g ON g.id_group = p2.id_group  ";
+        $sql .= "WHERE ";
+        $sql .= "p.date_wk = '$date_wk' ";
+        $sql .= "AND p.id_product != p2.id_product ";
+        $sql .= "ORDER BY p.size_product_code ASC ";
+        $query = $this->query($sql);
+        return $query->rows;
+    }
+    public function countAllBarcodeNotUsed() 
+    {
+        $sql = "SELECT * FROM (SELECT  ";
+        $sql .= "g.group_code ";
+        $sql .= ",(SELECT count(b.id_barcode) AS countqty FROM mb_master_barcode b WHERE b.id_group=g.id_group AND b.barcode_flag=0 AND b.barcode_status=0 AND b.group_received=1 GROUP BY b.id_group) AS qty ";
+        $sql .= "FROM mb_master_group g ";
+        $sql .= "WHERE g.barcode_use = 1 ) t WHERE t.qty is not null ";
+        $query = $this->query($sql);
         return $query->rows;
     }
     public function getDateLastWeek()
@@ -140,21 +201,29 @@ class AssociationModel extends db
         $query = $this->get('product p');
         return !empty($query->row['date_wk']) ? $query->row['date_wk'] : false;
     }
-    public function getGroupLastWeek($size, $date_lastwk)
+    public function getGroupLastWeek($size, $date_lastwk='')
     {
-        if ($date_lastwk != false) {
-            $this->where('p.id_group is not null', '', '');
-            $this->where('p.date_wk', $date_lastwk . '%', 'LIKE');
-            $this->where('p.size_product_code', $size);
-            $this->where('g.del', 0);
-            $this->where('g.date_added<=DATE_ADD(CURDATE(),INTERVAL-3 DAY)', '', '');
-            $this->select('g.group_code');
-            $this->join('group g', 'g.id_group=p.id_group', 'LEFT');
-            $query = $this->get('product p');
+        // if ($date_lastwk != false) {
+            // $this->where('p.id_group is not null', '', '');
+            // $this->where('p.date_wk', $date_lastwk . '%', 'LIKE');
+            // $this->where('p.size_product_code', $size);
+            // $this->where('g.del', 0);
+            // $this->where('g.date_added<=DATE_ADD(CURDATE(),INTERVAL-3 DAY)', '', '');
+            // $this->select('g.group_code');
+            // $this->join('group g', 'g.id_group=p.id_group', 'LEFT');
+            // $query = $this->get('product p');
+            // return !empty($query->row['group_code']) ? $query->row['group_code'] : '';
+            $sql = "SELECT g.group_code FROM mb_master_product p  ";
+            $sql .= "LEFT JOIN mb_master_group g ON g.id_group = p.id_group ";
+            $sql .= "WHERE g.id_group is not null AND p.size_product_code = $size ";
+            $sql .= "GROUP BY p.date_wk ORDER BY p.date_wk DESC LIMIT 1 ";
+            $query = $this->query($sql);
+            // echo $sql;
+            // echo '<br>';
             return !empty($query->row['group_code']) ? $query->row['group_code'] : '';
-        } else {
-            return '';
-        }
+        // } else {
+            // return '';
+        // }
     }
     public function getNotUseBarcode($group_code) {
         $sql = "SELECT count(*) as qty  FROM mb_master_barcode WHERE barcode_prefix = $group_code AND barcode_flag = 0 AND group_received = 1 AND barcode_status = 0 ";
@@ -237,7 +306,7 @@ class AssociationModel extends db
         $sql = "SELECT * FROM ( ";
             $sql .= "SELECT  ";
             $sql .= "g.group_code as `group`, ";
-            $sql .= "(SELECT count(b.id_barcode) as qty FROM mb_master_barcode b WHERE b.barcode_prefix = g.group_code AND group_received = 1 AND barcode_status = 0 AND b.date_modify BETWEEN '$day2' AND '$day1' GROUP BY b.id_group, b.barcode_prefix ORDER BY b.id_barcode,b.id_group) as qty ";
+            $sql .= "(SELECT count(b.id_barcode) as qty FROM mb_master_barcode b WHERE b.barcode_prefix = g.group_code AND b.group_received = 1 AND b.barcode_flag = 0 AND b.barcode_status = 0 AND b.date_modify BETWEEN '$day2' AND '$day1' GROUP BY b.id_group, b.barcode_prefix ORDER BY b.id_barcode,b.id_group) as qty ";
             $sql .= "FROM mb_master_group g ";
             $sql .= "WHERE ";
             $sql .= "g.barcode_use = 1 ";
@@ -261,6 +330,14 @@ class AssociationModel extends db
         $this->join('config_relationship cr', 'cr.`group` = cb.`group`', 'LEFT');
         $this->order_by('ABS(cb.`group`)', 'ASC');
         $query = $this->get('config_barcode cb');
+        return $query->rows;
+    }
+
+    public function getOldSync() {
+        $query = $this->query("SELECT config_value FROM mb_master_config WHERE config_key = 'config_date_size'");
+        $config = $query->row['config_value'];
+        $sql = "SELECT g.group_code FROM mb_master_product p LEFT JOIN mb_master_group g ON g.id_group=p.id_group WHERE p.date_modify>=DATE_ADD(CURDATE(),INTERVAL-$config DAY) ";
+        $query = $this->query($sql);
         return $query->rows;
     }
 

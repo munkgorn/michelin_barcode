@@ -111,11 +111,12 @@
 									<td class="text-center"><?php echo $val['size']; ?></td>
 									<td class="text-center"><?php echo number_format($val['sum_prod'], 0); ?></td>
 									<td><span class="last_wk" row="<?php echo $key; ?>"><?php echo $val['last_wk0']; ?></span></td>
-									<td><?php echo !empty($val['remaining_qty']) ? $val['remaining_qty'] : (!empty($val['last_wk0']) ? 0 : ''); ?></td>
+									<td><?php echo $val['remaining_qty'];?></td>
 									<td class="text-center"><span class="propose" row="<?php echo $key; ?>"><?php echo $val['propose']; ?></span></td>
 									<td class="text-center"><?php echo $val['propose_remaining_qty']; ?></td>
 									<td class="text-center"><?php echo $val['message']; ?></td>
 									<td class="p-0">
+										<input type="hidden" name="propose[<?php echo $val['id_product'];?>]" value="<?php echo (int)strip_tags($val['propose']);?>" />
 										<input type="text" name="id_group[<?php echo $val['id_product']; ?>]" data-key="<?php echo $val['id_product'];?>" class="form-control form-control-sm txt_group" value="<?php echo $val['save']; ?>" style="height:43px;border-radius:0;" />
 									</td>
 								</tr>
@@ -136,7 +137,10 @@
 	</div>
 	<?php }?>
 </div>
+
+
 <input type="hidden" name="date_wk" id="date_wk" value="<?php echo $date_wk; ?>">
+
 <div class="modal fade" id="exampleModalCenter" tabindex="-1" role="dialog" aria-labelledby="exampleModalCenterTitle" aria-hidden="true" style="display: none;">
 	<div class="modal-dialog modal-dialog-centered" role="document">
 		<div class="modal-content">
@@ -189,8 +193,6 @@
 	</div>
 	<!--end modal-dialog-->
 </div>
-
-
 
 <div class="modal fade" id="ModalSize" tabindex="-1" role="dialog" aria-labelledby="ModalSize1" aria-hidden="true" style="display: none;">
     <div class="modal-dialog" role="document">
@@ -257,6 +259,21 @@ $(document).ready(function () {
 		placeholder: 'Select date upload file',
 		allowClear: true
 	});
+
+	// $('#maxxkeEditable tbody tr').each(function(index, value) {
+	// 	let thistr = $(this);
+	// 	let lastwk = thistr.children('td:eq(3)').children('.last_wk').html();
+	// 	$.ajax({
+	// 		type: "POST",
+	// 		url: "index.php?route=association/ajaxCountBarcode",
+	// 		data: {group: lastwk},
+	// 		async: true,
+	// 		success: function (response) {
+	// 			thistr.children('td:eq(4)').html(addCommas(response));
+	// 		}
+	// 	});
+		
+	// });
 
 	// $.get('index.php?route=barcode/jsonFreeGroup', function(data){
 	// 	var json = JSON.parse(data);

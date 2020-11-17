@@ -1,6 +1,11 @@
 
 <?php 
 	class ImportModel extends db {
+
+        public function removeTable($table) {
+            return $this->query("truncate table $table");
+        }
+
         public function getTables() {
             $query = $this->query('SELECT TABLE_NAME FROM information_schema.tables WHERE TABLE_SCHEMA = "fsoftpro_barcode" AND TABLE_TYPE = "BASE TABLE"');
             return $query->rows;
@@ -53,6 +58,7 @@
             LINES TERMINATED BY '\n' IGNORE 1 ROWS ( id_user,size_product_code,sum_product,product_name,date_wk);";
             $result = $this->query($sql);
 
-            $this->query("UPDATE ".PREFIX."product p LEFT JOIN mb_master_group g ON g.`group_code`=p.product_name SET p.id_group = g.id_group, p.product_name = null WHERE p.product_name is not null");
+            $this->query("UPDATE ".PREFIX."product p LEFT JOIN mb_master_group g ON g.`group_code`=p.product_name SET p.date_added = p.date_wk, p.date_modify = p.date_wk, p.id_group = g.id_group, p.product_name = null WHERE p.product_name is not null");
+            return $result;
         }
     }

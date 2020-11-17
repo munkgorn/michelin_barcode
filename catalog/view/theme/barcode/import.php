@@ -48,19 +48,31 @@
 		<!--end card-header-->
 		<div class="card-body">
 
+		<div class="progress mb-3" style="height:20px;">
+			<div id="mainload" class="progress-bar progress-bar-striped progress-bar-animated" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100" style="width: 0%">0%</div>
+		</div>
+
 			<div class="table-responsive">
 				<table class="table table-bordered" id="table_result">
 					<thead>
 						<tr>
 							<th>Group Prefix</th>
-							<th width="25%"></th>
+							<th width="50%">Loading</th>
+							<th width="25%">Message</th>
+							<!-- <th width="15%">Action</th> -->
 						</tr>
 					</thead>
 					<tbody>
                     <?php foreach ($group as $value) : ?>
                         <tr>
-                            <td><?php echo $value;?></td>
-							<td><button class="findrange btn btn-primary btn-sm" data-toggle="modal" data-target="#modal_show_range" data-group="<?php echo (int)$value;?>">Find range not used.</button></td>
+                            <td><?php echo sprintf('%03d',$value);?></td>
+							<td>
+								<div class="progress">
+									<div class="load<?php echo $value;?> progress-bar progress-bar-striped progress-bar-animated" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100" style="width: 0%"></div>
+								</div>
+							</td>
+							<td></td>
+							<!-- <td><button class="findrange btn btn-primary btn-sm" data-toggle="modal" data-target="#modal_show_range" data-group="<?php echo (int)$value;?>">Find range not used.</button></td> -->
                         </tr>
                     <?php endforeach; ?>
 					</tbody>
@@ -127,6 +139,118 @@ $(document).ready(function () {
 		}
 		return x1 + x2;
 	}
+
+	const countall = parseInt('<?php echo count($group);?>');
+	const perItem = 100 / countall;
+
+	function setMain(add) {
+		const ele = $('#mainload');
+		let nowpercent = parseFloat(ele.attr('aria-valuenow'));
+		let newpercent = nowpercent + parseFloat(add);
+		if (newpercent>100) {
+			newpercent = 100.00;
+		}
+		newpercent = newpercent.toFixed(2);
+
+		ele.attr('aria-valuenow', newpercent).css('width', newpercent+'%').html(newpercent+'%');
+
+		if (newpercent==100.00) {
+			$.get("index.php?route=barcode/clearSession", data,
+				function (data, textStatus, jqXHR) {
+					window.location.href="index.php?route=loading/someone&redirect=association&key=freegroup,year,barcode";		
+				},
+			);
+			
+		}
+	}
+
+	const success = [ 'background: green', 'color: white', 'display: block', 'text-align: center'].join(';');
+	const failure = [ 'background: red', 'color: white', 'display: block', 'text-align: center'].join(';');
+
+	// Loop check all
+	$('#table_result tbody tr').each(function(index,value){
+		let el = $(this).children('td:eq(0)');
+		let groupcode = parseInt(el.html());
+		let msg = $(this).children('td:eq(2)');
+		let barcodeRange = [];
+		$('.load'+groupcode).attr('aria-valuenow','5').css('width','5%');
+		console.log(groupcode + ' start loading...');
+		msg.html('Start loading...');
+		$.ajax({
+			type: "POST",
+			url: "index.php?route=barcode/ajaxGetRange",
+			data: {group:groupcode},
+			dataType: "json",
+			success: function (response) {
+				// console.info('%c '+groupcode+' success get range', success);
+				if (response.length>0) {
+					$('.load'+groupcode).attr('aria-valuenow','20').css('width','20%');
+					let nowwidth = parseInt($('.load'+groupcode).attr('aria-valuenow'));
+					$.each(response, function(i,v){
+						if (v.qty < parseInt('<?php echo $maximum;?>')) {
+							barcodeRange.push(v.start+'-'+v.end);
+							nowwidth++;
+							$('.load'+groupcode).attr('aria-valuenow',nowwidth).css('width',nowwidth+'%');
+						}
+					});
+
+					// console.log('Barcode Range : ');
+					console.info('%c '+groupcode+' success get range ('+(barcodeRange.length)+') ', success);
+					if (barcodeRange.length>0) {
+						msg.html('Found barcode range < <?php echo $maximum;?> : '+barcodeRange.length+' unit.');
+						console.table(barcodeRange);
+						$.ajax({
+							type: "POST",
+							url: "index.php?route=barcode/ajaxRemoveRange",
+							data: {group:groupcode,barcode:JSON.stringify(barcodeRange)},
+							success: function (res) {
+								console.info('%c '+groupcode+' done ', success);
+								msg.html('Done, auto remove barcode range < <?php echo $maximum;?> success.');
+								setMain(perItem);
+								$('.load'+groupcode).attr('aria-valuenow','100').css('width','100%');
+							}
+						});
+					} else {
+						msg.html('Not found barcode range < <?php echo $maximum;?>');
+						console.info('%c '+groupcode+' not found range length < 50 ', failure);
+						setMain(perItem);
+						$('.load'+groupcode).attr('aria-valuenow','100').css('width','100%');
+					}
+
+					
+					
+				} else {
+					msg.html('Not found someone, done!!');
+					console.info('%c '+groupcode+' not found range ', failure);
+					setMain(perItem);
+					$('.load'+groupcode).attr('aria-valuenow','100').css('width','100%');
+				}
+			}
+		});
+	});
+	// let table = $('#table_result');
+	// table.children('tbody').each('tr', function(index, value){
+	// 	console.log(value);
+		// $.ajax({
+		// 	type: "POST",
+		// 	url: "index.php?route=barcode/ajaxGetRange",
+		// 	data: {group:groupdata},
+		// 	dataType: "json",
+		// 	success: function (response) {
+		// 		console.log(response);
+		// 		$('.load'+groupdata).attr('aria-valuenow','100').css('width','100');
+		// 	}
+		// });
+		// $.post("index.php?route=barcode/ajaxGetRange", {group: groupdata},
+		// 	function (data, textStatus, jqXHR) {
+		// 		console.log(data);
+		// 		$('.load'+groupdata).attr('aria-valuenow','100').css('width','100');
+		// 	},
+		// 	"json"
+		// );
+	// });
+
+
 	// $('.findrange').click(function() {
 	// 	let group = $(this).data('group');
 	// 	let modal = $('#modal_show_range');
@@ -166,53 +290,53 @@ $(document).ready(function () {
 			}
 		}
 	});
-	$('#modal_show_range').on('show.bs.modal', function (event) {
-		var button = $(event.relatedTarget) // Button that triggered the modal
-		var groupdata = button.data('group') // Extract info from data-* attributes
-		var modal = $(this)
-		var table = $('#modallist');
-		modal.find('#grouptitle').html(groupdata);
-		modal.find('.btnrm').attr('data-group', groupdata);
+	// $('#modal_show_range').on('show.bs.modal', function (event) {
+	// 	var button = $(event.relatedTarget) // Button that triggered the modal
+	// 	var groupdata = button.data('group') // Extract info from data-* attributes
+	// 	var modal = $(this)
+	// 	var table = $('#modallist');
+	// 	modal.find('#grouptitle').html(groupdata);
+	// 	modal.find('.btnrm').attr('data-group', groupdata);
 
-		modal.find('[name=barcodeall],[name=barcodemax]').val('[]');
-		modal.find('[name=barcodegroup]').val(groupdata);
+	// 	modal.find('[name=barcodeall],[name=barcodemax]').val('[]');
+	// 	modal.find('[name=barcodegroup]').val(groupdata);
 
-		modal.find('button').attr('disabled','disabled').addClass('disabled');
-		table.html('<tr><td colspan="2" class="text-center"><i class="fas fa-spinner fa-pulse"></i> Loading please wait...</td></tr>');
-		$.post("index.php?route=barcode/ajaxGetRange", {group: groupdata},
-			function (data, textStatus, jqXHR) {
-				if (data.length==0) {
-					table.html("<tr><td colspan='2' class='text-center'>Not found</td></tr>");
-				} else if (data.length>0) {
-					modal.find('button').removeAttr('disabled').removeClass('disabled');
-					var html = '';
-					var ball = JSON.parse(modal.find('[name=barcodeall]').val());
-					var bmax = JSON.parse(modal.find('[name=barcodemax]').val());
-					$.each(data, function (index,value) { 
-						var style = '';
-						ball.push(value.start+'-'+value.end);
-						if (value.qty < parseInt('<?php echo $maximum;?>')) {
-							style = 'text-danger';
-							bmax.push(value.start+'-'+value.end);
-						}
-						 html += '<tr><td class="'+style+'">'+value.start+' - '+value.end+'</td><td class="'+style+'">'+addCommas(value.qty)+'</td></tr>';
-					});
-					modal.find('[name=barcodeall]').val(JSON.stringify(ball));
-					modal.find('[name=barcodemax]').val(JSON.stringify(bmax));
+	// 	modal.find('button').attr('disabled','disabled').addClass('disabled');
+	// 	table.html('<tr><td colspan="2" class="text-center"><i class="fas fa-spinner fa-pulse"></i> Loading please wait...</td></tr>');
+	// 	$.post("index.php?route=barcode/ajaxGetRange", {group: groupdata},
+	// 		function (data, textStatus, jqXHR) {
+	// 			if (data.length==0) {
+	// 				table.html("<tr><td colspan='2' class='text-center'>Not found</td></tr>");
+	// 			} else if (data.length>0) {
+	// 				modal.find('button').removeAttr('disabled').removeClass('disabled');
+	// 				var html = '';
+	// 				var ball = JSON.parse(modal.find('[name=barcodeall]').val());
+	// 				var bmax = JSON.parse(modal.find('[name=barcodemax]').val());
+	// 				$.each(data, function (index,value) { 
+	// 					var style = '';
+	// 					ball.push(value.start+'-'+value.end);
+	// 					if (value.qty < parseInt('<?php echo $maximum;?>')) {
+	// 						style = 'text-danger';
+	// 						bmax.push(value.start+'-'+value.end);
+	// 					}
+	// 					 html += '<tr><td class="'+style+'">'+value.start+' - '+value.end+'</td><td class="'+style+'">'+addCommas(value.qty)+'</td></tr>';
+	// 				});
+	// 				modal.find('[name=barcodeall]').val(JSON.stringify(ball));
+	// 				modal.find('[name=barcodemax]').val(JSON.stringify(bmax));
 
-					if (ball.length==0) {
-						modal.find('button.rmall').attr('disabled','disabled').addClass('disabled');
-					}
-					if (bmax.length==0) {
-						modal.find('button.rmmax').attr('disabled','disabled').addClass('disabled');
-					}
+	// 				if (ball.length==0) {
+	// 					modal.find('button.rmall').attr('disabled','disabled').addClass('disabled');
+	// 				}
+	// 				if (bmax.length==0) {
+	// 					modal.find('button.rmmax').attr('disabled','disabled').addClass('disabled');
+	// 				}
 
-					table.html(html);
-				}
-				// console.log(data.length);
-			},
-			"json"
-		);
-	})
+	// 				table.html(html);
+	// 			}
+	// 			// console.log(data.length);
+	// 		},
+	// 		"json"
+	// 	);
+	// })
 });
 </script>

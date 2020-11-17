@@ -4,6 +4,7 @@ class ExportController extends Controller {
 
     public function association() {
         $association = $this->model('association');
+        $config = $this->model('config');
         $date_wk = get('date');
 
         $excel = array();
@@ -19,66 +20,92 @@ class ExportController extends Controller {
             'Validated',
         );
 
-        $freegroup = $this->jsonFreeGroup(false);
-        $jsonfreegroup = json_decode($freegroup, true);
-        $freegroup = json_decode($jsonfreegroup[0], true);
+        // Free Group
+        $free_group = $this->jsonFreeGroup(false);
+        $temp_freegroup = json_decode($free_group, true);
+        $temp_freegroup = json_decode($temp_freegroup[0], true);
+        $freegroup = array();
+        foreach ($temp_freegroup as $v) {
+            $freegroup[$v['group']] = $v['qty'];
+        }
+
+        // Config Relationship
+        $config_relation = array();
+        $temprelation = $config->getRelationship();
+        foreach ($temprelation as $tr) {
+            $config_relation[] = $tr['group'];
+        }
+
+        $oldSync = $association->getOldSync(); // Group barcode use with old association in config day
+        $beforeSync = array(); 
+        foreach ($oldSync as $v) {
+            $beforeSync[] = $v['group_code'];
+        }
 
         $i=0;
 
-        $date_lastweek = $association->getDateLastWeek();
-        $products = $association->getProducts($date_wk);
-        foreach ($products as $product) {
-            $last_week = ($date_lastweek!=false) ? $association->getGroupLastWeek($product['size'], $date_lastweek) : '';
-            $remaining_qty = 0;
-            if (!empty($last_week)) {
-                $groupReceived = $association->getGroupReceived($last_week);
-                $barcodeUse = $association->getBarcodeUse($last_week);
-                if ($groupReceived!=false) {
-                    if ($barcodeUse==0) {
-                        $remaining_qty = $groupReceived;
-                    } else {
-                        $remaining_qty = $groupReceived - $barcodeUse;
-                    }
-                }
-            }
-            // $remaining_qty = !empty($last_week) ? $association->getRemainingByGroup($last_week) : 0;
+        $lists = $association->getProducts($date_wk);
+        foreach ($lists as $key => $value) {
 
-            $relation_group = $association->getRelationshipBySize($product['size']);
+
+            $last_week = $value['last_week'];
+            $remaining_qty = $value['remaining_qty'];
+
+            $relation_group = $association->getRelationshipBySize($value['size'], $value['sum_prod']);
 
             $propose = '';
             $propose_remaining_qty = '';
             $message = '';
 
-            if ($remaining_qty>=$product['sum_prod']) {
-                $propose = $last_week;
-                $propose_remaining_qty = $remaining_qty;
-                $message = 'Last Weeek' ;
-            } else if (!empty($relation_group)) {
-                $qty = $association->getRemainingByGroup($relation_group);
-                if ($propose_remaining_qty>=$product['sum_prod']) {
-                    $propose = $relation_group;
-                    $propose_remaining_qty = $qty;
-                    $message = 'Relationship';
+            if ($value['sum_prod']>0) {
+                if (!empty($relation_group['group']) && !empty($relation_group['qty'])) {
+                    $propose = $relation_group['group'];
+                    $propose_remaining_qty = $relation_group['qty'];
+                    $message = '<span class="text-primary">Relationship</span>';
+                    unset($freegroup[$relation_group['group']]);
+                } 
+                else if ($remaining_qty >= $value['sum_prod']) {
+                    $propose = $last_week;
+                    $propose_remaining_qty = $remaining_qty;
+                    $message = 'Last Weeek';
+                    unset($freegroup[$last_week]);
+                } 
+                else {
+                    $free = '';
+                    $free_qty = '';
+
+                    if (count($freegroup)>0) {
+                        $keyfirst = array_keys($freegroup)[0];
+                        if (!in_array($keyfirst,$beforeSync)) {
+                            if ($freegroup[$keyfirst]>=$value['sum_prod'] && !in_array($keyfirst, $config_relation)) {
+                                $free = $keyfirst;
+                                $free_qty = $freegroup[$keyfirst];   
+                                unset($freegroup[$keyfirst]); 
+                            }
+                        }
+                    }
+        
+                    if (!empty($free)&&!empty($free_qty)) {
+                        $propose = $free;
+                        $propose_remaining_qty = $free_qty;
+                        $message = !empty($free) ? '<span class="text-danger">Free Group</span>' : '';
+                    }
                 }
-            } else { // Use free group in json file
-                $propose = (int)$freegroup[$i];
-                $message = 'Free group';
-                $i++;
             }
 
             $text = '';
             $text = $message;
 
             $excel[] = array(
-                'id_product' => $product['id_product'],
-                'size' => $product['size'],
-                'sum_prod' => $product['sum_prod'],
+                'id_product' => $value['id_product'],
+                'size' => $value['size'],
+                'sum_prod' => $value['sum_prod'],
                 'last_wk0' => $last_week,
-                'remaining_qty' => number_format((int)$remaining_qty,0),
+                'remaining_qty' => number_format((int)round($remaining_qty,0),0),
                 'propose' => $propose,
-                'propose_remaining_qty' => number_format((int)$propose_remaining_qty,0),
+                'propose_remaining_qty' => number_format((int)round($propose_remaining_qty,0),0),
                 'message' => $text,
-                'save' => $product['group_code']
+                'save' => $value['save']
             );
 
           
