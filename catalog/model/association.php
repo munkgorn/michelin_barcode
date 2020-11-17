@@ -165,6 +165,9 @@ class AssociationModel extends db
         // echo $sql;
         // echo '<br>';
 
+        $query = $this->query("SELECT date_wk FROM mb_master_product WHERE date_wk < '$date_wk' GROUP BY date_wk ORDER BY date_wk DESC LIMIT 0,1");
+        $last_datewk = $query->row['date_wk'];
+
         $sql = "SELECT ";
         $sql .= "p.id_product, ";
         $sql .= "p.size_product_code AS size, ";
@@ -178,6 +181,7 @@ class AssociationModel extends db
         $sql .= "WHERE ";
         $sql .= "p.date_wk = '$date_wk' ";
         $sql .= "AND p.id_product != p2.id_product ";
+        $sql .= "AND p2.date_wk = '$last_datewk' ";
         $sql .= "ORDER BY p.size_product_code ASC ";
         $query = $this->query($sql);
         return $query->rows;

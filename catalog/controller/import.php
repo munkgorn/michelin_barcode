@@ -112,7 +112,7 @@ class ImportController extends Controller
                             $this->getSession('id_user'),
                             $value[0],
                             (int) $value[1],
-                            $value[2],
+                            (isset($value[2])?$value[2]:''),
                             $date,
                         );
                         fputcsv($fp, $insert, ',', chr(0));
