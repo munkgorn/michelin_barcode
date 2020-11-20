@@ -8,5 +8,5 @@
 /uploads/freegroup.json
 /uploads/default_purchase.json
 /uploads/default_year.json
-/uploads/
+/uploads/*
 system/lib/PHPExcel/
