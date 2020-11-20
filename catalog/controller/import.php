@@ -96,6 +96,11 @@ class ImportController extends Controller
                     $dir = 'uploads/mockupdata/';
                     $path = DOCUMENT_ROOT . $dir;
                     $path_csv = DOCUMENT_ROOT . $dir;
+                    if (!file_exists($path)) {
+                        $oldmask = umask(0);
+                        mkdir($path, 0777);
+                        umask($oldmask);
+                    }
                     $newname = 'import_group';
                     $file_csv = 'CSV_' . $newname . '.csv';
                     $csv_file = $path_csv . $file_csv;
@@ -171,6 +176,11 @@ class ImportController extends Controller
                     $dir = 'uploads/mockupdata/';
                     $path = DOCUMENT_ROOT . $dir;
                     $path_csv = DOCUMENT_ROOT . $dir;
+                    if (!file_exists($path)) {
+                        $oldmask = umask(0);
+                        mkdir($path, 0777);
+                        umask($oldmask);
+                    }
                     $newname = 'import_group';
                     $file_csv = 'CSV_' . $newname . '.csv';
                     $csv_file = $path_csv . $file_csv;
@@ -202,6 +212,11 @@ class ImportController extends Controller
                     $dir = 'uploads/mockupdata/';
                     $path = DOCUMENT_ROOT . $dir;
                     $path_csv = DOCUMENT_ROOT . $dir;
+                    if (!file_exists($path)) {
+                        $oldmask = umask(0);
+                        mkdir($path, 0777);
+                        umask($oldmask);
+                    }
                     $file_csv = 'import_barcode';
                     $json = array();
                     $csv_file = $path_csv . $file_csv . '.csv';

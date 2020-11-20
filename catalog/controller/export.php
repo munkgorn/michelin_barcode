@@ -385,6 +385,11 @@ class ExportController extends Controller {
         $purchase->clearAjaxPurchase(); // clear data ajax
 
         $doc = DOCUMENT_ROOT . 'uploads/export/';
+        if (!file_exists($doc)) {
+            $oldmask = umask(0);
+            mkdir($doc, 0777);
+            umask($oldmask);
+        }
         $name = 'export_group_date'.$filter['date_modify'].'-group'.$filter['group_code'].'-barcode'.$filter['barcode_use'].'_'.date('YmdHis').'.xlsx';
 
         // $file = whiteExcel($excel, $doc, $name);
@@ -494,6 +499,11 @@ class ExportController extends Controller {
         // }
 
         $doc = DOCUMENT_ROOT . 'uploads/export/';
+        if (!file_exists($doc)) {
+            $oldmask = umask(0);
+            mkdir($doc, 0777);
+            umask($oldmask);
+        }
         $name = 'export_importbarcode_date'.$date.'_'.date('YmdHis').'.xlsx';
         $file = whiteExcel($excel, $doc, $name);
         header('location:uploads/export/'.$file);
@@ -548,6 +558,11 @@ class ExportController extends Controller {
         }
 
         $doc = DOCUMENT_ROOT . 'uploads/export/';
+        if (!file_exists($doc)) {
+            $oldmask = umask(0);
+            mkdir($doc, 0777);
+            umask($oldmask);
+        }
         $name = 'export_report-remaining-qty_'.date('YmdHis').'.xlsx';
 
         $objPHPExcel = new PHPExcel();
@@ -636,6 +651,11 @@ class ExportController extends Controller {
         }
 
         $doc = DOCUMENT_ROOT . 'uploads/export/';
+        if (!file_exists($doc)) {
+            $oldmask = umask(0);
+            mkdir($doc, 0777);
+            umask($oldmask);
+        }
         $name = 'export_config_barcode_'.$date.'_'.date('YmdHis').'.xlsx';
 
         
@@ -662,6 +682,11 @@ class ExportController extends Controller {
 
 
         $doc = DOCUMENT_ROOT . 'uploads/export/';
+        if (!file_exists($doc)) {
+            $oldmask = umask(0);
+            mkdir($doc, 0777);
+            umask($oldmask);
+        }
         $name = 'export_config_relation_'.$date.'_'.date('YmdHis').'.xlsx';
         $file = whiteExcel($excel, $doc, $name);
         header('location:uploads/export/'.$file);

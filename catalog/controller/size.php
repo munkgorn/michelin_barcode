@@ -11,7 +11,19 @@
 	    		if(isset($_FILES['excel_input'])){
 			    	$file = $_FILES['excel_input'];
 			    	$path = 'uploads/import_xlsx_size/';
-			    	$path_csv = 'uploads/convert_xlsx_size_csv/';
+					$path_csv = 'uploads/convert_xlsx_size_csv/';
+					if (!file_exists($path)) {
+						$oldmask = umask(0);
+						mkdir($path, 0777);
+						umask($oldmask);
+					}
+					if (!file_exists($path_csv)) {
+						$oldmask = umask(0);
+						mkdir($path_csv, 0777);
+						umask($oldmask);
+					}
+				
+					
 			    	$name = time().'_'.rand().'_'.pure_text($file['name']);
 			    	$full_path = $path.$name;
 			    	$result_upload = upload($file,$path,$name);

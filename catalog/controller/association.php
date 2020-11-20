@@ -206,9 +206,17 @@ class AssociationController extends Controller
 
             $date_wk = '';
 
+            
+
             $dir = 'uploads/association/';
             $path = DOCUMENT_ROOT . $dir;
             $path_csv = DOCUMENT_ROOT . $dir;
+
+            if (!file_exists($path)) {
+                $oldmask = umask(0);
+                mkdir($path, 0777);
+                umask($oldmask);
+            }
 
             $file = $_FILES['excel_input'];
             $fileType = strtolower(pathinfo(basename($file["name"]), PATHINFO_EXTENSION));
