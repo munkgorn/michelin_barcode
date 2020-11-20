@@ -8,7 +8,5 @@
 /uploads/freegroup.json
 /uploads/default_purchase.json
 /uploads/default_year.json
-/uploads/*
-/fsoftpro/*
-system/lib/*
+/uploads/
 system/lib/PHPExcel/
