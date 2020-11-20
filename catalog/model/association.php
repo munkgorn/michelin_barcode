@@ -316,8 +316,6 @@ class AssociationModel extends db
             $sql .= "g.group_code as `group`, ";
             $sql .= "(SELECT count(b.id_barcode) as qty FROM mb_master_barcode b WHERE b.barcode_prefix = g.group_code AND b.group_received = 1 AND b.barcode_flag = 0 AND b.barcode_status = 0 AND b.date_modify BETWEEN '$day2' AND '$day1' GROUP BY b.id_group, b.barcode_prefix ORDER BY b.id_barcode,b.id_group) as qty ";
             $sql .= "FROM mb_master_group g ";
-            // $sql .= "WHERE ";
-            //$sql .= "g.barcode_use = 1 ";
         $sql .= ") t ";
         $sql .= "WHERE t.qty is not null ";
         // echo $sql;
@@ -344,7 +342,7 @@ class AssociationModel extends db
     public function getOldSync() {
         $query = $this->query("SELECT config_value FROM mb_master_config WHERE config_key = 'config_date_size'");
         $config = $query->row['config_value'];
-        $sql = "SELECT g.group_code FROM mb_master_product p LEFT JOIN mb_master_group g ON g.id_group=p.id_group WHERE p.date_modify>=DATE_ADD(CURDATE(),INTERVAL-$config DAY) ";
+        $sql = "SELECT g.group_code FROM mb_master_product p LEFT JOIN mb_master_group g ON g.id_group=p.id_group WHERE p.date_modify>=DATE_ADD(CURDATE(),INTERVAL-$config DAY) AND p.date_modify  ";
         // $sql = "SELECT g.group_code FROM mb_master_product p LEFT JOIN mb_master_group g ON g.id_group=p.id_group WHERE p.date_modify>=DATE_ADD('2020-10-16',INTERVAL-$config DAY) ";
         $query = $this->query($sql);
         return $query->rows;
