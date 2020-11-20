@@ -89,7 +89,7 @@ class AssociationController extends Controller
         $config_relation = array();
         $temprelation = $config->getRelationship();
         foreach ($temprelation as $tr) {
-            $config_relation[] = $tr['group'];
+            $config_relation[] = (int)$tr['group'];
         }
 
         $oldSync = $association->getOldSync(); // Group barcode use with old association in config day
@@ -97,27 +97,36 @@ class AssociationController extends Controller
         foreach ($oldSync as $v) {
             $beforeSync[] = $v['group_code'];
         }
-        
-        // $date_lastweek = $association->getDateLastWeek();
 
         $lists = $association->getProducts($date_wk);
-        // echo '<pre>';
-        // print_r($lists);
-        // echo '</pre>';
+        $notuse = array();
         foreach ($lists as $key => $value) {
-
-            // $last_week = ($date_lastweek != false) ? $association->getGroupLastWeek($value['size'], $date_lastweek) : '';
-            // $last_week = $association->getGroupLastWeek($value['size']);
             $last_week = $value['last_week'];
-            $remaining_qty = $value['remaining_qty'];
-            // if (!empty($last_week)) {
-                // $remaining_qty = $association->getNotUseBarcode($last_week);
-            // }
+            $remaining_qty = (int)$value['remaining_qty'];
+            // $remaining_qty = 0;
 
             $relation_group = $association->getRelationshipBySize($value['size'], $value['sum_prod']);
-            // $relation_group = array();
+            $lists[$key]['relation_group'] = $relation_group;
 
-            
+            if ($value['sum_prod']>0) {
+                if (!empty($relation_group['group']) && !empty($relation_group['qty'])) {
+                    if (!in_array((int)$relation_group['group'],$notuse)) {
+                        $notuse[] = (int)$relation_group['group'];
+                    }
+                }
+                else if ($remaining_qty >= $value['sum_prod']) {
+                    if (!in_array((int)$last_week,$notuse)) {
+                        $notuse[] = (int)$last_week;
+                    }
+                }
+            }
+        }
+        foreach ($lists as $key => $value) {
+            $last_week = $value['last_week'];
+            $remaining_qty = (int)$value['remaining_qty'];
+            // $remaining_qty = 0;
+
+            $relation_group = $value['relation_group'];
 
             $propose = '';
             $propose_remaining_qty = '';
@@ -128,7 +137,7 @@ class AssociationController extends Controller
                     $propose = $relation_group['group'];
                     $propose_remaining_qty = $relation_group['qty'];
                     $message = '<span class="text-primary">Relationship</span>';
-                    unset($freegroup[$relation_group['group']]);
+                    unset($freegroup[(int)$relation_group['group']]);
                 } 
                 else if ($remaining_qty >= $value['sum_prod']) {
                     $propose = $last_week;
@@ -141,26 +150,26 @@ class AssociationController extends Controller
                     $free_qty = '';
 
                     if (count($freegroup)>0) {
-                        $keyfirst = array_keys($freegroup)[0];
-                        if (!in_array($keyfirst,$beforeSync)) {
-                            if ($freegroup[$keyfirst]>=$value['sum_prod'] && !in_array($keyfirst, $config_relation)) {
-                                $free = $keyfirst;
-                                $free_qty = $freegroup[$keyfirst];   
-                                unset($freegroup[$keyfirst]); 
+                        foreach ($freegroup as $keyfirst => $fgqty) {
+                            if ($keyfirst=='34') {
+                                // echo '<br>'.$value['size'].' '.$keyfirst;
+                                // var_dump(!in_array($keyfirst,$beforeSync));
+                                // var_dump($fgqty>=$value['sum_prod']);
+                                // var_dump(!in_array($keyfirst, $config_relation));
+                                // var_dump(!in_array($keyfirst, $notuse));
+                            }
+                            
+
+                            if (!in_array($keyfirst,$beforeSync)) {
+                                if ($fgqty>=$value['sum_prod'] && !in_array($keyfirst, $config_relation) && !in_array($keyfirst, $notuse) ) {
+                                    $free = $keyfirst;
+                                    $free_qty = $freegroup[$keyfirst];   
+                                    unset($freegroup[$keyfirst]); 
+                                    break;
+                                }
                             }
                         }
                     }
-    
-                    // foreach ($temp_freegroup as $k => $fg) {
-                    //     if (isset($fg['qty'])&&$fg['qty']>=$value['sum_prod'] && !in_array($fg['group'], $config_relation)) {
-                    //         $free = $fg['group'];
-                    //         $free_qty = $fg['qty'];
-                    //         unset($temp_freegroup[$k]);
-                    //         $temp_freegroup = array_values($temp_freegroup);
-                    //         break;
-                    //     }
-                    // }
-        
                     if (!empty($free)&&!empty($free_qty)) {
                         $propose = $free;
                         $propose_remaining_qty = $free_qty;

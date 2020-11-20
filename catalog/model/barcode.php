@@ -51,8 +51,8 @@
 			// $this->where('barcode_code', $barcode);
 			// $this->order_by('date_modify', 'DESC');
 			// $query = $this->get('barcode');
-
-			$query = $this->query("SELECT * FROM mb_master_barcode WHERE date_modify > DATE_ADD(CURDATE(),INTERVAL-".$config." DAY)   AND  barcode_code = '$barcode'  ORDER BY date_modify DESC");
+			$sql = "SELECT * FROM mb_master_barcode WHERE date_modify > DATE_ADD(CURDATE(),INTERVAL-".$config." DAY)   AND  barcode_code = '$barcode'  ORDER BY date_modify DESC";
+			$query = $this->query($sql);
 			return $query->row;
 		}
 		public function addRowBarcode($data=array()){
@@ -761,20 +761,22 @@
 			
 		}
 
-		public function getRangeBarcode($group=0, $status=1, $date='', $flag = false) {
+		public function getRangeBarcode($group=0, $status=null, $date='', $flag = false) {
 			$sql = "SELECT a.barcode_status, a.barcode_prefix, (MIN(c.barcode_code) - a.barcode_code) + 1 as qty ";
 			$sql .= ", LPAD(a.barcode_code, 8, \"0\") as start ";
 			$sql .= ", LPAD(MIN(c.barcode_code), 8, \"0\") as end "; 
-			$sql .= "FROM (SELECT * FROM mb_master_barcode WHERE barcode_status = ".(int)$status." ";
-			$sql .= $flag!==false ? "AND barcode_flag = $flag " : '';
+			$sql .= "FROM (SELECT * FROM mb_master_barcode WHERE 1 ";
+			$sql .= $status!=null ? "AND barcode_status = ".(int)$status." " : '';
+			$sql .= $flag!==false ? "AND barcode_flag = ".(int)$flag." " : '';
 			$sql .= $group > 0 && !is_array($group) ? "AND barcode_prefix = $group " : (is_array($group) ? " AND barcode_prefix IN (".implode(',', $group).") " : '') ;
 			$sql .= "AND group_received = 1 ";
 			$sql .= !empty($date) ? "AND date_modify = '$date'" : "";
 			$sql .= ") a ";
 			
 			$sql .= "LEFT  ";
-			$sql .= "JOIN (SELECT * FROM mb_master_barcode WHERE barcode_status = ".(int)$status." ";
-			$sql .= $flag!==false ? "AND barcode_flag = $flag " : '';
+			$sql .= "JOIN (SELECT * FROM mb_master_barcode WHERE 1 ";
+			$sql .= $status!=null ? "AND barcode_status = ".(int)$status." " : '';
+			$sql .= $flag!==false ? "AND barcode_flag = ".(int)$flag." " : '';
 			$sql .= $group > 0 && !is_array($group) ? "AND barcode_prefix = $group " : (is_array($group) ? " AND barcode_prefix IN (".implode(',', $group).") " : '') ;
 			$sql .= "AND group_received = 1 ";
 			$sql .= !empty($date) ? "AND date_modify = '$date'" : "";
@@ -783,8 +785,9 @@
 			$sql .= "AND b.barcode_code = a.barcode_code - 1 ";
 				
 			$sql .= "LEFT  ";
-			$sql .= "JOIN (SELECT * FROM mb_master_barcode WHERE barcode_status = ".(int)$status." ";
-			$sql .= $flag!==false ? "AND barcode_flag = $flag " : '';
+			$sql .= "JOIN (SELECT * FROM mb_master_barcode WHERE 1 ";
+			$sql .= $status!=null ? "AND barcode_status = ".(int)$status." " : '';
+			$sql .= $flag!==false ? "AND barcode_flag = ".(int)$flag." " : '';
 			$sql .= $group > 0 && !is_array($group) ? "AND barcode_prefix = $group " : (is_array($group) ? " AND barcode_prefix IN (".implode(',', $group).") " : '') ;
 			$sql .= "AND group_received = 1 ";
 			$sql .= !empty($date) ? "AND date_modify = '$date'" : "";
@@ -793,8 +796,9 @@
 			$sql .= "AND c.barcode_code >= a.barcode_code ";
 				
 			$sql .= "LEFT  ";
-			$sql .= "JOIN (SELECT * FROM mb_master_barcode WHERE barcode_status = ".(int)$status." ";
-			$sql .= $flag!==false ? "AND barcode_flag = $flag " : '';
+			$sql .= "JOIN (SELECT * FROM mb_master_barcode WHERE 1 ";
+			$sql .= $status!=null ? "AND barcode_status = ".(int)$status." " : '';
+			$sql .= $flag!==false ? "AND barcode_flag = ".(int)$flag." " : '';
 			$sql .= $group > 0 && !is_array($group) ? "AND barcode_prefix = $group " : (is_array($group) ? " AND barcode_prefix IN (".implode(',', $group).") " : '') ;
 			$sql .= "AND group_received = 1 ";
 			$sql .= !empty($date) ? "AND date_modify = '$date'" : "";

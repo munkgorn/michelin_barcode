@@ -71,21 +71,22 @@
             $query = $this->get('group');
             $group = $query->row;
 
-            $num1 = $group['start'] - $group['remaining_qty'];
+            $num1 = $group['start'] - $group['remaining_qty'] + 1;
             if ($num1<$group['default_start']) {
                 $num2 = $group['start'] - $group['default_start'];
                 $num3 = $group['default_end'] - ($group['remaining_qty'] - $num2);
                 $start = $num3 + 1;
                 // echo 'con1';
             } else {
-                $start = $group['start'] - $group['remaining_qty']; // find start number this purchase
+                $start = $group['start'] - $group['remaining_qty'] + 1; // find start number this purchase
+                $end = $start + $group['remaining_qty'] - 1;
                 // echo 'con2';
             }
 
             // echo $start;
             // exit();
             
-            // $end = $group['start']-1; // -1 because this number for next purcharse
+            // $end = $group['remaining_qty'] - 1 ; // -1 because this number for next purcharse
 
             $update = array(
                 // 'del'=>1  // เอาออกเพราะว่า group เกิดมาตั้งแต่ association แล้ว ดังนั้นใช้วิธีคืนค่าแทน
@@ -96,6 +97,7 @@
             $this->where('id_group', $id);
             $result = $this->update('group', $update);
  
+            // echo "DELETE FROM ".PREFIX."barcode WHERE id_group = '".$id."' AND barcode_code >= '".$start."' AND barcode_code <= '".$end."'";
             // if ($result) {
                 $this->query("DELETE FROM ".PREFIX."barcode WHERE id_group = '".$id."' AND barcode_code >= '".$start."' AND barcode_code <= '".$end."'");
             // }

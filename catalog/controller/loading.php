@@ -39,7 +39,7 @@ class LoadingController extends Controller
     public function someone() {
 
         $key = explode(',',$_GET['key']);
-        $redirect = $_GET['redirect'];
+        $redirect = isset($_GET['redirect']) ? $_GET['redirect'] : 'association';
 
         $loading = array();
         $loading['freegroup'] = array(
@@ -66,9 +66,20 @@ class LoadingController extends Controller
         );
 
         $data['loading'] = array();
-        if (isset($loading[$key])) {
-            $data['loading'] = $loading;
+        if (is_array($key)) {
+            foreach ($key as $k => $v) {
+                if (isset($loading[$v])) {
+                    $data['loading'][] = $loading[$v];
+                }
+                
+            }
+        } else {
+            if (isset($loading[$key])) {
+                $data['loading'] = $loading;
+            }
         }
+
+        
 
         $files = array(
             'freegroup' => 'freegroup.json',
@@ -78,19 +89,32 @@ class LoadingController extends Controller
             'date' => 'default_datebarcode.json'
         );
 
-        $file = isset($files[$key]) ? $files[$key] : '';
-        if (!empty($file)) {
-            $path = DOCUMENT_ROOT . 'uploads/'. $file;
-            if (file_exists($path)) {
-                unlink($path);
+        if (is_array($key)) {
+            foreach ($key as $k => $v) {
+                $file = isset($files[$v]) ? $files[$v] : '';
+                if (!empty($file)) {
+                    $path = DOCUMENT_ROOT . 'uploads/'. $file;
+                    if (file_exists($path)) {
+                        unlink($path);
+                    }
+                }
+            }
+        } else {
+            $file = isset($files[$key]) ? $files[$key] : '';
+            if (!empty($file)) {
+                $path = DOCUMENT_ROOT . 'uploads/'. $file;
+                if (file_exists($path)) {
+                    unlink($path);
+                }
             }
         }
+        
 
         if (!empty($redirect)) {
-            $this->redirect($redirect);
-        } else {
-            $this->view('loading/index', $data);
+            // $this->redirect($redirect);
+            $data['redirect'] = $redirect;
         }
+        $this->view('loading/index', $data);
 
         
 

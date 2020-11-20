@@ -26,8 +26,10 @@
 	    		$data['start_group'] 	= post('start_group');
 				$data['end_group'] 		= post('end_group');
 				$this->setSession('success', 'Purchase order successful');
-	    		$this->redirect('purchase&start_group='.$data['start_group'].'&end_group='.$data['end_group']);
+	    		$this->redirect('purchase&start_group='.$data['start_group'].'&end_group='.$data['end_group'].'&validated=true');
 			}
+
+			$data['validated'] = isset($_GET['validated']) ? true : false;
 			
 	    	$data['result'] = get('result');
 	    	$data['title'] = "List Purchase";
@@ -78,7 +80,8 @@
 					// $value['barcode_end_year'] = $purchase->getEndBarcodeOfYearAgo($value['group_code']);
 					// $value['barcode_end_year'] = '';
 					$barcode_use = $group->getGroupStatus($value['group_code']);
-					$value['status'] = $barcode_use==="1" ? '<span class="text-primary">Recived</span>' : ($barcode_use==="0" ? '<span class="text-danger">Waiting</span>' : '');
+					//$value['status'] = $barcode_use==="1" ? '<span class="text-primary">Recived</span>' : ($barcode_use==="0" ? '<span class="text-danger">Waiting</span>' : '');
+					$value['status'] = $barcode_use==="1" ? '' : ($barcode_use==="0" ? '<span class="text-danger">Waiting</span>' : '');
 					$value['status_id'] = $barcode_use;
 	
 					$data['getMapping'][] = $value;

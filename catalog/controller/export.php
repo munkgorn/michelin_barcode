@@ -45,13 +45,37 @@ class ExportController extends Controller {
         $i=0;
 
         $lists = $association->getProducts($date_wk);
+
+        $notuse = array();
         foreach ($lists as $key => $value) {
-
-
             $last_week = $value['last_week'];
-            $remaining_qty = $value['remaining_qty'];
+            $remaining_qty = (int)$value['remaining_qty'];
+            // $remaining_qty = 0;
 
             $relation_group = $association->getRelationshipBySize($value['size'], $value['sum_prod']);
+            $lists[$key]['relation_group'] = $relation_group;
+
+            if ($value['sum_prod']>0) {
+                if (!empty($relation_group['group']) && !empty($relation_group['qty'])) {
+                    if (!in_array((int)$relation_group['group'],$notuse)) {
+                        $notuse[] = (int)$relation_group['group'];
+                    }
+                }
+                else if ($remaining_qty >= $value['sum_prod']) {
+                    if (!in_array((int)$last_week,$notuse)) {
+                        $notuse[] = (int)$last_week;
+                    }
+                }
+            }
+        }
+
+        
+        foreach ($lists as $key => $value) {
+            $last_week = $value['last_week'];
+            $remaining_qty = (int)$value['remaining_qty'];
+            // $remaining_qty = 0;
+
+            $relation_group = $value['relation_group'];
 
             $propose = '';
             $propose_remaining_qty = '';
@@ -319,21 +343,41 @@ class ExportController extends Controller {
             $value['status'] = $barcode_use==="1" ? 'Recived' : ($barcode_use==="0" ? 'Waiting' : '');
             $value['status_id'] = $barcode_use;
 
-            if (!empty($value['change_end'])) {
-                $excel[] = array(
-                    '',
-                    $i++,
-                    // $value['group_code'],
-                    sprintf('%08d', $value['barcode_start']),
-                    '="'.sprintf('%08d', $value['change_end']).'"',
-                    ($value['change_qty']>0 ? $value['change_qty'] : ''),
-                    // $value['barcode_start_year'],
-                    // $value['barcode_end_year'],
-                    // $value['default_start'],
-                    // $value['default_end'],
-                    // $value['default_range'],
-                    // $value['status']
-                );
+            if (!empty($value['remaining_qty'])) {
+
+                $temp = (int)$value['barcode_start'] - (int)$value['remaining_qty'];
+                if ($temp< $value['default_start']) {
+
+                    $excel[] = array(
+                        '',
+                        $i++,
+                        '="'.sprintf('%08d', $value['default_end'] - ($value['remaining_qty']-($value['barcode_start']-$value['default_start']))+1).'"',
+                        '="'.sprintf('%08d', $value['default_end']).'"',
+                        ($value['default_end']-($value['default_end'] - ($value['remaining_qty']-($value['barcode_start']-$value['default_start']))+1)+1),
+                       
+                    );
+
+                    $excel[] = array(
+                        '',
+                        $i++,
+                        '="'.sprintf('%08d', $value['default_start']).'"',
+                        '="'.sprintf('%08d', $value['barcode_start']-1).'"',
+                        (int)$value['barcode_start']-1-$value['default_start']+1,
+                       
+                    );
+
+                    
+                } else {
+                    $excel[] = array(
+                        '',
+                        $i++,
+                        sprintf('%08d', $value['barcode_start']-$value['remaining_qty']),
+                        '="'.sprintf('%08d', $value['barcode_start']-1).'"',
+                        (int)$value['remaining_qty'],
+                    );
+                }
+
+                
             }
         }
 

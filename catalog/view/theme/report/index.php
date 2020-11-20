@@ -104,7 +104,7 @@ $(document).ready(function(){
 			}
 		}
 		if ($break==false) {
-			$.post("index.php?route=barcode/calcurateBarcode", {group: filterGroup, status: 0},
+			$.post("index.php?route=barcode/calcurateBarcode", {group: filterGroup, status: 0, flag: true},
 				function (data, textStatus, jqXHR) {
 					if (data.length > 0) {
 						let sum = 0;

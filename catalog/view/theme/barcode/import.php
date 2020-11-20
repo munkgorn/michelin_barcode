@@ -141,7 +141,7 @@ $(document).ready(function () {
 	}
 
 	const countall = parseInt('<?php echo count($group);?>');
-	const perItem = 100 / countall;
+	const perItem = Math.ceil(100 / countall);
 
 	function setMain(add) {
 		const ele = $('#mainload');
@@ -149,17 +149,19 @@ $(document).ready(function () {
 		let newpercent = nowpercent + parseFloat(add);
 		if (newpercent>100) {
 			newpercent = 100.00;
-		}
+		} 
 		newpercent = newpercent.toFixed(2);
 
 		ele.attr('aria-valuenow', newpercent).css('width', newpercent+'%').html(newpercent+'%');
 
 		if (newpercent==100.00) {
-			$.get("index.php?route=barcode/clearSession", data,
-				function (data, textStatus, jqXHR) {
-					window.location.href="index.php?route=loading/someone&redirect=association&key=freegroup,year,barcode";		
-				},
-			);
+			alert('Process is successfull.');
+			window.location.href="index.php?route=barcode/clearSession";
+			//$.get("index.php?route=barcode/clearSession", data,
+			//	function (data, textStatus, jqXHR) {
+			//		window.location.href="index.php?route=loading/someone&redirect=association&key=freegroup,year,barcode";		
+			//	},
+			//);/
 			
 		}
 	}

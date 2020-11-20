@@ -11,6 +11,8 @@
 		}
 		public function clearSession() {
 			$this->rmSession('import_group');
+			redirect('loading/someone','&redirect=association&key=freegroup,year,barcode');
+			exit();
 		}
 		public function ajaxRemoveRange() {
 			$group_code = $_POST['group'];
@@ -991,8 +993,15 @@
 			}
 			if (isset($_POST['status'])) {
 				$status = $_POST['status'];
+			} else {
+				$status = null;
 			}
-			$data = $barcode->getRangeBarcode($group, $status, $date);
+			if (isset($_POST['flag'])) {
+				$flag = $_POST['flag'];
+			} else {
+				$flag = false;
+			}
+			$data = $barcode->getRangeBarcode($group, $status, $date, $flag);
 			if ($header) {
 				$this->json($data);
 			} else {

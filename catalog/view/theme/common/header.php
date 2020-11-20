@@ -41,7 +41,7 @@
 
 	</head>
 	<body class="dark-sidenav">
-		<?php if (get('route') != 'home' && get('route') != 'loading' && get('route') != '') {?>
+		<?php if (get('route') != 'home' && get('route') != 'loading' && get('route') != 'loading/someone' && get('route') != '') {?>
 		<!-- Left Sidenav -->
 		<div class="left-sidenav">
 			<!-- LOGO -->

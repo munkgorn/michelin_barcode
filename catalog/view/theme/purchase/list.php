@@ -50,10 +50,10 @@
 			<div class="row">
 				<div class="col-12"><h4>Today : <?php echo date('Y-m-d'); ?></h4></div>
 				<div class="col-6">
-					<a href="<?php echo $export_excel; ?>" target="new" class="btn btn-outline-success"><i class="fas fa-file-excel"></i> Export Excel</a>
+					<a href="<?php echo $export_excel; ?>" target="new" class="btn btn-outline-success <?php echo !$validated?'disabled':''?>" <?php echo !$validated?'disabled="disabled"':''?>><i class="fas fa-file-excel"></i> Export Excel</a>
 				</div>
 				<div class="col-6 text-right">
-					<button type="submit" class="btn btn-outline-primary"><i class="fas fa-check-double"></i> Save</button>
+					<button type="submit" class="btn btn-outline-primary"><i class="fas fa-check-double"></i> Validated</button>
 				</div>
 			</div>
 		</div>
@@ -336,7 +336,9 @@ $(document).ready(function () {
 
 		var qty = parseInt(ele.val());
 		var start = parseInt(ele.attr('start'));
-		var end = parseInt(ele.attr('end')); // ? Not Use
+		// var end = parseInt(ele.attr('end')); // ? Not Use
+		var end = parseInt(ele.parent('td').prev('td').children('.end').html());
+		// console.log(end);
 		var default_start = parseInt(ele.attr('default_start'));
 		var default_end = parseInt(ele.attr('default_end'));
 		var groupcode = ele.data('id');
@@ -351,17 +353,18 @@ $(document).ready(function () {
 		}
 		
 		var barcodeUsed = false;
-		if (newstart>0) {
-			$.post("index.php?route=purchase/checkBarcodeUsed", {barcode: newstart},
+		// console.log(num1);
+		// console.log(default_end);
+		// console.log(newstart);
+		if (newstart>=0) {
+			$.post("index.php?route=purchase/checkBarcodeUsed", {barcode: num1},
 				function (data, textStatus, jqXHR) {
 					var obj = JSON.parse(data);
 					console.log(obj);
 					if (obj.id_barcode > 0) {
 						ele.val('');
 						ele.parents('tr').find('.end').text('00000000');
-						
-						alert('ไม่สามารถใช้ barcode '+pad(newstart, 8)+' ได้ เนื่องจากอยู่ภายใต้เงื่อนไขใช้ซ้ำภายในจำนวน x วัน');
-						
+						alert('ไม่สามารถใช้ barcode '+pad(num1, 8)+' ได้ เนื่องจากอยู่ภายใต้เงื่อนไขใช้ซ้ำภายในจำนวน x วัน');
 						barcodeUsed = true;
 					}
 				}, "json"

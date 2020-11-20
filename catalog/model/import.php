@@ -32,7 +32,7 @@
             // update default start default end in group table for speed query
             $sql = "UPDATE mb_master_group g ";
             $sql .= "LEFT JOIN mb_master_config_barcode b ON b.`group` = g.group_code ";
-            $sql .= "SET g.start = g.start+1, ";
+            $sql .= "SET , ";
             $sql .= "g.default_start = b.`start`, ";
             $sql .= "g.default_end = b.`end`, ";
             $sql .= "g.default_range = b.`total` ";

@@ -66,7 +66,7 @@
 			<div class="row">
 				<div class="col-6">
 					<a type="button" href="<?php echo $export_excel; ?>" target="new" class="btn btn-outline-success "><i class="fas fa-file-excel"></i> Export Excel</a>
-					<button type="button" class="btn btn-outline-info " data-toggle="modal" data-target="#ModalSize" <?php echo $hasValidated ? 'disabled="disabled"' : '';?>><i class="fas fa-plus-circle"></i> Add Menual Size</button>
+					<!-- <button type="button" class="btn btn-outline-info " data-toggle="modal" data-target="#ModalSize" <?php echo $hasValidated ? 'disabled="disabled"' : '';?>><i class="fas fa-plus-circle"></i> Add Menual Size</button> -->
 				</div>
 				<div class="col-6 text-right">
 					<button type="submit"  class="btn btn-outline-primary "><i class="fas fa-check-double"></i> Validate Check</button>
@@ -116,8 +116,8 @@
 									<td class="text-center"><?php echo $val['propose_remaining_qty']; ?></td>
 									<td class="text-center"><?php echo $val['message']; ?></td>
 									<td class="p-0">
-										<input type="hidden" name="propose[<?php echo $val['id_product'];?>]" value="<?php echo (int)strip_tags($val['propose']);?>" />
-										<input type="text" name="id_group[<?php echo $val['id_product']; ?>]" data-key="<?php echo $val['id_product'];?>" class="form-control form-control-sm txt_group" value="<?php echo $val['save']; ?>" style="height:43px;border-radius:0;" />
+										<input type="hidden" name="propose[<?php echo $val['id_product'];?>]" data-size="<?php echo $val['size'];?>" data-key="<?php echo $val['id_product'];?>" class="txt_propose" value="<?php echo (int)strip_tags($val['propose']);?>" />
+										<input type="text" name="id_group[<?php echo $val['id_product']; ?>]" data-size="<?php echo $val['size'];?>" data-key="<?php echo $val['id_product'];?>" class="form-control form-control-sm txt_group" value="<?php echo $val['save']; ?>" style="height:43px;border-radius:0;" />
 									</td>
 								</tr>
 								<?php } ?>
@@ -237,6 +237,8 @@
 <script>
 $(document).ready(function () {
 
+
+
 	function addCommas(nStr) {
 		nStr += '';
 		x = nStr.split('.');
@@ -315,8 +317,30 @@ $(document).ready(function () {
 	});
 
 	$(document).on('keyup','.txt_group',function(e){
+		let proposevalue = $(this).prev('input[type=hidden]').val();
 		let thisvalue = $(this).val();
 		let thiskey = $(this).data('key');
+
+		$('.txt_propose').each(function(i,ele){
+			let proposesize = $(ele).data('size');
+			let elevalue = parseInt($(ele).val());
+			let keyvalue = parseInt(thisvalue);
+			let key = $(ele).data('key');
+			if (key!=thiskey && elevalue==keyvalue) {
+				alert('Incorrect propose with size : ' + proposesize);
+			}
+		});
+
+		$('.txt_group').each(function(i,ele){
+			let size = $(ele).data('size');
+			let elevalue = parseInt($(ele).val());
+			let key = $(ele).data('key');
+			if (key!=thiskey && elevalue==thisvalue) {
+				alert('Incorrect validated with size : ' + size);
+			}
+		});
+		
+
 		if (isNaN(parseInt(thisvalue))==false && parseInt(thisvalue)>0) {
 			$('[name="checkbox['+thiskey+']"]').prop('checked', true);
 		} else {

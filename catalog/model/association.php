@@ -166,7 +166,7 @@ class AssociationModel extends db
         // echo '<br>';
 
         $query = $this->query("SELECT date_wk FROM mb_master_product WHERE date_wk < '$date_wk' GROUP BY date_wk ORDER BY date_wk DESC LIMIT 0,1");
-        $last_datewk = $query->row['date_wk'];
+        $last_datewk = isset($query->row['date_wk']) ? $query->row['date_wk'] : '';
 
         $sql = "SELECT ";
         $sql .= "p.id_product, ";
@@ -176,13 +176,17 @@ class AssociationModel extends db
         $sql .= "(SELECT count(*) as qty FROM mb_master_barcode b WHERE b.id_group = g.id_group AND b.group_received=1 AND b.barcode_status=0 AND b.barcode_flag=0) as remaining_qty, ";
         $sql .= "(SELECT group_code FROM mb_master_group g2 WHERE g2.id_group = p.id_group) as save ";
         $sql .= "FROM mb_master_product p ";
-        $sql .= "INNER JOIN mb_master_product p2 ON p2.size_product_code = p.size_product_code ";
+        $sql .= "LEFT JOIN mb_master_product p2 ON p2.size_product_code = p.size_product_code AND p2.id_product != p.id_product ";
         $sql .= "LEFT JOIN mb_master_group g ON g.id_group = p2.id_group  ";
         $sql .= "WHERE ";
         $sql .= "p.date_wk = '$date_wk' ";
-        $sql .= "AND p.id_product != p2.id_product ";
-        $sql .= "AND p2.date_wk = '$last_datewk' ";
+        $sql .= "AND  ";
+        $sql .= "( ";
+            $sql .= !empty($last_datewk) ? "(p.id_product != p2.id_product AND p2.date_wk = '2020-10-09') OR " : "";
+            $sql .= "(p2.id_product is null) ";
+            $sql .= ") ";
         $sql .= "ORDER BY p.size_product_code ASC ";
+        // echo $sql;
         $query = $this->query($sql);
         return $query->rows;
     }
@@ -312,8 +316,8 @@ class AssociationModel extends db
             $sql .= "g.group_code as `group`, ";
             $sql .= "(SELECT count(b.id_barcode) as qty FROM mb_master_barcode b WHERE b.barcode_prefix = g.group_code AND b.group_received = 1 AND b.barcode_flag = 0 AND b.barcode_status = 0 AND b.date_modify BETWEEN '$day2' AND '$day1' GROUP BY b.id_group, b.barcode_prefix ORDER BY b.id_barcode,b.id_group) as qty ";
             $sql .= "FROM mb_master_group g ";
-            $sql .= "WHERE ";
-            $sql .= "g.barcode_use = 1 ";
+            // $sql .= "WHERE ";
+            //$sql .= "g.barcode_use = 1 ";
         $sql .= ") t ";
         $sql .= "WHERE t.qty is not null ";
         // echo $sql;
@@ -341,6 +345,7 @@ class AssociationModel extends db
         $query = $this->query("SELECT config_value FROM mb_master_config WHERE config_key = 'config_date_size'");
         $config = $query->row['config_value'];
         $sql = "SELECT g.group_code FROM mb_master_product p LEFT JOIN mb_master_group g ON g.id_group=p.id_group WHERE p.date_modify>=DATE_ADD(CURDATE(),INTERVAL-$config DAY) ";
+        // $sql = "SELECT g.group_code FROM mb_master_product p LEFT JOIN mb_master_group g ON g.id_group=p.id_group WHERE p.date_modify>=DATE_ADD('2020-10-16',INTERVAL-$config DAY) ";
         $query = $this->query($sql);
         return $query->rows;
     }
