@@ -761,6 +761,13 @@
 			
 		}
 
+		public function getGroupReceived() 
+		{
+			$sql = "SELECT DISTINCT group_code FROM mb_master_group WHERE barcode_use = 1 ORDER BY group_code";
+			$query = $this->query($sql);
+			return $query->rows;
+		}
+
 		public function getRangeBarcode($group=0, $status=null, $date='', $flag = false) {
 			$sql = "SELECT a.barcode_status, a.barcode_prefix, (MIN(c.barcode_code) - a.barcode_code) + 1 as qty ";
 			$sql .= ", LPAD(a.barcode_code, 8, \"0\") as start ";

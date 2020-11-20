@@ -629,6 +629,46 @@ class ExportController extends Controller {
         exit();
     }
 
+    public function reportAll() {
+        $excel = array();
+        $excel[] = array(
+            'Group Prefix',
+            'Start Barcode',
+            'End Barcode',
+            'Remaining QTY',
+        );
+
+        $file_handle = fopen(DOCUMENT_ROOT . 'uploads/reportall.json', "r");
+        while (!feof($file_handle)) {
+            $line_of_text = fgets($file_handle);
+            $json = json_decode($line_of_text, true);
+            $json = json_decode($json,true);
+            foreach ($json as $value) {
+                foreach ($value['range'] as $k => $r) {
+                    $range = explode('-', $r);
+                    $excel[] = array(
+                        '="'.$value['group'].'"',
+                        '="'.trim($range[0]).'"',
+                        '="'.trim($range[1]).'"',
+                        (int)str_replace(',','',$value['qty'][$k])
+                    ); 
+                }
+            }
+        }
+        fclose($file_handle);
+
+        $doc = DOCUMENT_ROOT . 'uploads/export/';
+        if (!file_exists($doc)) {
+            $oldmask = umask(0);
+            mkdir($doc, 0777);
+            umask($oldmask);
+        }
+        $name = 'export_report_allgroup_'.$date.'_'.date('YmdHis').'.xlsx';
+        $file = whiteExcel($excel, $doc, $name);
+        header('location:uploads/export/'.$file);
+        exit();
+    }
+
     public function setting_barcode() {
         $excel = array();
 

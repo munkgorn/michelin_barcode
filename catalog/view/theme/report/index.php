@@ -70,6 +70,7 @@ $(document).ready(function(){
 	const inputGroup = $('#groupFilter');
 	const linkexport = $('#linkexport');
 
+
 	linkexport.attr('disabled','disabled').addClass('disabled');
 
 	$.post("index.php?route=barcode/ajaxGetGroupByDate", {},

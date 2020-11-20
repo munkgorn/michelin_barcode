@@ -10,7 +10,7 @@ class ReportController extends Controller
             $this->redirect('home');
         }
     }
-
+ 
     public function index()
     {
 
@@ -31,6 +31,22 @@ class ReportController extends Controller
         $this->rmSession('error');
 
         $this->view('report/index', $data);
+    }
+
+    public function all() 
+    {
+        $data = array();
+
+        $this->view('report/all', $data);
+    }
+
+    public function saveJson()
+    {
+        $json = $_POST['data'];
+        $fp = fopen(DOCUMENT_ROOT . 'uploads/reportall.json', 'w');
+        fwrite($fp, json_encode($json));
+        fclose($fp);
+        return $json;
     }
 
 }

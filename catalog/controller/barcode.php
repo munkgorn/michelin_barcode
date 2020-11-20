@@ -27,6 +27,12 @@
 			$data = $barcode->getRangeBarcode($_POST['group'], 0, '', 0);
 			$this->json($data);
 		}
+		public function ajaxGroupReceived() {
+			$data = array();
+			$barcode = $this->model('barcode');
+			$data = $barcode->getGroupReceived();
+			$this->json($data);
+		}
 		public function import() {
 			$data = array();
 
@@ -993,6 +999,9 @@
 		public function calcurateBarcode($header=true, $group='', $status='') {
 			$data = array();
 			$barcode = $this->model('barcode');
+			if (isset($_POST['header'])) {
+				$header = (bool)$_POST['header'];
+			}
 			if (isset($_POST['date'])) {
 				$date = $_POST['date'];
 			} else {
