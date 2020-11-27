@@ -329,8 +329,9 @@ class ExportController extends Controller {
         $json = json_decode($json, true);
         // Get List
         $filter = array(
+            'date_purchase' => date('Y-m-d'),
             'start_group' => $start_group,
-            'end_group' => $end_group
+            'end_group' => $end_group,
         );
         $i=1;
         $mapping = $purchase->getPurchases($filter);
@@ -353,7 +354,7 @@ class ExportController extends Controller {
                         $i++,
                         '="'.sprintf('%08d', $value['default_end'] - ($value['remaining_qty']-($value['barcode_start']-$value['default_start']))+1).'"',
                         '="'.sprintf('%08d', $value['default_end']).'"',
-                        ($value['default_end']-($value['default_end'] - ($value['remaining_qty']-($value['barcode_start']-$value['default_start']))+1)+1),
+                        '="'.number_format(($value['default_end']-($value['default_end'] - ($value['remaining_qty']-($value['barcode_start']-$value['default_start']))+1)+1),0).'"',
                        
                     );
 
@@ -362,7 +363,7 @@ class ExportController extends Controller {
                         $i++,
                         '="'.sprintf('%08d', $value['default_start']).'"',
                         '="'.sprintf('%08d', $value['barcode_start']-1).'"',
-                        (int)$value['barcode_start']-1-$value['default_start']+1,
+                        '="'.number_format((int)$value['barcode_start']-1-$value['default_start']+1,0).'"',
                        
                     );
 
@@ -373,7 +374,7 @@ class ExportController extends Controller {
                         $i++,
                         sprintf('%08d', $value['barcode_start']-$value['remaining_qty']),
                         '="'.sprintf('%08d', $value['barcode_start']-1).'"',
-                        (int)$value['remaining_qty'],
+                        '="'.number_format((int)$value['remaining_qty'],0).'"',
                     );
                 }
 

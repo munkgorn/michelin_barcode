@@ -100,8 +100,11 @@ $(document).ready(function(){
 			$confirm = confirm('Loading data all group is so many data and slowly, Are you sure loading?');
 			if ($confirm==false) {
 				$break = true;
-				table.html(trnotfound);
+				// table.html(trnotfound);
 				linkexport.attr('disabled','disabled').addClass('disabled');
+			} else {
+				$break = true;
+				window.location.href = "index.php?route=report/all";
 			}
 		}
 		if ($break==false) {

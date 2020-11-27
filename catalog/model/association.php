@@ -1,6 +1,11 @@
 <?php
 class AssociationModel extends db
 {
+    public function checkProduct($size) {
+        $this->where('size_product_code', $size);
+        $query = $this->get('product');
+        return $query->num_rows==1?true:false;
+    }
     public function importCSV($path)
     {
         $result = array();
@@ -46,7 +51,7 @@ class AssociationModel extends db
         $result_query_check_have_group = $this->query($sql_check_have_group);
         $data_now = date('Y-m-d H:i:s');
 
-        if ($result_query_check_have_group->num_rows == 0) { // Insert because this group is never used.
+        if ($result_query_check_have_group->num_rows == 0) { // Insert because this group is never used.==1?true:false;
             $data_insert = array(
                 'group_code' => $group_code,
                 'id_user' => $id_user,
@@ -173,19 +178,19 @@ class AssociationModel extends db
         $sql .= "p.size_product_code AS size, ";
         $sql .= "p.sum_product AS sum_prod, ";
         $sql .= "g.group_code AS `last_week`, ";
-        $sql .= "(SELECT count(*) as qty FROM mb_master_barcode b WHERE b.id_group = g.id_group AND b.group_received=1 AND b.barcode_status=0 AND b.barcode_flag=0) as remaining_qty, ";
+        // $sql .= "(SELECT count(*) as qty FROM mb_master_barcode b WHERE b.id_group = g.id_group AND b.group_received=1 AND b.barcode_status=0 AND b.barcode_flag=0) as remaining_qty, ";
         $sql .= "(SELECT group_code FROM mb_master_group g2 WHERE g2.id_group = p.id_group) as save ";
         $sql .= "FROM mb_master_product p ";
         $sql .= "LEFT JOIN mb_master_product p2 ON p2.size_product_code = p.size_product_code AND p2.id_product != p.id_product ";
         $sql .= "LEFT JOIN mb_master_group g ON g.id_group = p2.id_group  ";
         $sql .= "WHERE ";
         $sql .= "p.date_wk = '$date_wk' ";
-        $sql .= "AND  ";
-        $sql .= "( ";
-            $sql .= !empty($last_datewk) ? "(p.id_product != p2.id_product AND p2.date_wk = '2020-10-09') OR " : "";
-            $sql .= "(p2.id_product is null) ";
-            $sql .= ") ";
-        $sql .= "ORDER BY p.size_product_code ASC ";
+        // $sql .= !empty($last_datewk) ?  "AND  " : "";
+        // $sql .= !empty($last_datewk) ? "( " : "";
+        //     $sql .= !empty($last_datewk) ? "(p.id_product != p2.id_product AND p2.date_wk = '$last_datewk') OR " : "";
+        //     $sql .= !empty($last_datewk) ? "(p2.id_product is null) " : "";
+        //     $sql .= !empty($last_datewk) ? ") " : "";
+        $sql .= "ORDER BY p.size_product_code ASC,p2.id_product DESC  ";
         // echo $sql;
         $query = $this->query($sql);
         return $query->rows;

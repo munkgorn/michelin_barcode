@@ -72,7 +72,7 @@ class ImportController extends Controller
             $file = $_FILES['import_file'];
 
             $fileType = strtolower(pathinfo(basename($file["name"]), PATHINFO_EXTENSION));
-            $newname = 'import_relationship_' . date('YmdHis');
+            $newname = 'import_mockup_association';
             $file_csv = 'CSV_' . $newname . '.csv';
             $newname .= '.' . $fileType;
             $acceptFileType = array('xlsx');
@@ -128,7 +128,7 @@ class ImportController extends Controller
                     fclose($fp);
                     $result = $import->loadCSVAssociation($csv_file);
                     echo 'Import association with date '.($result?'success':'fail').'<br>';
-                    $this->generateJsonFreeGroup();
+                    // $this->generateJsonFreeGroup();
                 }
             }
 

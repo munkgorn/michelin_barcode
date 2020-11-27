@@ -78,12 +78,12 @@
                 $start = $num3 + 1;
                 // echo 'con1';
             } else {
-                $start = $group['start'] - $group['remaining_qty'] + 1; // find start number this purchase
+                $start = $group['start'] - $group['remaining_qty']; // find start number this purchase
                 $end = $start + $group['remaining_qty'] - 1;
                 // echo 'con2';
             }
 
-            // echo $start;
+            // echo $start.' '.$end;
             // exit();
             
             // $end = $group['remaining_qty'] - 1 ; // -1 because this number for next purcharse

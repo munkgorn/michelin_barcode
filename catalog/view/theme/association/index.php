@@ -108,17 +108,25 @@
 											<label class="custom-control-label" for="listcheck<?php echo $key;?>"></label>
 										</div>
 									</td>
-									<td class="text-center"><?php echo $val['size']; ?></td>
-									<td class="text-center"><?php echo number_format($val['sum_prod'], 0); ?></td>
-									<td><span class="last_wk" row="<?php echo $key; ?>"><?php echo $val['last_wk0']; ?></span></td>
-									<td><?php echo $val['remaining_qty'];?></td>
+									<td class="text-center tdid tdsize" data-idproduct="<?php echo $val['id_product'];?>"><?php echo $val['size']; ?></td>
+									<td class="text-center tdid tdsumprod" data-idproduct="<?php echo $val['id_product'];?>"><?php echo number_format($val['sum_prod'], 0); ?></td>
+									<td class="text-center tdid tdlast" data-idproduct="<?php echo $val['id_product'];?>"><span class="last_wk" row="<?php echo $key; ?>"><?php echo $val['last_wk0']; ?></span></td>
+									<td class="text-center tdid tdqty" data-idproduct="<?php echo $val['id_product'];?>"></td>
+									<td class="text-center tdid tdpropose" data-idproduct="<?php echo $val['id_product'];?>"></td>
+									<td class="text-center tdid tdproposeqty" data-idproduct="<?php echo $val['id_product'];?>"></td>
+									<td class="text-center tdid tdmsg" data-idproduct="<?php echo $val['id_product'];?>"></td>
+									<td class="p-0">
+										<input type="hidden" name="propose[<?php echo $val['id_product'];?>]" data-size="<?php echo $val['size'];?>" data-key="<?php echo $val['id_product'];?>" class="txt_propose" value="<?php echo (int)strip_tags($val['propose']);?>" />
+										<input type="text" name="id_group[<?php echo $val['id_product']; ?>]" data-size="<?php echo $val['size'];?>" data-key="<?php echo $val['id_product'];?>" class="form-control form-control-sm txt_group" value="<?php echo $val['save']; ?>" style="height:43px;border-radius:0;" />
+									</td>
+									<!-- <td><?php echo $val['remaining_qty'];?></td>
 									<td class="text-center"><span class="propose" row="<?php echo $key; ?>"><?php echo $val['propose']; ?></span></td>
 									<td class="text-center"><?php echo $val['propose_remaining_qty']; ?></td>
 									<td class="text-center"><?php echo $val['message']; ?></td>
 									<td class="p-0">
 										<input type="hidden" name="propose[<?php echo $val['id_product'];?>]" data-size="<?php echo $val['size'];?>" data-key="<?php echo $val['id_product'];?>" class="txt_propose" value="<?php echo (int)strip_tags($val['propose']);?>" />
 										<input type="text" name="id_group[<?php echo $val['id_product']; ?>]" data-size="<?php echo $val['size'];?>" data-key="<?php echo $val['id_product'];?>" class="form-control form-control-sm txt_group" value="<?php echo $val['save']; ?>" style="height:43px;border-radius:0;" />
-									</td>
+									</td> -->
 								</tr>
 								<?php } ?>
                                 <?php else: ?>
@@ -236,6 +244,76 @@
 
 <script>
 $(document).ready(function () {
+
+	const loading = '<img src="assets/loading.gif" height="30" />Loading...';
+
+	$('.tdqty').each(function (index, element) {
+		// console.log(element);
+		let idproduct = $(element).data('idproduct');
+		let idgroup = $('.tdlast[data-idproduct='+idproduct+'] > span.last_wk').html();
+		let idsize =  parseInt($('.tdsize[data-idproduct='+idproduct+']').html());
+		let idsumprod =  $('.tdsumprod[data-idproduct='+idproduct+']').html();
+		
+		$('.tdqty[data-idproduct='+idproduct+']').html(loading);
+		$('.tdpropose[data-idproduct='+idproduct+']').html(loading);
+		$('.tdproposeqty[data-idproduct='+idproduct+']').html(loading);
+		$('.tdmsg[data-idproduct='+idproduct+']').html(loading);
+		
+		if (idgroup>0) {
+			$.ajax({
+				type: "POST",
+				url: "index.php?route=association/ajaxCountBarcodeNotuse",
+				data: {group: idgroup},
+				dataType: "json",
+				async: true,
+				cache:true,
+				success: function (data) {
+					console.log('Group '+idgroup+' Qty '+data);
+
+					if (data>0) {
+						$(element).html(addCommas(data));
+					} else {
+						$(element).html(0);
+					}
+
+					$.ajax({
+						type: "POST",
+						url: "index.php?route=association/ajaxCondition",
+						data: {size: idsize, sum_prod: idsumprod, last_wk: idgroup, qty: data},
+						dataType: "json",
+						async: false,
+						cache:true,
+						success: function (data2) {
+							if (data2.propose!=null) {
+								$('.tdpropose[data-idproduct='+idproduct+']').html(data2.propose);
+							}
+							if (data2.propose_remaining_qty!=null) {
+								$('.tdproposeqty[data-idproduct='+idproduct+']').html(data2.propose_remaining_qty);
+							}
+							if (data2.message!=null) {
+								$('.tdmsg[data-idproduct='+idproduct+']').html(data2.message);
+							}
+						}
+					});
+
+				},
+				error: function (xhr, ajaxOptions, thrownError) {
+					console.log('Group '+idgroup+' Error');
+					console.log(xhr.status);
+					console.log(thrownError);
+					$(element).html('');
+				}
+
+			});
+		} else {
+		$('.tdqty[data-idproduct='+idproduct+']').html('');
+		$('.tdpropose[data-idproduct='+idproduct+']').html('');
+		$('.tdproposeqty[data-idproduct='+idproduct+']').html('');
+		$('.tdmsg[data-idproduct='+idproduct+']').html('');
+		}
+		
+	});
+
 
 
 
