@@ -50,6 +50,12 @@
 							</div>
 						</div>
 						<div class="form-group row">
+							<label for="" class="col-sm-3 col-md-4 col-form-label text-left">วันที่กำหนด ระยะเวลาค้นหา lastweek ล่าสุดของ association</label>
+							<div class="col-sm-9 col-md-8">
+								<input type="number" name="config_lastweek" class="form-control" min="0" value="<?php echo $config_lastweek; ?>" required/>
+							</div>
+						</div>
+						<div class="form-group row">
 							<div class="col-sm-12">
 								<hr />
 								<button type="submit" class="btn btn-primary float-right">Save</button>

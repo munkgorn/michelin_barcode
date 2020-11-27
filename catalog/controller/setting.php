@@ -45,6 +45,7 @@
 			$data['config_date_size'] = $config->getConfig('config_date_size')!==false ? $config->getConfig('config_date_size') : 0;
 			$data['config_date_year'] = $config->getConfig('config_date_year')!==false ? $config->getConfig('config_date_year') : 0;
 			$data['config_maximum_alert'] = $config->getConfig('config_maximum_alert')!==false ? $config->getConfig('config_maximum_alert') : 0;
+			$data['config_lastweek'] = $config->getCOnfig('config_lastweek')!==false ? $config->getConfig('config_lastweek') : 0;
 
 			// tab relationship
 			$data['relationships'] = $config->getRelationship();
