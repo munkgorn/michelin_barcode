@@ -167,6 +167,8 @@
 	accept="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet, application/vnd.ms-excel">
 	<input type="text" class="form-control" name="date" value="<?php echo $date; ?>">
 </form>
+
+
 <script>
 $(document).ready(function(){
 	$('#barcode').addClass('mm-active').children('ul.mm-collapse').addClass('mm-show');
@@ -174,201 +176,57 @@ $(document).ready(function(){
 </script>
 <script type="text/javascript">
 $(document).ready(function () {
-	const loading = '<img src="assets/loading.gif" height="30" /> Loading...';
-	$('#default_start_year').html(loading);
-	$('#default_end_year').html(loading);
-	$.get("index.php?route=purchase/ajaxDefaultDate", {},
-		function (data, textStatus, jqXHR) {
-			console.log("Loading date success");
-			const obj = jQuery.parseJSON(data);
-			$('#default_start_year').html(obj.start);
-			$('#default_end_year').html(obj.end);
-		},
-		"json"
-	);
-
-	$('.load_default_start').each(function(){
-		$(this).html(loading);
-	});
-	$('.load_default_end').each(function(){
-		$(this).html(loading);
-	});
-	$.get("index.php?route=purchase/ajaxGroupDefault", {},
-		function (data, textStatus, jqXHR) {
-			console.log("Loading group success");
-			const obj = jQuery.parseJSON(data);
-			// console.log(obj);
-			$.each(obj, function(index, value){
-				$('.load_default_start[data-group='+index+']').html(value.start);
-				$('.load_default_end[data-group='+index+']').html(value.end);
-			});
-		},
-		"json"
-	);
-});
-</script>
-<script>
-	$('.select2start, .select2end').select2({
-		placeholder: "Select group barcode"
-	});
-	$(document).on('click','#import_excel',function(e){
-		$('#import_file').trigger('click');
-	});
-	$(document).on('change','#import_file',function(e){
-		var ele = $(this);
-		var date = $('#date').val();
-
-		var file_data = $('#import_file').prop('files')[0];   
-	    var form_data = new FormData();                  
-	    form_data.append('file_import', file_data);
-	    form_data.append('date', date);
-		$.ajax({
-			url: 'index.php?route=barcode/listGroup',
-			cache: false,
-	        contentType: false,
-	        processData: false,
-	        dataType: 'text',
-			type: 'POST',
-			dataType: 'json',
-			data: form_data,
-		})
-		.done(function(e) { 
-			location.reload();
-			// window.location = 'index.php?route=barcode/listGroup&date='+date+'&result=success';
-			console.log(e);
-			console.log("success");
-		})
-		.fail(function(a,b,c) {
-			console.log(a);
-			console.log(b);
-			console.log(c);
-			console.log("error");
-		})
-		.always(function() {
-			console.log("complete");
-		});
-		// location.reload();
-	});
-	$(document).on('keyup','.default_start',function(e){
-		var val = $(this).val();
-		var id_group = $(this).attr('id_group');
-		$.ajax({
-			url: 'index.php?route=purchase/updateDefaultGroup',
-			type: 'GET',
-			dataType: 'json',
-			data: {
-				value: val,
-				id_group: id_group,
-				type: 'default_start'
-			},
-		})
-		.done(function() {
-			console.log("success");
-		})
-		.fail(function(a,b,c) {
-			console.log(a);
-			console.log(b);
-			console.log(c);
-			console.log("error");
-		})
-		.always(function() {
-			console.log("complete");
-		});
-	});
-	$(document).on('keyup','.default_end',function(e){
-		var val = $(this).val();
-		var id_group = $(this).attr('id_group');
-		$.ajax({
-			url: 'index.php?route=purchase/updateDefaultGroup',
-			type: 'GET',
-			dataType: 'json',
-			data: {
-				value: val,
-				id_group: id_group,
-				type: 'default_end'
-			},
-		})
-		.done(function() {
-			console.log("success");
-		})
-		.fail(function(a,b,c) {
-			console.log(a);
-			console.log(b);
-			console.log(c);
-			console.log("error");
-		})
-		.always(function() {
-			console.log("complete");
-		});
-	});
-	$(document).on('keyup','.default_range',function(e){
-		var val = $(this).val();
-		var id_group = $(this).attr('id_group');
-		$.ajax({
-			url: 'index.php?route=purchase/updateDefaultGroup',
-			type: 'GET',
-			dataType: 'json',
-			data: {
-				value: val,
-				id_group: id_group,
-				type: 'default_range'
-			},
-		})
-		.done(function() {
-			console.log("success");
-		})
-		.fail(function(a,b,c) {
-			console.log(a);
-			console.log(b);
-			console.log(c);
-			console.log("error");
-		})
-		.always(function() {
-			console.log("complete");
-		});
-	});
-	//
-
-
+	
+	init();
 	
 	$(document).on('keyup','.qty_group',function(e){
 		var ele = $(this);
 
 		var qty = parseInt(ele.val());
 		var start = parseInt(ele.attr('start'));
-		// var end = parseInt(ele.attr('end')); // ? Not Use
 		var end = parseInt(ele.parent('td').prev('td').children('.end').html());
-		// console.log(end);
 		var default_start = parseInt(ele.attr('default_start'));
 		var default_end = parseInt(ele.attr('default_end'));
 		var groupcode = ele.data('id');
-		// console.log(groupcode);
-		// console.log(groupcode*100000);
 
 		var num1 = start + qty - 1;
 		var newstart = 0;
+		let check = '';
 		if (num1 > default_end) {
 			var num2 = num1 - default_end;
 			newstart = default_start + num2 - 1;
+			check = newstart.toString().substring(0,3);
+		}
+
+		console.log(qty+' '+check+' '+pad(groupcode,3));
+		if (qty>99999&&check!=pad(groupcode,3)) {
+			alert('การสั่งซื้อมาจำนวนมากกว่าที่กำหนด');
+			ele.val('');
+			ele.parents('tr').find('.end').text('00000000');
 		}
 		
 		var barcodeUsed = false;
-		// console.log(num1);
-		// console.log(default_end);
-		// console.log(newstart);
-		if (newstart>=0) {
-			$.post("index.php?route=purchase/checkBarcodeUsed", {barcode: num1},
-				function (data, textStatus, jqXHR) {
-					var obj = JSON.parse(data);
-					console.log(obj);
+		// console.log(start+'+'+qty+'='+num1+' / '+default_end+' / '+newstart);
+		if (newstart>=0 && check==pad(groupcode,3)) {
+			console.log('checking barcode...');
+			$.ajax({
+				type: "POST",
+				url: "index.php?route=purchase/checkBarcodeUsed",
+				data: {barcode: num1},
+				dataType: "json",
+				success: function (response) {
+					var obj = JSON.parse(response);
 					if (obj.id_barcode > 0) {
+						console.log('Found barcode is cannot use');
 						ele.val('');
 						ele.parents('tr').find('.end').text('00000000');
 						alert('ไม่สามารถใช้ barcode '+pad(num1, 8)+' ได้ เนื่องจากอยู่ภายใต้เงื่อนไขใช้ซ้ำภายในจำนวน x วัน');
 						barcodeUsed = true;
+					} else {
+						console.log('Can use');
 					}
-				}, "json"
-			);
+				}
+			});
 		}
 
 		var sum_end_qty = 0;
@@ -386,35 +244,84 @@ $(document).ready(function () {
 				change_qty: qty,
 				change_end: end_string
 			}
-
-			$.ajax({
-				type: "POST",
-				url: "<?php echo $action_ajax;?>",
-				data: dataPost,
-				// dataType: "json",
-				success: function (response) {
-					// console.log(sum_end_qty);
-					console.log(response);
-				},
-				error: function (xhr, ajaxOptions, thrownError) {
-					console.log(xhr.status);
-					console.log(thrownError);
-				}
-			});
+			saveForExport(dataPost);
 		} else {
 			ele.parents('tr').find('.end').text('000000');
 		}
 
 		
 	});
-	function pad(num, size) {
-	    var s = num+"";
-	    while (s.length < size) s = "0" + s;
-	    return s;
-	}
-</script>
-<script type="text/javascript">
-$(document).ready(function () {
+
+	
+
+
 	
 });
+</script>
+<script>
+const loading = '<img src="assets/loading.gif" height="30" /> Loading...';
+let init = () => {
+	$('.select2start, .select2end').select2({
+		placeholder: "Select group barcode"
+	});
+	loadYear();
+	loadBarcode();
+}
+let loadYear = () => {
+	console.log('loading year...');
+	$('#default_start_year').html(loading);
+	$('#default_end_year').html(loading);
+	$.ajax({
+		type: "GET",
+		url: "index.php?route=purchase/ajaxDefaultDate",
+		dataType: "json",
+		async:true,
+		success: function (response) {
+			console.log("Load year success");
+			const obj = jQuery.parseJSON(response);
+			$('#default_start_year').html(obj.start);
+			$('#default_end_year').html(obj.end);
+		}
+	});
+}
+let loadBarcode = () => {
+	console.log('Loading barcode...');
+	$('.load_default_start').each(function(){
+		$(this).html(loading);
+	});
+	$('.load_default_end').each(function(){
+		$(this).html(loading);
+	});
+	$.ajax({
+		type: "GET",
+		url: "index.php?route=purchase/ajaxGroupDefault",
+		dataType: "json",
+		success: function (response) {
+			console.log("Load barcode success");
+			const obj = jQuery.parseJSON(response);
+			$.each(obj, function(index, value){
+				$('.load_default_start[data-group='+pad(index,3)+']').html(value.start);
+				$('.load_default_end[data-group='+pad(index,3)+']').html(value.end);
+			});
+		}
+	});
+}
+let saveForExport = (dataPost) => {
+	$.ajax({
+		type: "POST",
+		url: "<?php echo $action_ajax;?>",
+		data: dataPost,
+		success: function (response) {
+			console.log(response);
+		},
+		error: function (xhr, ajaxOptions, thrownError) {
+			console.log(xhr.status);
+			console.log(thrownError);
+		}
+	});
+}
+let pad = (str,max) => {
+	str = str.toString();
+	return str.length < max ? pad("0" + str, max) : str;
+}
 </script>

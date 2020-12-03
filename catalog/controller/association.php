@@ -71,6 +71,16 @@ class AssociationController extends Controller
         $this->json($json);
     }
 
+    public function ajaxCheckOldSync() {
+        $association = $this->model('association');
+        // Group barcode use with old association in config day
+        $oldSync = $association->getOldSync(); 
+        $beforeSync = array(); 
+        foreach ($oldSync as $v) {
+            $beforeSync[] = $v['group_code'];
+        }
+        $this->json($beforeSync);
+    }
 
     public function ajaxCondition() {
         $association = $this->model('association');
@@ -98,13 +108,13 @@ class AssociationController extends Controller
         }
 
         // Free Group
-        $free_group = $this->jsonFreeGroup(false);
-        $temp_freegroup = json_decode($free_group, true);
-        $temp_freegroup = json_decode($temp_freegroup[0], true);
-        $freegroup = array();
-        foreach ($temp_freegroup as $v) {
-            $freegroup[$v['group']] = $v['qty'];
-        }
+        // $free_group = $this->jsonFreeGroup(false);
+        // $temp_freegroup = json_decode($free_group, true);
+        // $temp_freegroup = json_decode($temp_freegroup[0], true);
+        // $freegroup = array();
+        // foreach ($temp_freegroup as $v) {
+        //     $freegroup[$v['group']] = $v['qty'];
+        // }
 
         // Config Relationship
         $config_relation = array();
@@ -125,39 +135,46 @@ class AssociationController extends Controller
         $message = '';
 
         if ($sumprod>0) {
+            
             if (!empty($relation_group['group']) && !empty($relation_group['qty'])) {
                 $propose = $relation_group['group'];
                 $propose_remaining_qty = $relation_group['qty'];
                 $message = '<span class="text-primary">Relationship</span>';
-                unset($freegroup[(int)$relation_group['group']]);
+                // unset($freegroup[(int)$relation_group['group']]);
             } 
             else if ($remaining_qty >= $sumprod) {
                 $propose = $last_week;
                 $propose_remaining_qty = $remaining_qty;
                 $message = 'Last Weeek';
-                unset($freegroup[$last_week]);
+                // unset($freegroup[$last_week]);
             } 
             else {
                 $free = '';
                 $free_qty = '';
-
-                if (count($freegroup)>0) {
-                    foreach ($freegroup as $keyfirst => $fgqty) {
-                        if (!in_array($keyfirst,$beforeSync)) {
-                            if ($fgqty>=$sumprod && !in_array($keyfirst, $config_relation) && !in_array($keyfirst, $notuse) ) {
-                                $free = $keyfirst;
-                                $free_qty = $freegroup[$keyfirst];   
-                                unset($freegroup[$keyfirst]); 
-                                break;
-                            }
-                        }
-                    }
-                }
-                if (!empty($free)&&!empty($free_qty)) {
-                    $propose = $free;
-                    $propose_remaining_qty = $free_qty;
-                    $message = !empty($free) ? '<span class="text-danger">Free Group</span>' : '';
-                }
+                // if (count($freegroup)>0) {
+                //     // $freegroupuse = $this->hasSession('freegroupuse') ? $this->getSession('freegroupuse') : array();
+                //     // $freegroupuse = array();
+                //     foreach ($freegroup as $keyfirst => $fgqty) {
+                //         if (!in_array($keyfirst,$beforeSync)) {
+                //             // $propose = '13';
+                //             if ($fgqty>=$sumprod && !in_array($keyfirst, $config_relation) && !in_array($keyfirst, $notuse)) {
+                //             // if ($fgqty>=$sumprod && !in_array($keyfirst, $config_relation) && !in_array($keyfirst, $notuse) && !in_array($keyfirst, $freegroupuse)) {
+                //                 $free = $keyfirst;
+                //                 $free_qty = $freegroup[$keyfirst];   
+                //                 // $freegroupuse[] = $freegroup[$keyfirst];
+                //                 unset($freegroup[$keyfirst]); 
+                //                 // $this->setSession('freegroupuse', $freegroupuse);
+                                
+                //                 break;
+                //             }
+                //         }
+                //     }
+                // }
+                // if (!empty($free)&&!empty($free_qty)) {
+                //     $propose = $free;
+                //     $propose_remaining_qty = $free_qty;
+                //     $message = !empty($free) ? '<span class="text-danger">Free Group</span>' : '';
+                // }
             }
         }
 
@@ -173,9 +190,9 @@ class AssociationController extends Controller
             'sum_prod' => $sumprod,
             'last_wk0' => !empty($last_week) ? sprintf('%03d', $last_week) : '',
             'remaining_qty' => number_format((int) round($remaining_qty,0), 0),
-            'propose' => !empty(strip_tags($propose)) ? ($propose!=$last_week?'<span class="text-danger">'.sprintf('%03d', $propose).'</span>':sprintf('%03d', $propose)) : '',
-            'propose_remaining_qty' => round($propose_remaining_qty,0) > 0 ? ($propose!=$last_week?'<span class="text-danger">'.number_format((int) round($propose_remaining_qty,0), 0).'</span>':number_format((int) round($propose_remaining_qty,0), 0)) : '',
-            'message' => $message,
+            'propose' => !empty(strip_tags($propose)) ? ($propose!=$last_week?''.sprintf('%03d', $propose).'':sprintf('%03d', $propose)) : '',
+            'propose_remaining_qty' => round($propose_remaining_qty,0) > 0 ? ($propose!=$last_week?''.number_format((int) round($propose_remaining_qty,0), 0).'':number_format((int) round($propose_remaining_qty,0), 0)) : '',
+            'message' => $message, 
         );
 
 
@@ -397,7 +414,7 @@ class AssociationController extends Controller
                 }
             }
 
-            $this->generateJsonFreeGroup();
+            // $this->generateJsonFreeGroup();
             $this->redirect('loading/someone&key=freegroup,year,barcode&redirect=association');
             $this->redirect('association&date_wk=' . $date_wk);
         } else {

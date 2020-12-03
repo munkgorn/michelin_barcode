@@ -113,7 +113,7 @@
             $this->order_by('ABS(cb.`group`)','ASC');
             $this->join('group g', 'g.group_code = cb.`group`', 'LEFT');
             $query = $this->get('config_barcode cb');
-            // echo $this->last_query();
+            //echo $this->last_query();
             return $query->num_rows > 0 ? $query->rows : false;
         }
 

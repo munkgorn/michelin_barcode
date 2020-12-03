@@ -107,14 +107,16 @@ $(document).ready(function(){
 
 		$('#table_result tbody tr td .loadrange').each(function(index, ele){
 			let valuegroup = $(ele).data('group');
-			num++;
+			
 			// console.log(valuegroup);
 			$.post("index.php?route=barcode/calcurateBarcode", {header:false, group: valuegroup, status:0, flag:0},
 				function (data, textStatus, jqXHR) {
+					num++;
+					console.log(num+' '+countall);
 					// console.log(data);
 					if (data.length==0) {
 						$(ele).parent('td').parent('tr.trgroup'+valuegroup).remove();
-						console.info('%c Group:'+valuegroup+' not found range, remove it! ', failure);
+						// console.info('%c Group:'+valuegroup+' not found range, remove it! ', failure);
 					} else {
 						// console.log('Group : ' + valuegroup + ', Found : ' + data.length);
 						
@@ -135,20 +137,20 @@ $(document).ready(function(){
 						console.info('%c Group:'+valuegroup+' Found : ' + data.length, success);
 						if (grouprange.length>0) {
 							$(ele).html(grouprange.join('<br>'));
-							console.table(grouprange);
+							// console.table(grouprange);
 						}
 						if (groupqty.length>0) {
 							$(ele).parent('td').next('td').children('.loadqty[data-group='+valuegroup+']').html(groupqty.join('<br>'));
 						}
 
-						// console.log(JSON.stringify(json));
+						
 						if (num==countall) {
+							// console.log(JSON.stringify(json));
 							$.post("index.php?route=report/saveJson", {data: JSON.stringify(json)},
 								function (data2, textStatus2, jqXHR2) {
 									alert('You can export all group in type excel');
 									$('#linkexport').removeAttr('disabled').removeClass('disabled');
-								},
-								"json"
+								}
 							);
 						}
 					}

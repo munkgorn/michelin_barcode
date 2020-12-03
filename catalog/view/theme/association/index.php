@@ -250,7 +250,7 @@ $(document).ready(function () {
 	$('.tdqty').each(function (index, element) {
 		// console.log(element);
 		let idproduct = $(element).data('idproduct');
-		let idgroup = $('.tdlast[data-idproduct='+idproduct+'] > span.last_wk').html();
+		let idgroup = $('.tdlast[data-idproduct='+idproduct+'] .last_wk').html();
 		let idsize =  parseInt($('.tdsize[data-idproduct='+idproduct+']').html());
 		let idsumprod =  $('.tdsumprod[data-idproduct='+idproduct+']').html();
 		
@@ -268,7 +268,7 @@ $(document).ready(function () {
 				async: true,
 				cache:true,
 				success: function (data) {
-					console.log('Group '+idgroup+' Qty '+data);
+					console.log('Size '+idsize+' Group '+idgroup+' Qty '+data);
 
 					if (data>0) {
 						$(element).html(addCommas(data));
@@ -311,11 +311,82 @@ $(document).ready(function () {
 		$('.tdproposeqty[data-idproduct='+idproduct+']').html('');
 		$('.tdmsg[data-idproduct='+idproduct+']').html('');
 		}
-		
 	});
 
+	pasteFreegroup();
+
+	function pasteFreegroup() {
+		$.get('index.php?route=barcode/jsonFreeGroup', function(data){
+			var json = JSON.parse(data);
+			var temp = json;
+
+			// Freegroup
+			let jsonfreeuse = [];
+			$.each(temp, function(i,v){
+				jsonfreeuse.push(v.group);
+			});
+
+			// Group sync with old association on config day
+			let oldsync = [];
+			$.ajax({
+				type: "GET",
+				url: "index.php?route=association/ajaxCheckOldSync",
+				dataType: "json",
+				async: false,
+				success: function (response) {
+					$.each(response, (i,v) => {
+						oldsync.push(v);
+					});
+				}
+			});
+
+			// Diff 2 array
+			// Real freegroup can use
+			let indexFree = [];
+			// let difference = []; // not use
+			$.grep(jsonfreeuse, function(el, index) {
+				if (jQuery.inArray(el, oldsync) == -1) {
+					indexFree.push(index); // Save index freegroup
+					// difference.push(el); // save group (not use)
+				}
+			});
+			// console.log(difference);
+
+			var i = 0;
+			$('.tdpropose').each(function(index,value){
+				var thishtml = parseInt($(this).html());
+				var idproduct = $(this).data('idproduct');
+				var row = $(this).attr('row');
+				var last_wk = parseInt($('.tdlast[data-idproduct='+idproduct+'] .last_wk').html());
+				var thissave = $('.txt_group[data-key='+idproduct+']').val();
+
+				if (last_wk!=$(this).html()) {
+					$(this).addClass('text-danger');
+				}
+
+				if (isNaN(thishtml)&&thissave.length==0) {
+					// var oldqty = $(this).parent('td').prev('td').prev('td').prev('td').html();
+					let thisgroup = pad(temp[indexFree[i]].group, 3); 
+					let thisqty = temp[indexFree[i]].qty;
+					$(this).html(thisgroup);
+					$('.tdproposeqty[data-idproduct='+idproduct+']').html(addCommas(thisqty));
+					$('.tdmsg[data-idproduct='+idproduct+']').html('Free Group');
+					if (last_wk!=thisgroup) {
+						$(this).addClass('text-danger');
+						$('.tdproposeqty[data-idproduct='+idproduct+']').addClass('text-danger');
+						$('.tdmsg[data-idproduct='+idproduct+']').addClass('text-danger');
+					}
+					i++;
+				}
+			});
+		},'json');
+	}
 
 
+	function pad (str, max) { // zero left pad
+		str = str.toString();
+		return str.length < max ? pad("0" + str, max) : str;
+	}
 
 	function addCommas(nStr) {
 		nStr += '';
@@ -332,7 +403,7 @@ $(document).ready(function () {
 	$('[type="file"]').on('change', function(e){
 		var fileName = e.target.files[0].name;
 		$(this).next('label.custom-file-label').html('<span class="text-dark">'+fileName+'</span>');
-		console.log(fileName);
+		// console.log(fileName);
 	});
 
 	$('.select2').select2({
@@ -355,36 +426,7 @@ $(document).ready(function () {
 		
 	// });
 
-	// $.get('index.php?route=barcode/jsonFreeGroup', function(data){
-	// 	var json = JSON.parse(data);
-	// 	var temp = json;
-	// 	console.log(json);
-	// 	var i = 0;
-	// 	$('.propose').each(function(index,value){
-	// 		var thishtml = parseInt($(this).html());
-	// 		var row = $(this).attr('row');
-	// 		var last_wk = parseInt($('.last_wk[row="'+row+'"]').html());
-
-	// 		if (last_wk!=$(this).html()) {
-	// 			$(this).addClass('text-danger');
-	// 		}
-	// 		if (isNaN(thishtml)) {
-	// 			var oldqty = $(this).parent('td').prev('td').prev('td').prev('td').html();
-	// 			console.log(oldqty);
-	// 			// i=0;
-	// 			// while(temp[i].qty>) {
-
-	// 			// }
-	// 			$(this).html(temp[i].group).parent('td').next('td').html(addCommas(temp[i].qty)).next('td').html('Free Group');
-	// 			if (last_wk!=temp[i].group) {
-	// 				$(this).addClass('text-danger');
-	// 				$(this).parent('td').next('td').addClass('text-danger');
-	// 			}
-				
-	// 			i++;
-	// 		}
-	// 	});
-	// },'json');
+	
 
 	$('#check_all').change(function(){
 		if ($(this).is(':checked')) {

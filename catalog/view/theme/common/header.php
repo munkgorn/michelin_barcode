@@ -141,6 +141,14 @@
 						</ul>
 					</li>
 					<?php endif;?>
+					<?php if (isset($_SESSION['id_user_group']) && in_array($_SESSION['id_user_group'], array(1,2))): ?>
+					<li>
+						<a href="<?php echo route('clear');?>">
+							<i data-feather="home" class="align-self-center menu-icon"></i>
+							<span>Clear Data</span>
+						</a>
+					</li>
+					<?php endif; ?>
 					<?php if (isset($_SESSION['id_user_group']) && in_array($_SESSION['id_user_group'], array(1))): ?>
 					<li>
 						<a href="<?php echo route('import'); ?>">

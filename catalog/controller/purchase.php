@@ -41,16 +41,8 @@
 	    	$data_select_date_wk = array(
 	    		'date' => $data['date_wk']
 	    	);
-			// $data['listPrefixBarcode'] = $barcode->listPrefixBarcode($data_select_date_wk);
-			
 			$data['result_group'] = array();
 			$data['result_group'] = $config->getBarcodes();
-
-			// if (count($data['result_group'])==0) {
-			// 	$this->setSession('error', 'Cannot go page "new barcode ordering", please import association and validated.');
-			// 	$this->redirect('association');
-			// }
-
 			$data['end_group'] = isset($_GET['end_group']) ? get('end_group') : end($data['result_group'])['group'];
 	    	$data['action'] = route('purchase');
 			$data['action_import_excel'] = route('listGroup');
@@ -60,12 +52,6 @@
 			
 			$purchase = $this->model('purchase');
 			$group = $this->model('group');
-
-			if (empty($data['start_group']) || empty($data['end_group'])) {
-				// $this->setSession('error', 'Not found');
-				// $this->redirect('association');
-			}
-
 			// Get List
 			$filter = array(
 				'start_group' => get('start_group'),
@@ -75,22 +61,12 @@
 			$data['getMapping'] = array();
 			if ($mapping!=false) {
 				foreach ($mapping as $key => $value) {
-					// $value['barcode_start_year'] = $purchase->getStartBarcodeOfYearAgo($value['group_code']);
-					// $value['barcode_start_year'] = '';
-					// $value['barcode_end_year'] = $purchase->getEndBarcodeOfYearAgo($value['group_code']);
-					// $value['barcode_end_year'] = '';
 					$barcode_use = $group->getGroupStatus($value['group_code']);
-					//$value['status'] = $barcode_use==="1" ? '<span class="text-primary">Recived</span>' : ($barcode_use==="0" ? '<span class="text-danger">Waiting</span>' : '');
 					$value['status'] = $barcode_use==="1" ? '' : ($barcode_use==="0" ? '<span class="text-danger">Waiting</span>' : '');
 					$value['status_id'] = $barcode_use;
-	
 					$data['getMapping'][] = $value;
 				}
 			}
-
-			// 3 year ago
-			// $data['date_first_3_year'] = !empty($default_first_3_year) ? date('Y-m-d', strtotime($default_first_3_year)) : '';
-			// $data['date_lasted_order'] = !empty($default_end_year) ? date('Y-m-d', strtotime($default_end_year)) : '';
 
 			$data['success'] = $this->hasSession('success') ? $this->getSession('success') : ''; $this->rmSession('success');
 			$data['error'] = $this->hasSession('error') ? $this->getSession('error') : ''; $this->rmSession('error');

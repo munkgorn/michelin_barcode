@@ -179,7 +179,7 @@ class AssociationModel extends db
         $sql .= "p.size_product_code AS size, ";
         $sql .= "p.sum_product AS sum_prod, ";
         // $sql .= "g.group_code AS `last_week`, ";
-        $sql .= "(SELECT g.group_code FROM mb_master_product p2 LEFT JOIN mb_master_group g ON g.id_group = p2.id_group WHERE p2.size_product_code = p.size_product_code AND p2.id_product != p.id_product AND p2.id_group is not null ORDER BY p2.id_product DESC LIMIT 0,1 ) as last_week, ";
+        $sql .= "(SELECT g.group_code FROM mb_master_product p2 LEFT JOIN mb_master_group g ON g.id_group = p2.id_group WHERE p2.size_product_code = p.size_product_code AND p2.id_product != p.id_product AND p2.id_group is not null AND p2.date_wk >= DATE_ADD( p.date_wk, INTERVAL - $lastweekdate DAY )  ORDER BY p2.id_product DESC LIMIT 0,1 ) as last_week, ";
         // $sql .= "(SELECT count(*) as qty FROM mb_master_barcode b WHERE b.id_group = g.id_group AND b.group_received=1 AND b.barcode_status=0 AND b.barcode_flag=0) as remaining_qty, ";
         $sql .= "(SELECT group_code FROM mb_master_group g2 WHERE g2.id_group = p.id_group) as save ";
         $sql .= "FROM mb_master_product p ";
@@ -350,10 +350,18 @@ class AssociationModel extends db
     public function getOldSync() {
         $query = $this->query("SELECT config_value FROM mb_master_config WHERE config_key = 'config_date_size'");
         $config = $query->row['config_value'];
-        $sql = "SELECT g.group_code FROM mb_master_product p LEFT JOIN mb_master_group g ON g.id_group=p.id_group WHERE p.date_modify>=DATE_ADD(CURDATE(),INTERVAL-$config DAY) AND p.date_modify  ";
+        $sql = "SELECT g.group_code FROM mb_master_product p LEFT JOIN mb_master_group g ON g.id_group=p.id_group WHERE p.date_modify>=DATE_ADD(CURDATE(),INTERVAL-$config DAY) AND p.date_modify AND g.group_code is not null ";
         // $sql = "SELECT g.group_code FROM mb_master_product p LEFT JOIN mb_master_group g ON g.id_group=p.id_group WHERE p.date_modify>=DATE_ADD('2020-10-16',INTERVAL-$config DAY) ";
         $query = $this->query($sql);
         return $query->rows;
+    }
+
+    public function clearAllAssociation() {
+        return $this->query("TRUNCATE TABLE mb_master_product;");
+    }
+
+    public function clearAssociation($date) {
+        return $this->query("DELETE FROM mb_master_product WHERE date_wk = '$date'");
     }
 
 }

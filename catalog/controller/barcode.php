@@ -59,8 +59,6 @@
 							$res = $barcode->findAndUpdateBarcode($groupcode, $thisbarcode);
 							if ($res==true && in_array($groupcode, $data['group'])==false) {
 								$data['group'][] = $groupcode;
-
-
 							}
 						}
 					}
@@ -192,18 +190,18 @@
 				}
 			} else {
 				$this->setSession('error', 'End Barcode is heighter more than Start Barcode');
-				$this->redirect('barcode&date='.get('date'));
+				redirect('barcode&date='.get('date'));
 			}
 
 			$result = $barcode->updateBarcodeUse($range);
 			if ($result) {
 				// $this->jsonFreeGroup();
-				$this->generateJsonDateBarcode();
+				// $this->generateJsonDateBarcode();
 				$this->setSession('success', 'Success add range barcode is used <b>'.$start.' - '.$end.'</b>');
 			} else {
 				$this->setSession('error', 'Cannot add range barcode');
 			}
-			$this->redirect('barcode&date='.get('date'));
+			redirect('barcode&date='.get('date'));
 		}
 		public function unconfirmImportBarcode() {
 			$this->rmSession('barcodealert');
@@ -1021,6 +1019,22 @@
 				$flag = false;
 			}
 			$data = $barcode->getRangeBarcode($group, $status, $date, $flag);
+			
+			// if (count($data)>0) {
+			// 	$barcode = $this->model('barcode');
+			// 	foreach ($data as $value) {
+			// 		$save = array(
+			// 			'group' => $value['barcode_prefix'],
+			// 			'barcode_start' => $value['start'],
+			// 			'barcode_end' => $value['end'], 
+			// 			'total' => $value['qty'],
+			// 			'type' => $value['barcode_status'] // 1 use , 2 notuse
+			// 		);
+			// 		$barcode->saveRange($save);
+			// 	}
+			// }
+
+
 			if ($header) {
 				$this->json($data);
 			} else {
@@ -1252,7 +1266,8 @@
 			$fp = fopen(DOCUMENT_ROOT . 'uploads/default_datebarcode.json', 'w');
 			fwrite($fp, json_encode($data));
 			fclose($fp);
-			return $data;
+			// return 1;
+			$this->json(array('status'=>true));
 		}
 	}
 ?>

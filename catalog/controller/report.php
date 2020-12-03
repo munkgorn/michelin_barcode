@@ -42,6 +42,24 @@ class ReportController extends Controller
 
     public function saveJson()
     {
+        // $memory = $this->model('memory');
+        // $decode = json_decode($_POST['data'], true);
+        // $start = ''; $end = '';
+        // if (isset($decode['range'])) {
+        //     $ex = explode('-', $decode['range']);
+        //     $start = trim($ex[0]);
+        //     $end = trim($ex[1]);
+        // }
+        // $save = array(
+        //     'group' => $decode['group'],
+        //     'barcode_start' => $start,
+        //     'barcode_end' => $end,
+        //     'total' => $_POST['qty'],
+        //     'type' => 2 // 1 use , 2 notuse
+        // );
+        // // print_r($save);
+        // $memory->saveRange($save);
+
         $json = $_POST['data'];
         $fp = fopen(DOCUMENT_ROOT . 'uploads/reportall.json', 'w');
         fwrite($fp, json_encode($json));

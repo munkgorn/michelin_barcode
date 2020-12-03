@@ -751,12 +751,14 @@
 					$temp = explode('-', $v);
 					if (count($temp)==2) {
 						$where[] = (count($where)==0?'':' OR ')." (barcode_code >= $temp[0] AND barcode_code <= $temp[1]) ";
+						// $sql = "DELETE FROM mb_master_memory WHERE barcode_start = ".$temp[0]." AND barcode_end = ".$temp[1]." AND group = ".$group;
+						// $this->query($sql);
 					}
 				}
 
 				$sql = "UPDATE mb_master_barcode SET barcode_flag = 1 WHERE barcode_status = 0 AND barcode_flag = 0 AND group_received = 1 AND barcode_prefix = $group AND (".implode(' ',$where).")";
 				$query = $this->query($sql);
-				echo $query;
+				// echo $query;
 			}
 			
 		}
@@ -821,12 +823,50 @@
 			$sql .= "BY a.barcode_status,a.barcode_code; ";
 			// echo $sql;
 
+
 			$query = $this->query($sql);
-			return $query->rows;
+			$rows = $query->rows;
+
+			/*
+			foreach ($rows as $row) {
+				$queryfind = $this->query("SELECT * FROM mb_master_memory WHERE `group` = ".(int)$row['barcode_prefix']." AND `type` = ".$status." AND `barcode_start` = ".$row['start']." AND `barcode_end`=".$row['end']);
+				if ($queryfind->num_rows==0) {
+
+					$sql = "INSERT INTO `mb_master_memory` ";
+					$sql .= "(`group`, `barcode_start`, `barcode_end`, `total`, `type`) VALUES ";
+					$sql .= "(".$row['barcode_prefix'].", ".$row['start'].", ".$row['end'].", ".$row['qty'].", ".$row['barcode_status'].") ";
+				} else {
+					$sql = "UPDATE `mb_master_memory` SET ";
+					$sql .= "`group`=".$row['barcode_prefix'].", ";
+					$sql .= "`barcode_start`=".$row['start'].", ";
+					$sql .= "`barcode_end`=".$row['end'].", ";
+					$sql .= "`total`=".$row['qty'].", ";
+					$sql .= "`type`=".$row['barcode_status']." ";
+					$sql .= "WHERE id=".$queryfind->row['id'];
+				}
+				$this->query($sql);
+			}
+			*/ 
+			
+			return $rows;
 		}
 		
 
 
+		public function saveRange ($data) {
+			// return $this->insert('memory', $data);
+			// $sql = "INSERT INTO `mb_master_memory SET group = $data[group], barcode_start = $data[barcode_start], barcode_end = $data[barcode_end], `type` = $data[type] ;";
+			// $sql = "INSERT INTO `mb_master_memory` ";
+			// $sql .= "(`group`, `barcode_start`, `barcode_end`, `total`, `type`) rowS ";
+			// $sql .= "(".$data['group'].", ".$data['barcode_start'].", ".$data['barcode_end'].", ".$data['total'].", ".$data['type'].") ";
+			// $this->query($sql);
+		}
+
+		public function clearBarcode($date) {
+			$sql = "DELETE FROM mb_master_barcode WHERE date_modify <= '$date'";
+			return $this->query($sql);
+			// return $query->row;
+		}
 
 
 		
