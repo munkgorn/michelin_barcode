@@ -189,26 +189,19 @@ $(document).ready(function () {
 		var default_end = parseInt(ele.attr('default_end'));
 		var groupcode = ele.data('id');
 
-		var num1 = start + qty - 1;
-		var newstart = 0;
-		let check = '';
-		if (num1 > default_end) {
-			var num2 = num1 - default_end;
-			newstart = default_start + num2 - 1;
-			check = newstart.toString().substring(0,3);
-		}
 
-		console.log(qty+' '+check+' '+pad(groupcode,3));
-		if (qty>99999&&check!=pad(groupcode,3)) {
-			alert('การสั่งซื้อมาจำนวนมากกว่าที่กำหนด');
-			ele.val('');
-			ele.parents('tr').find('.end').text('00000000');
+		// Check calcurate with condition when 'barcode end' is more than 'default end' just reset to 'default start' and calcurate
+		let check = () => {
+			let newend = start + qty - 1;	
+			if (newend > default_end) {
+				let cal = (default_start-1) + (qty - (default_end - start) - 1);
+				newend = cal;
+				console.log('This barcode is running more than default end : ' + default_end);
+			}	
+			return newend;
 		}
-		
-		var barcodeUsed = false;
-		// console.log(start+'+'+qty+'='+num1+' / '+default_end+' / '+newstart);
-		if (newstart>=0 && check==pad(groupcode,3)) {
-			console.log('checking barcode...');
+		// send now 'barcode end' to check in database used? or not? in 'x' day
+		let sendBarcodeCheck = (num1) => {
 			$.ajax({
 				type: "POST",
 				url: "index.php?route=purchase/checkBarcodeUsed",
@@ -216,6 +209,7 @@ $(document).ready(function () {
 				dataType: "json",
 				success: function (response) {
 					var obj = JSON.parse(response);
+					console.log(obj);
 					if (obj.id_barcode > 0) {
 						console.log('Found barcode is cannot use');
 						ele.val('');
@@ -229,27 +223,37 @@ $(document).ready(function () {
 			});
 		}
 
-		var sum_end_qty = 0;
-		if (qty>0 && !barcodeUsed) {
-			var sum_end_qty = newstart > 0 ? newstart : (start + qty - 1); // ! Change `End` 
-			var end_string = pad(sum_end_qty,8);
-			if (isNaN(end_string)==false) {
-				ele.parents('tr').find('.end').text(end_string);
-			}
-
-			var dataPost = {
-				start_group: '<?php echo $start_group;?>',
-				end_group: '<?php echo $end_group;?>',
-				group_code: groupcode,
-				change_qty: qty,
-				change_end: end_string
-			}
-			saveForExport(dataPost);
+		let barcodeUsed = false;
+		let newstart = 0;
+		let sum_end_qty = 0;
+		if (qty>100000) {
+			console.log('Alert bug input qty is more than 100,000')
+			alert('This barcode is more than limit input, please key in maximum 100,000. ');
+			ele.val('');
+			ele.parents('tr').find('.end').text('00000000');
+			return 0;
 		} else {
-			ele.parents('tr').find('.end').text('000000');
+			newstart = check();
+			console.log('Barcode End : ' + newstart);
+			sendBarcodeCheck(newstart);
+			if (qty>0 && !barcodeUsed) {
+				sum_end_qty = newstart > 0 ? newstart : (start + qty - 1); // ! Change `End` 
+				var end_string = pad(sum_end_qty,8);
+				if (isNaN(end_string)==false) {
+					ele.parents('tr').find('.end').text(end_string);
+				}
+				var dataPost = {
+					start_group: '<?php echo $start_group;?>',
+					end_group: '<?php echo $end_group;?>',
+					group_code: groupcode,
+					change_qty: qty,
+					change_end: end_string
+				}
+				saveForExport(dataPost);
+			} else {
+				ele.parents('tr').find('.end').text('000000');
+			}
 		}
-
-		
 	});
 
 	
@@ -312,7 +316,7 @@ let saveForExport = (dataPost) => {
 		url: "<?php echo $action_ajax;?>",
 		data: dataPost,
 		success: function (response) {
-			console.log(response);
+			// console.log(response);
 		},
 		error: function (xhr, ajaxOptions, thrownError) {
 			console.log(xhr.status);
