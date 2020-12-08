@@ -80,6 +80,23 @@
             </div>
 
         </div>
+        <div class="col-sm-6">
+
+            <div class="card">
+                <div class="card-header"><h3>Remove Save Association</h3></div>
+                <div class="card-body">
+                    <form action="index.php?route=import/removeAssoiation" method="post">
+                        <select name="dateass" id="" class="form-control">
+                        <?php foreach ($assdate as $ass) : ?>
+                            <option value="<?php echo $ass['date_wk'];?>"><?php echo $ass['date_wk'];?></option>
+                        <?php endforeach; ?>
+                        </select>
+                        <input type="submit" class="btn btn-outline-primary mt-2" value="TRUNCATE" onclick="return confirm('Are you sure?')" />
+                    </form>
+                </div>
+            </div>
+
+        </div>
     </div>
 </div>
 

@@ -263,7 +263,7 @@ $(document).ready(function () {
 			$.ajax({
 				type: "POST",
 				url: "index.php?route=association/ajaxCountBarcodeNotuse",
-				data: {group: idgroup},
+				data: {group: idgroup, id_product: idproduct},
 				dataType: "json",
 				async: true,
 				cache:true,
@@ -279,20 +279,40 @@ $(document).ready(function () {
 					$.ajax({
 						type: "POST",
 						url: "index.php?route=association/ajaxCondition",
-						data: {size: idsize, sum_prod: idsumprod, last_wk: idgroup, qty: data},
+						data: {size: idsize, sum_prod: idsumprod, last_wk: idgroup, qty: data, id_product: idproduct},
 						dataType: "json",
 						async: false,
 						cache:true,
 						success: function (data2) {
 							if (data2.propose!=null) {
 								$('.tdpropose[data-idproduct='+idproduct+']').html(data2.propose);
+								$('.txt_propose[data-key='+idproduct+']').val(data2.propose);
 							}
 							if (data2.propose_remaining_qty!=null) {
 								$('.tdproposeqty[data-idproduct='+idproduct+']').html(data2.propose_remaining_qty);
 							}
 							if (data2.message!=null) {
 								$('.tdmsg[data-idproduct='+idproduct+']').html(data2.message);
+								if (data2.message=='Free Group') {
+									$('.tdpropose[data-idproduct='+idproduct+']').addClass('text-danger');
+									$('.tdproposeqty[data-idproduct='+idproduct+']').addClass('text-danger');
+									$('.tdmsg[data-idproduct='+idproduct+']').addClass('text-danger');
+								}
 							}
+
+							let thisprq_str = data2.propose_remaining_qty;
+							let thisprq = thisprq_str.replace(',','');
+
+							$.ajax({
+								type: "POST",
+								url: "index.php?route=association/ajaxSavePropose",
+								data: {id_product: idproduct, remaining_qty: data, propose: data2.propose, propose_remaining_qty: thisprq, message: data2.message},
+								dataType: "json",
+								async: false,
+								success: function (response) {
+									console.log(response);
+								}
+							});
 						}
 					});
 
@@ -333,6 +353,7 @@ $(document).ready(function () {
 				url: "index.php?route=association/ajaxCheckOldSync",
 				dataType: "json",
 				async: false,
+				cache:true,
 				success: function (response) {
 					$.each(response, (i,v) => {
 						oldsync.push(v);
@@ -355,26 +376,47 @@ $(document).ready(function () {
 			var i = 0;
 			$('.tdpropose').each(function(index,value){
 				var thishtml = parseInt($(this).html());
+				
+				
 				var idproduct = $(this).data('idproduct');
+				var thisqtylk_str = $('.tdqty[data-idproduct='+idproduct+']').html();
+				var thisqtylk = parseInt(thisqtylk_str.replace(',', ''));
+
+				var thissumpod_str = $('.tdsumprod[data-idproduct='+idproduct+']').html();
+				var thissumpod = parseInt(thissumpod_str.replace(',',''));
+				
 				var row = $(this).attr('row');
 				var last_wk = parseInt($('.tdlast[data-idproduct='+idproduct+'] .last_wk').html());
 				var thissave = $('.txt_group[data-key='+idproduct+']').val();
 
 				if (last_wk!=$(this).html()) {
 					$(this).addClass('text-danger');
+					// $(this).addClass('text-danger');
+					$('.tdproposeqty[data-idproduct='+idproduct+']').addClass('text-danger');
+					$('.tdmsg[data-idproduct='+idproduct+']').addClass('text-danger');
 				}
 
-				if (isNaN(thishtml)&&thissave.length==0) {
+				if (isNaN(thishtml)&&thissave.length==0 && typeof temp[indexFree[i]] != 'undefined' && thissumpod > 0) {
 					// var oldqty = $(this).parent('td').prev('td').prev('td').prev('td').html();
 					let thisgroup = pad(temp[indexFree[i]].group, 3); 
-					let thisqty = temp[indexFree[i]].qty;
+					let thisqty_str = temp[indexFree[i]].qty;
+					let thisqty = parseInt(thisqty_str.replace(',',''));
 					$(this).html(thisgroup);
+					$('.txt_propose[data-key='+idproduct+']').val(thisgroup);
 					$('.tdproposeqty[data-idproduct='+idproduct+']').html(addCommas(thisqty));
 					$('.tdmsg[data-idproduct='+idproduct+']').html('Free Group');
 					if (last_wk!=thisgroup) {
-						$(this).addClass('text-danger');
-						$('.tdproposeqty[data-idproduct='+idproduct+']').addClass('text-danger');
-						$('.tdmsg[data-idproduct='+idproduct+']').addClass('text-danger');
+
+						// $.ajax({
+						// 	type: "POST",
+						// 	url: "index.php?route=association/ajaxSavePropose",
+						// 	data: {id_product: idproduct, remaining_qty: thisqtylk, propose: thisgroup, propose_remaining_qty: thisqty, message: 'Free Group'},
+						// 	dataType: "json",
+						// 	async: false,
+						// 	success: function (response) {
+						// 		console.log(response);
+						// 	}
+						// });
 					}
 					i++;
 				}

@@ -11,7 +11,7 @@
 		}
 		public function clearSession() {
 			$this->rmSession('import_group');
-			redirect('loading/someone','&redirect=association&key=freegroup,year,barcode');
+			redirect('loading/someone','&redirect=barcode&key=freegroup,year,barcode');
 			exit();
 		}
 		public function ajaxRemoveRange() {

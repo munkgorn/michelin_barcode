@@ -157,6 +157,7 @@ $(document).ready(function () {
 		if (newpercent==100.00) {
 			if (nowpercent!=100.00) {
 				alert('Process is successfull.');
+				// window.location.href="index.php?route=loading/someone&key=freegroup,barcode&redirect=barcode/clearSession";
 				window.location.href="index.php?route=barcode/clearSession";
 			}
 			

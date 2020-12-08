@@ -23,7 +23,7 @@ class AssociationModel extends db
     public function validatedProductWithGroup($data = array())
     {
         $result = array();
-        $group_code = (int) $data['id_group'];
+        $group_code = (int)$data['id_group']; // groupcode
         $id_user = $data['id_user'];
         $date_wk = $data['date_wk'];
         $id_product = $data['id_product'];
@@ -50,7 +50,7 @@ class AssociationModel extends db
         $result_query_check_have_group = $this->query($sql_check_have_group);
         $data_now = date('Y-m-d H:i:s');
 
-        if ($result_query_check_have_group->num_rows == 0) { // Insert because this group is never used.==1?true:false;
+        if ($result_query_check_have_group->num_rows == 0 && (int)$group_code>0) { // Insert because this group is never used.==1?true:false;
             $data_insert = array(
                 'group_code' => $group_code,
                 'id_user' => $id_user,
@@ -72,7 +72,7 @@ class AssociationModel extends db
         foreach ($config_barcodes->rows as $barcode) {
             $this->where('group_code', $barcode['group']);
             $group_info = $this->get('group');
-            if ($group_info->num_rows == 0) {
+            if ($group_info->num_rows == 0 && (int)$barcode['group']>0) {
                 $insert = array(
                     'id_user' => $id_user,
                     'group_code' => $barcode['group'],
@@ -112,6 +112,17 @@ class AssociationModel extends db
         $this->select('count(id_group) as count_group');
         $result = $this->get('product');
         return $result->row['count_group'];
+    }
+
+    public function removeJunkSave($date_wk) {
+        $this->where('date_wk', $date_wk);
+        $update = array(
+            'propose' => '',
+            'propose_remaining_qty' => '',
+            'message'=>'',
+            'remaining_qty' => '',
+        );
+        $this->update('product', $update);
     }
 
     public function getDateWK()
@@ -179,7 +190,7 @@ class AssociationModel extends db
         $sql .= "p.size_product_code AS size, ";
         $sql .= "p.sum_product AS sum_prod, ";
         // $sql .= "g.group_code AS `last_week`, ";
-        $sql .= "(SELECT g.group_code FROM mb_master_product p2 LEFT JOIN mb_master_group g ON g.id_group = p2.id_group WHERE p2.size_product_code = p.size_product_code AND p2.id_product != p.id_product AND p2.id_group is not null AND p2.date_wk >= DATE_ADD( p.date_wk, INTERVAL - $lastweekdate DAY )  ORDER BY p2.id_product DESC LIMIT 0,1 ) as last_week, ";
+        $sql .= "(SELECT g.group_code FROM mb_master_product p2 LEFT JOIN mb_master_group g ON g.id_group = p2.id_group WHERE p2.size_product_code = p.size_product_code AND p2.id_product != p.id_product AND p2.id_group is not null AND p2.date_wk >= DATE_ADD( p.date_wk, INTERVAL - $lastweekdate DAY ) AND p2.date_wk <= p.date_wk  ORDER BY p2.id_product DESC LIMIT 0,1 ) as last_week, ";
         // $sql .= "(SELECT count(*) as qty FROM mb_master_barcode b WHERE b.id_group = g.id_group AND b.group_received=1 AND b.barcode_status=0 AND b.barcode_flag=0) as remaining_qty, ";
         $sql .= "(SELECT group_code FROM mb_master_group g2 WHERE g2.id_group = p.id_group) as save ";
         $sql .= "FROM mb_master_product p ";
@@ -193,6 +204,7 @@ class AssociationModel extends db
         //     $sql .= !empty($last_datewk) ? "(p.id_product != p2.id_product AND p2.date_wk = '$last_datewk') OR " : "";
         //     $sql .= !empty($last_datewk) ? "(p2.id_product is null) " : "";
         //     $sql .= !empty($last_datewk) ? ") " : "";
+        $sql .= "GROUP BY p.size_product_code ";
         $sql .= "ORDER BY p.size_product_code ASC ";
         $query = $this->query($sql);
         // echo $sql;
@@ -240,6 +252,26 @@ class AssociationModel extends db
         // } else {
             // return '';
         // }
+    }
+    public function getRemaining($idproduct) {
+        $sql = "SELECT remaining_qty FROM mb_master_product WHERE id_product = $idproduct";
+        $query = $this->query($sql);
+        return $query->num_rows == 1&&!empty($query->row['remaining_qty']) ? $query->row['remaining_qty'] : false;
+    }
+    public function getPropose($idproduct) {
+        $sql = "SELECT propose, propose_remaining_qty, `message` FROM mb_master_product WHERE id_product = $idproduct";
+        $query = $this->query($sql);
+        return $query->num_rows==1&&!empty($query->row['propose']) ? $query->row : false;
+    }
+    public function savePropose($idproduct , $data=array()) {
+        $sql = "UPDATE mb_master_product SET ";
+        $sql .= !empty($data[remaining_qty]) ? "remaining_qty = '$data[remaining_qty]', " : "";
+        $sql .= !empty($data[propose]) ? "propose = '$data[propose]', " : "";
+        $sql .= !empty($data[propose_remaining_qty]) ? "propose_remaining_qty = '$data[propose_remaining_qty]', " : "";
+        $sql .= !empty($data[message]) ? "`message` = '$data[message]' " : "";
+        $sql .= "WHERE id_product = $idproduct ";
+        $query = $this->query($sql);
+        
     }
     public function getNotUseBarcode($group_code) {
         $sql = "SELECT count(*) as qty  FROM mb_master_barcode WHERE barcode_prefix = $group_code AND barcode_flag = 0 AND group_received = 1 AND barcode_status = 0 ";

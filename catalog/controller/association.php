@@ -67,7 +67,12 @@ class AssociationController extends Controller
     public function ajaxCountBarcodeNotuse() {
         $group_code = $_POST['group'];
         $association = $this->model('association');
-        $json = $association->getNotUseBarcode($group_code);
+        $remaining = $association->getRemaining($_POST['id_product']);
+        if ($remaining==false) {
+            $json = $association->getNotUseBarcode($group_code);
+        } else {
+            $json = $remaining;
+        }
         $this->json($json);
     }
 
@@ -82,6 +87,18 @@ class AssociationController extends Controller
         $this->json($beforeSync);
     }
 
+    public function ajaxSavePropose() {
+
+        $idproduct = $_POST['id_product'];
+        $data = array();
+        $data['remaining_qty'] =  isset($_POST['remaining_qty'])&&!empty($_POST['remaining_qty']) ? $_POST['remaining_qty'] : '';
+        $data['propose'] =  isset($_POST['propose'])&&!empty($_POST['propose']) ? $_POST['propose'] : '';
+        $data['propose_remaining_qty'] =  isset($_POST['propose_remaining_qty'])&&!empty($_POST['propose_remaining_qty']) ? $_POST['propose_remaining_qty'] : '';
+        $data['message'] =  isset($_POST['message'])&&!empty($_POST['message']) ? $_POST['message'] : '';
+        $association = $this->model('association');
+        $association->savePropose($idproduct, $data);
+    }
+
     public function ajaxCondition() {
         $association = $this->model('association');
         $config = $this->model('config');
@@ -91,109 +108,95 @@ class AssociationController extends Controller
         $last_week = $_POST['last_wk'];
         $remaining_qty = $_POST['qty'];
 
-        $notuse = array();
+        $pp = $association->getPropose($_POST['id_product']);
+        if ($pp!==false) {
+            $propose = $pp['propose'];
+            $propose_remaining_qty = $pp['propose_remaining_qty'];
+            $message = $pp['message'];
 
-        $relation_group = $association->getRelationshipBySize($size, $sumprod);
-        if ($sumprod>0) {
-            if (!empty($relation_group['group']) && !empty($relation_group['qty'])) {
-                if (!in_array((int)$relation_group['group'],$notuse)) {
-                    $notuse[] = (int)$relation_group['group'];
+            $json = array(
+                'size' => $size,
+                'sum_prod' => $sumprod,
+                'last_wk0' => !empty($last_week) ? sprintf('%03d', $last_week) : '',
+                'remaining_qty' => number_format((int) round($remaining_qty,0), 0),
+                'propose' => !empty(strip_tags($propose)) ? ($propose!=$last_week?''.sprintf('%03d', $propose).'':sprintf('%03d', $propose)) : '',
+                'propose_remaining_qty' => round($propose_remaining_qty,0) > 0 ? ($propose!=$last_week?''.number_format((int) round($propose_remaining_qty,0), 0).'':number_format((int) round($propose_remaining_qty,0), 0)) : '',
+                'message' => $message, 
+            );
+        } else {
+
+            $notuse = array();
+
+            $relation_group = $association->getRelationshipBySize($size, $sumprod);
+            if ($sumprod>0) {
+                if (!empty($relation_group['group']) && !empty($relation_group['qty'])) {
+                    if (!in_array((int)$relation_group['group'],$notuse)) {
+                        $notuse[] = (int)$relation_group['group'];
+                    }
+                }
+                else if ($remaining_qty >= $sumprod) {
+                    if (!in_array((int)$last_week,$notuse)) {
+                        $notuse[] = (int)$last_week;
+                    }
                 }
             }
-            else if ($remaining_qty >= $sumprod) {
-                if (!in_array((int)$last_week,$notuse)) {
-                    $notuse[] = (int)$last_week;
-                }
+
+            // Config Relationship
+            $config_relation = array();
+            $temprelation = $config->getRelationship();
+            foreach ($temprelation as $tr) {
+                $config_relation[] = (int)$tr['group'];
             }
-        }
 
-        // Free Group
-        // $free_group = $this->jsonFreeGroup(false);
-        // $temp_freegroup = json_decode($free_group, true);
-        // $temp_freegroup = json_decode($temp_freegroup[0], true);
-        // $freegroup = array();
-        // foreach ($temp_freegroup as $v) {
-        //     $freegroup[$v['group']] = $v['qty'];
-        // }
-
-        // Config Relationship
-        $config_relation = array();
-        $temprelation = $config->getRelationship();
-        foreach ($temprelation as $tr) {
-            $config_relation[] = (int)$tr['group'];
-        }
-
-        // Group barcode use with old association in config day
-        $oldSync = $association->getOldSync(); 
-        $beforeSync = array(); 
-        foreach ($oldSync as $v) {
-            $beforeSync[] = $v['group_code'];
-        }
-
-        $propose = '';
-        $propose_remaining_qty = '';
-        $message = '';
-
-        if ($sumprod>0) {
-            
-            if (!empty($relation_group['group']) && !empty($relation_group['qty'])) {
-                $propose = $relation_group['group'];
-                $propose_remaining_qty = $relation_group['qty'];
-                $message = '<span class="text-primary">Relationship</span>';
-                // unset($freegroup[(int)$relation_group['group']]);
-            } 
-            else if ($remaining_qty >= $sumprod) {
-                $propose = $last_week;
-                $propose_remaining_qty = $remaining_qty;
-                $message = 'Last Weeek';
-                // unset($freegroup[$last_week]);
-            } 
-            else {
-                $free = '';
-                $free_qty = '';
-                // if (count($freegroup)>0) {
-                //     // $freegroupuse = $this->hasSession('freegroupuse') ? $this->getSession('freegroupuse') : array();
-                //     // $freegroupuse = array();
-                //     foreach ($freegroup as $keyfirst => $fgqty) {
-                //         if (!in_array($keyfirst,$beforeSync)) {
-                //             // $propose = '13';
-                //             if ($fgqty>=$sumprod && !in_array($keyfirst, $config_relation) && !in_array($keyfirst, $notuse)) {
-                //             // if ($fgqty>=$sumprod && !in_array($keyfirst, $config_relation) && !in_array($keyfirst, $notuse) && !in_array($keyfirst, $freegroupuse)) {
-                //                 $free = $keyfirst;
-                //                 $free_qty = $freegroup[$keyfirst];   
-                //                 // $freegroupuse[] = $freegroup[$keyfirst];
-                //                 unset($freegroup[$keyfirst]); 
-                //                 // $this->setSession('freegroupuse', $freegroupuse);
-                                
-                //                 break;
-                //             }
-                //         }
-                //     }
-                // }
-                // if (!empty($free)&&!empty($free_qty)) {
-                //     $propose = $free;
-                //     $propose_remaining_qty = $free_qty;
-                //     $message = !empty($free) ? '<span class="text-danger">Free Group</span>' : '';
-                // }
+            // Group barcode use with old association in config day
+            $oldSync = $association->getOldSync(); 
+            $beforeSync = array(); 
+            foreach ($oldSync as $v) {
+                $beforeSync[] = $v['group_code'];
             }
-        }
 
-        if (empty($last_week)) {
             $propose = '';
             $propose_remaining_qty = '';
             $message = '';
+
+            if ($sumprod>0) {
+                
+                if (!empty($relation_group['group']) && !empty($relation_group['qty'])) {
+                    $propose = $relation_group['group'];
+                    $propose_remaining_qty = $relation_group['qty'];
+                    $message = '<span class="text-primary">Relationship</span>';
+                    // unset($freegroup[(int)$relation_group['group']]);
+                } 
+                else if ($remaining_qty >= $sumprod) {
+                    $propose = $last_week;
+                    $propose_remaining_qty = $remaining_qty;
+                    $message = 'Last Weeek';
+                    // unset($freegroup[$last_week]);
+                } 
+                else {
+                    $free = '';
+                    $free_qty = '';
+                }
+            }
+
+            if (empty($last_week)) {
+                $propose = '';
+                $propose_remaining_qty = '';
+                $message = '';
+            }
+
+
+            $json = array(
+                'size' => $size,
+                'sum_prod' => $sumprod,
+                'last_wk0' => !empty($last_week) ? sprintf('%03d', $last_week) : '',
+                'remaining_qty' => number_format((int) round($remaining_qty,0), 0),
+                'propose' => !empty(strip_tags($propose)) ? ($propose!=$last_week?''.sprintf('%03d', $propose).'':sprintf('%03d', $propose)) : '',
+                'propose_remaining_qty' => round($propose_remaining_qty,0) > 0 ? ($propose!=$last_week?''.number_format((int) round($propose_remaining_qty,0), 0).'':number_format((int) round($propose_remaining_qty,0), 0)) : '',
+                'message' => $message, 
+            );
+
         }
-
-
-        $json = array(
-            'size' => $size,
-            'sum_prod' => $sumprod,
-            'last_wk0' => !empty($last_week) ? sprintf('%03d', $last_week) : '',
-            'remaining_qty' => number_format((int) round($remaining_qty,0), 0),
-            'propose' => !empty(strip_tags($propose)) ? ($propose!=$last_week?''.sprintf('%03d', $propose).'':sprintf('%03d', $propose)) : '',
-            'propose_remaining_qty' => round($propose_remaining_qty,0) > 0 ? ($propose!=$last_week?''.number_format((int) round($propose_remaining_qty,0), 0).'':number_format((int) round($propose_remaining_qty,0), 0)) : '',
-            'message' => $message, 
-        );
 
 
         $this->json($json);
@@ -466,6 +469,7 @@ class AssociationController extends Controller
                         unset($freegroup[$value]);
 
                     } else { // Auto add validated
+
                         
                         // use value on input propose
                         $insert = array(
@@ -485,6 +489,7 @@ class AssociationController extends Controller
             } else {
                 //$this->generateJsonFreeGroup();
                 $this->setSession('success', 'Successfil validated group');
+                redirect('loading/someone','&key=freegroup&redirect=association');
             }
         } else {
             $this->setSession('error', 'Not found post');

@@ -284,7 +284,18 @@ class ImportController extends Controller
 
         }
 
+
+        $association = $this->model('association');
+        $data['assdate'] = $association->getDateWK();
+
         $this->view('import/index', $data);
+    }
+
+    public function removeAssoiation() {
+        $association = $this->model('association');
+        $association->removeJunkSave($_POST['dateass']);
+        echo 'success remove asssociation date : '.$_POST['dateass'];
+        $this->linkIndex();
     }
 
     public function addDefaultGroup()

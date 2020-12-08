@@ -144,7 +144,7 @@
 					<?php if (isset($_SESSION['id_user_group']) && in_array($_SESSION['id_user_group'], array(1,2))): ?>
 					<li>
 						<a href="<?php echo route('clear');?>">
-							<i data-feather="home" class="align-self-center menu-icon"></i>
+							<i data-feather="x-octagon" class="align-self-center menu-icon"></i>
 							<span>Clear Data</span>
 						</a>
 					</li>
@@ -152,7 +152,7 @@
 					<?php if (isset($_SESSION['id_user_group']) && in_array($_SESSION['id_user_group'], array(1))): ?>
 					<li>
 						<a href="<?php echo route('import'); ?>">
-							<i data-feather="home" class="align-self-center menu-icon"></i>
+							<i data-feather="tool" class="align-self-center menu-icon"></i>
 							<span>Import Mockup Data</span>
 						</a>
 					</li>
