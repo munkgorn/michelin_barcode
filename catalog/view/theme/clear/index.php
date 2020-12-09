@@ -22,7 +22,7 @@
                                     <input type="date" name="date" class="form-control" max="<?php echo date('Y-m-d', time());?>" value=""  />
                                     <button type="submit" onclick="return prompt('ยืนยันการลบด้วยการพิมพ์ว่า `confirm`')=='confirm'?true:false;" class="btn btn-danger mt-3">ยืนยันการลบ Barcode</button>
                                 </div>
-                                <small class="text-danger">เมื่อกดยืนยัน barcode ที่เก่ากว่าวันที่ที่เลือกจะถูกลบทิ้งทั้งหมดไม่สามารถกู้คืนได้</small>
+                                <small class="text-danger">เมื่อกดยืนยัน barcode ที่เก่ากว่าวันที่ที่เลือก (เฉพาะที่ใช้ไปแล้วหรือลบไปแล้ว) จะถูกลบทิ้งทั้งหมดไม่สามารถกู้คืนได้</small>
                                 <small class="text-danger">ขั้นตอนการลบอาจจะใช้เวลานาน กรุณารอจนกว่าจะมีสถานะแจ้งเตือนขึ้นมาแสดง</small>
                             </div>
                         </form>

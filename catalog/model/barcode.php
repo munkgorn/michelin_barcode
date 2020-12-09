@@ -863,7 +863,7 @@
 		}
 
 		public function clearBarcode($date) {
-			$sql = "DELETE FROM mb_master_barcode WHERE date_modify <= '$date'";
+			$sql = "DELETE FROM mb_master_barcode WHERE date_modify <= '$date' AND group_received = 1 AND (barcode_status = 1 OR barcode_flag = 1);";
 			return $this->query($sql);
 			// return $query->row;
 		}

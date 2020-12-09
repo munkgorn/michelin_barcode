@@ -264,7 +264,11 @@ class AssociationController extends Controller
                 }
             }
         }
+
         foreach ($lists as $key => $value) {
+            // echo '<pre>';
+            // print_r($value['relation_group']);
+            // echo '</pre>';
             $last_week = $value['last_week'];
             // $remaining_qty = (int)$value['remaining_qty'];
             $remaining_qty = 0;
@@ -276,11 +280,13 @@ class AssociationController extends Controller
             $message = '';
 
             if ($value['sum_prod']>0) {
-                if (!empty($relation_group['group']) && !empty($relation_group['qty'])) {
-                    $propose = $relation_group['group'];
-                    $propose_remaining_qty = $relation_group['qty'];
+                if (!empty($relation_group['group'])) {
                     $message = '<span class="text-primary">Relationship</span>';
-                    unset($freegroup[(int)$relation_group['group']]);
+                    if (!empty($relation_group['qty'])) {
+                        $propose = $relation_group['group'];
+                        $propose_remaining_qty = $relation_group['qty'];
+                        unset($freegroup[(int)$relation_group['group']]);
+                    }
                 } 
                 else if ($remaining_qty >= $value['sum_prod']) {
                     $propose = $last_week;
@@ -323,7 +329,7 @@ class AssociationController extends Controller
             if (empty($last_week)) {
                 $propose = '';
                 $propose_remaining_qty = '';
-                $message = '';
+                // $message = '';
             }
 
             
