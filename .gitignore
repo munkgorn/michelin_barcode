@@ -9,7 +9,10 @@
 /uploads/default_purchase.json
 /uploads/default_year.json
 /uploads/*
+/downloads/*
+/update_source/*
 system/lib/PHPExcel/
+
 
 
 # Logs and databases #
