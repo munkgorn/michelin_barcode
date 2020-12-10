@@ -20,7 +20,7 @@
                                 <label for="">Date of barcode</label>
                                 <div>
                                     <input type="date" name="date" class="form-control" max="<?php echo date('Y-m-d', time());?>" value=""  />
-                                    <button type="submit" onclick="return prompt('ยืนยันการลบด้วยการพิมพ์ว่า `confirm`')=='confirm'?true:false;" class="btn btn-danger mt-3">ยืนยันการลบ Barcode</button>
+                                    <button type="button" class="btnsubmit btn btn-danger mt-3">ยืนยันการลบ Barcode</button>
                                 </div>
                                 <small class="text-danger">เมื่อกดยืนยัน barcode ที่เก่ากว่าวันที่ที่เลือก (เฉพาะที่ใช้ไปแล้วหรือลบไปแล้ว) จะถูกลบทิ้งทั้งหมดไม่สามารถกู้คืนได้</small>
                                 <small class="text-danger">ขั้นตอนการลบอาจจะใช้เวลานาน กรุณารอจนกว่าจะมีสถานะแจ้งเตือนขึ้นมาแสดง</small>
@@ -40,7 +40,7 @@
                                         <option value="<?php echo $date['date_wk'];?>"><?php echo $date['date_wk'];?></option>
                                     <?php endforeach; ?>
                                     </select>
-                                    <button type="submit" onclick="return prompt('ยืนยันการลบด้วยการพิมพ์ว่า `confirm`')=='confirm'?true:false;" class="btn btn-danger mt-3">ยืนยันการลบ Association</button>
+                                    <button type="button" class="btnsubmit btn btn-danger mt-3">ยืนยันการลบ Association</button>
                                 </div>
                                 <small class="text-danger">เมื่อกดยืนยัน ระบบจะลบ association ตามวันที่ที่เลือก ทั้งหมดและไม่สามารถกู้คืนได้</small>
                             </div>
@@ -52,7 +52,7 @@
                                 <label for="">Clear file import&export</label>
                                 <!-- <select name="" id="" class="form-control"></select> -->
                                 <div>
-                                <button type="submit" onclick="return prompt('ยืนยันการลบด้วยการพิมพ์ว่า `confirm`')=='confirm'?true:false;" class="btn btn-danger">ยืนยันการลบไฟล์</button>
+                                <button type="button" class="btnsubmit btn btn-danger">ยืนยันการลบไฟล์</button>
                                 </div>
                                 <small class="text-danger">ระบบมีการเก็บไฟล์ล่าสุดลงในเครื่อง server หากต้องการให้พื้นที่คงเหลือ สามารถลบไฟล์ได้ หากมีการ Export และ Import ใหม่ระบบก็จะทำงานได้ปกติ (ไม่มีผลกระทบต่อระบบ)</small>
                             </div>
@@ -67,9 +67,26 @@
 
 <script>
 $(document).ready(function(){
-    $('button').on('click', function() {
-        $(this).attr('disabled','disabled').parents('form').submit();
+    $('.btnsubmit').click(function(event){
+        const boolconfirm = confirmPrompt();
+        if (boolconfirm===true) {
+            console.log($(this).parents('form').attr('src'));
+            $(this).html('กำลังดำเนินการ').attr('disabled','disabled').parents('form').submit();
+        } else {
+            event.stopPropagation();
+        }
     });
+    function confirmPrompt() {
+        const value = prompt('ยืนยันการลบด้วยการพิมพ์ว่า `confirm`');
+        if (value==='confirm') {
+            return true;
+        } else {
+            return false;
+        }
+    }
+    // $('button').on('click', function() {
+    //     $(this).attr('disabled','disabled').parents('form').submit();
+    // });
 	$('#clear').addClass('mm-active').children('ul.mm-collapse').addClass('mm-show');
 	$('[type="file"]').on('change', function(e){
 		var fileName = e.target.files[0].name;

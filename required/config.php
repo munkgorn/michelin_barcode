@@ -11,6 +11,7 @@ set_time_limit(0);
 	$base = str_replace('required', '', __DIR__);
   	define('MURL','http://localhost/michelin_barcode/');
 	// define('MURL','https://www.fsoftpro.com/dohung/');
+	define('SOURCE_UPDATE', 'https://www.fsoftpro.com/production/michelin_barcode/');
 	define('DOCUMENT_ROOT',$_SERVER['DOCUMENT_ROOT'].'/michelin_barcode/');
 	define('ROW_IN_DOC','10');
 	define('BYTE_PER_KB','1000');

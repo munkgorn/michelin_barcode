@@ -16,12 +16,12 @@
 			<form action="" id="formresult">
 				<div class="row">
 					<div class="col-12">
-						<p class="text-success">Update currently</p>
+						<p class="text-success">Update </p>
 					</div>
 				</div>
 				<div class="row">
 					<div class="col-12">
-						<table class="table table-striped">
+						<!-- <table class="table table-striped">
 							<tr>
 								<td>Date</td>
 								<td>By</td>
@@ -30,7 +30,7 @@
 								<td>2020-01-01</td>
 								<td>Admin</td>
 							</tr>
-						</table>
+						</table> -->
 					</div>
 				</div>
 				<div class="row mt-4">
