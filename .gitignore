@@ -10,6 +10,7 @@
 /uploads/default_year.json
 /uploads/*
 /downloads/*
+/downloads/update/*
 /update_source/*
 system/lib/PHPExcel/
 
