@@ -22,7 +22,7 @@
 
 	    	$the_folder = 'downloads/update/';
 			$zip_file_name = 'update_file.zip';
-	    	$output_filename = $the_folder.$zip_file_name;
+	    	$output_filename = DOCUMENT_ROOT.$the_folder.$zip_file_name;
 
 		    $host = $result_link;
 		    $ch = curl_init();
@@ -34,10 +34,12 @@
 		    curl_setopt($ch, CURLOPT_HTTP_VERSION, CURL_HTTP_VERSION_1_1);
 		    curl_setopt($ch, CURLOPT_HEADER, 0);
 		    $result = curl_exec($ch);
-		    curl_close($ch);
+			curl_close($ch);
+			
 		    $fp = fopen($output_filename, 'w');
 		    fwrite($fp, $result);
-		    fclose($fp);
+			fclose($fp);
+			
 
 		    $result = array();
 		    $result['result_download_file'] = true;
