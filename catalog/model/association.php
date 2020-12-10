@@ -324,23 +324,16 @@ class AssociationModel extends db
 
         $sql = "SELECT * FROM  ";
         $sql .= "(  ";
-        $sql .= "SELECT cr.`group`, ";
+        $sql .= "SELECT cr.size, cr.`group`, ";
         $sql .= "(SELECT count(b.id_barcode) as qty FROM mb_master_barcode b WHERE b.barcode_prefix = cr.`group` AND b.group_received = 1 AND b.barcode_status = 0 AND b.date_modify BETWEEN '$day2' AND '$day1' GROUP BY b.id_group, b.barcode_prefix ORDER BY b.id_barcode ASC,b.id_group ASC,b.date_modify DESC) as qty  ";
         $sql .= "FROM mb_master_config_relationship cr ";
         $sql .= "WHERE cr.size != '' AND cr.size is not null AND cr.size = $size";
         $sql .= ") t WHERE t.qty is not null AND t.qty >= $sumprod LIMIT 0,1";
+        
+      
 
         $query = $this->query($sql);
         return $query->row;
-
-        // $this->where('cr.size', $size);
-        // $this->where('cr.`group` is not null', '', '');
-        // $this->where("g.date_purchase <= '".$day1."'", '', '');
-        // $this->where('g.del', 0);
-        // $this->select('cr.`group`');
-        // $this->join('group g', 'g.group_code = cr.`group`', 'LEFT');
-        // $query = $this->get('config_relationship cr');
-        // return !empty($query->row['group']) ? $query->row['group'] : '';
     }
     public function getFreeGroup() {
         $day1 = $this->query("SELECT config_value FROM mb_master_config WHERE config_key = 'config_date_size';")->row['config_value'];

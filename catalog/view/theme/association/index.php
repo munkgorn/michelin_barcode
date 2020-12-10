@@ -114,19 +114,11 @@
 									<td class="text-center tdid tdqty" data-idproduct="<?php echo $val['id_product'];?>"></td>
 									<td class="text-center tdid tdpropose" data-idproduct="<?php echo $val['id_product'];?>"></td>
 									<td class="text-center tdid tdproposeqty" data-idproduct="<?php echo $val['id_product'];?>"></td>
-									<td class="text-center tdid tdmsg" data-idproduct="<?php echo $val['id_product'];?>"></td>
+									<td class="text-center tdid tdmsg" data-idproduct="<?php echo $val['id_product'];?>" data-text="<?php echo $val['plain_message'];?>"></td>
 									<td class="p-0">
 										<input type="hidden" name="propose[<?php echo $val['id_product'];?>]" data-size="<?php echo $val['size'];?>" data-key="<?php echo $val['id_product'];?>" class="txt_propose" value="<?php echo (int)strip_tags($val['propose']);?>" />
 										<input type="text" name="id_group[<?php echo $val['id_product']; ?>]" data-size="<?php echo $val['size'];?>" data-key="<?php echo $val['id_product'];?>" class="form-control form-control-sm txt_group" value="<?php echo $val['save']; ?>" style="height:43px;border-radius:0;" />
 									</td>
-									<!-- <td><?php echo $val['remaining_qty'];?></td>
-									<td class="text-center"><span class="propose" row="<?php echo $key; ?>"><?php echo $val['propose']; ?></span></td>
-									<td class="text-center"><?php echo $val['propose_remaining_qty']; ?></td>
-									<td class="text-center"><?php echo $val['message']; ?></td>
-									<td class="p-0">
-										<input type="hidden" name="propose[<?php echo $val['id_product'];?>]" data-size="<?php echo $val['size'];?>" data-key="<?php echo $val['id_product'];?>" class="txt_propose" value="<?php echo (int)strip_tags($val['propose']);?>" />
-										<input type="text" name="id_group[<?php echo $val['id_product']; ?>]" data-size="<?php echo $val['size'];?>" data-key="<?php echo $val['id_product'];?>" class="form-control form-control-sm txt_group" value="<?php echo $val['save']; ?>" style="height:43px;border-radius:0;" />
-									</td> -->
 								</tr>
 								<?php } ?>
                                 <?php else: ?>
@@ -253,12 +245,14 @@ $(document).ready(function () {
 		let idgroup = $('.tdlast[data-idproduct='+idproduct+'] .last_wk').html();
 		let idsize =  parseInt($('.tdsize[data-idproduct='+idproduct+']').html());
 		let idsumprod =  $('.tdsumprod[data-idproduct='+idproduct+']').html();
-		
+		let oldmsg = $('.tdmsg[data-idproduct='+idproduct+']').data('text');
+
 		$('.tdqty[data-idproduct='+idproduct+']').html(loading);
 		$('.tdpropose[data-idproduct='+idproduct+']').html(loading);
 		$('.tdproposeqty[data-idproduct='+idproduct+']').html(loading);
-		$('.tdmsg[data-idproduct='+idproduct+']').html(loading);
-		
+		if (oldmsg!='Relationship') {
+			$('.tdmsg[data-idproduct='+idproduct+']').html(loading);
+		}
 		if (idgroup>0) {
 			$.ajax({
 				type: "POST",
@@ -326,10 +320,14 @@ $(document).ready(function () {
 
 			});
 		} else {
-		$('.tdqty[data-idproduct='+idproduct+']').html('');
-		$('.tdpropose[data-idproduct='+idproduct+']').html('');
-		$('.tdproposeqty[data-idproduct='+idproduct+']').html('');
-		$('.tdmsg[data-idproduct='+idproduct+']').html('');
+			$('.tdqty[data-idproduct='+idproduct+']').html('');
+			$('.tdpropose[data-idproduct='+idproduct+']').html('');
+			$('.tdproposeqty[data-idproduct='+idproduct+']').html('');
+			if (oldmsg!='Relationship') {
+				$('.tdmsg[data-idproduct='+idproduct+']').html('');	
+			} else {
+				$('.tdmsg[data-idproduct='+idproduct+']').html('<span class="text-primary">Relationship</span>');	
+			}
 		}
 	});
 
@@ -381,6 +379,7 @@ $(document).ready(function () {
 				var idproduct = $(this).data('idproduct');
 				var thisqtylk_str = $('.tdqty[data-idproduct='+idproduct+']').html();
 				var thisqtylk = parseInt(thisqtylk_str.replace(',', ''));
+				var thismsg = $('.tdmsg[data-idproduct='+idproduct+']').data('text');
 
 				var thissumpod_str = $('.tdsumprod[data-idproduct='+idproduct+']').html();
 				var thissumpod = parseInt(thissumpod_str.replace(',',''));
@@ -389,14 +388,14 @@ $(document).ready(function () {
 				var last_wk = parseInt($('.tdlast[data-idproduct='+idproduct+'] .last_wk').html());
 				var thissave = $('.txt_group[data-key='+idproduct+']').val();
 
-				if (last_wk!=$(this).html()) {
+				if (last_wk!=$(this).html()&&thismsg!='Relationship') {
 					$(this).addClass('text-danger');
 					// $(this).addClass('text-danger');
 					$('.tdproposeqty[data-idproduct='+idproduct+']').addClass('text-danger');
 					$('.tdmsg[data-idproduct='+idproduct+']').addClass('text-danger');
 				}
 
-				if (isNaN(thishtml)&&thissave.length==0 && typeof temp[indexFree[i]] != 'undefined' && thissumpod > 0) {
+				if (isNaN(thishtml)&&thissave.length==0 && typeof temp[indexFree[i]] != 'undefined' && thissumpod > 0&&thismsg!='Relationship') {
 					// var oldqty = $(this).parent('td').prev('td').prev('td').prev('td').html();
 					let thisgroup = pad(temp[indexFree[i]].group, 3); 
 					let thisqty_str = temp[indexFree[i]].qty;
@@ -405,8 +404,7 @@ $(document).ready(function () {
 					$('.txt_propose[data-key='+idproduct+']').val(thisgroup);
 					$('.tdproposeqty[data-idproduct='+idproduct+']').html(addCommas(thisqty));
 					$('.tdmsg[data-idproduct='+idproduct+']').html('Free Group');
-					if (last_wk!=thisgroup) {
-
+					if (last_wk!=thisgroup) { // free group is not save 
 						// $.ajax({
 						// 	type: "POST",
 						// 	url: "index.php?route=association/ajaxSavePropose",

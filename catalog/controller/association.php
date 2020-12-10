@@ -266,11 +266,7 @@ class AssociationController extends Controller
         }
 
         foreach ($lists as $key => $value) {
-            // echo '<pre>';
-            // print_r($value['relation_group']);
-            // echo '</pre>';
             $last_week = $value['last_week'];
-            // $remaining_qty = (int)$value['remaining_qty'];
             $remaining_qty = 0;
 
             $relation_group = $value['relation_group'];
@@ -279,12 +275,16 @@ class AssociationController extends Controller
             $propose_remaining_qty = '';
             $message = '';
 
+            if (!empty($relation_group['size'])&&$relation_group['size']==$value['size']) {
+                $message = '<span class="text-primary">Relationship</span>';
+            }
+
             if ($value['sum_prod']>0) {
                 if (!empty($relation_group['group'])) {
-                    $message = '<span class="text-primary">Relationship</span>';
                     if (!empty($relation_group['qty'])) {
                         $propose = $relation_group['group'];
                         $propose_remaining_qty = $relation_group['qty'];
+                        $message = '<span class="text-primary">Relationship</span>';
                         unset($freegroup[(int)$relation_group['group']]);
                     }
                 } 
@@ -300,14 +300,6 @@ class AssociationController extends Controller
 
                     if (count($freegroup)>0) {
                         foreach ($freegroup as $keyfirst => $fgqty) {
-                            if ($keyfirst=='34') {
-                                // echo '<br>'.$value['size'].' '.$keyfirst;
-                                // var_dump(!in_array($keyfirst,$beforeSync));
-                                // var_dump($fgqty>=$value['sum_prod']);
-                                // var_dump(!in_array($keyfirst, $config_relation));
-                                // var_dump(!in_array($keyfirst, $notuse));
-                            }
-
                             if (!in_array($keyfirst,$beforeSync)) {
                                 if ($fgqty>=$value['sum_prod'] && !in_array($keyfirst, $config_relation) && !in_array($keyfirst, $notuse) ) {
                                     $free = $keyfirst;
@@ -332,8 +324,6 @@ class AssociationController extends Controller
                 // $message = '';
             }
 
-            
-
             $text = $message;
             $data['list'][] = array(
                 'id_product' => $value['id_product'],
@@ -344,12 +334,11 @@ class AssociationController extends Controller
                 'propose' => !empty(strip_tags($propose)) ? ($propose!=$last_week?'<span class="text-danger">'.sprintf('%03d', $propose).'</span>':sprintf('%03d', $propose)) : '',
                 'propose_remaining_qty' => round($propose_remaining_qty,0) > 0 ? ($propose!=$last_week?'<span class="text-danger">'.number_format((int) round($propose_remaining_qty,0), 0).'</span>':number_format((int) round($propose_remaining_qty,0), 0)) : '',
                 'message' => $text,
+                'plain_message' => strip_tags($text),
                 'save' => !empty($value['save']) ? sprintf('%03d', $value['save']) : '',
             );
             // exit();
         }
-
-        //print_r($freegroup);
         return $data['list'];
     }
 
