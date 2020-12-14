@@ -1,18 +1,3 @@
-/uploads/association/*
-/uploads/export/*
-/uploads/config/*
-/uploads/import/*
-/uploads/import_barcode_csv/*
-/uploads/import_cutbarcode/*
-/uploads/PPDOrder/*
-/uploads/freegroup.json
-/uploads/default_purchase.json
-/uploads/default_year.json
-/uploads/*
-/downloads/*
-/downloads/update/*
-/update_source/*
-system/lib/PHPExcel/
 
 
 
