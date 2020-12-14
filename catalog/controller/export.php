@@ -735,7 +735,7 @@ class ExportController extends Controller {
 			$index_char = 0;
 			$row++;
 		}
-		$objPHPExcel->getActiveSheet()->setTitle('Group Report');
+		$objPHPExcel->getARRctiveSheet()->setTitle('Group Report');
         $objPHPExcel->getSecurity()->setLockWindows(false);
         $objPHPExcel->getSecurity()->setLockStructure(false);
         $objPHPExcel->setActiveSheetIndex(1);
@@ -795,6 +795,7 @@ class ExportController extends Controller {
         $excel[] = array(
             'Group',
             'Size',
+            'Remark'
         );
 
         $config = $this->model('config');
