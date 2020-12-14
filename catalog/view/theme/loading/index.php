@@ -58,6 +58,13 @@ $(document).ready(function () {
         cache: true,
         type: 'POST',
         url: "<?php echo $load['url'];?>",
+        success: function(data) {
+            $('.progress.load<?php echo $key;?> > .progress-bar').attr('aria-valuenow', 100).css('width', '100%');
+        },
+        error: function (xhr, ajaxOptions, thrownError) {
+            console.log(xhr.status);
+            console.log(thrownError);
+        }
     });
     <?php endforeach; ?>
 
