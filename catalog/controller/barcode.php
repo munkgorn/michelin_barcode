@@ -53,7 +53,7 @@
 					if ($row>0) {
 						$col = explode(';', $line[0]);
 						$thisbarcode = (int)sprintf('%08d', str_replace('"','',$col[9]));
-						$groupcode = (int)substr($thisbarcode, 0, 3);
+						$groupcode = substr(sprintf('%08d',$thisbarcode), 0, 3);
 						$findgroup = $group->findIdGroup($groupcode);
 						if (!empty($findgroup)) {
 							$res = $barcode->findAndUpdateBarcode($groupcode, $thisbarcode);
