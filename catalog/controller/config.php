@@ -18,7 +18,7 @@
 	    	$result = array();
 	    	// http://localhost/barcode_source/
 	    	$result_source = curlParseJson(SOURCE_UPDATE);
-	    	$result_link = SOURCE_UPDATE.$result_source['link'];
+			$result_link = SOURCE_UPDATE.$result_source['link'];
 
 	    	$the_folder = 'downloads/update/';
 			$zip_file_name = 'update_file.zip';
@@ -41,15 +41,18 @@
 			fclose($fp);
 			
 
-		    $result = array();
-		    $result['result_download_file'] = true;
+			$result = array();
+			// $result['link'] = $result_link;
+		    $result['result_download_file'] = false;
 
 			umask(0);
 			$zip = new ZipArchive;
-			if ($zip->open($the_folder.$zip_file_name) === TRUE) {
+			if ($zip->open(DOCUMENT_ROOT.$the_folder.$zip_file_name) === TRUE) {
 			    $zip->extractTo( './');
-			    $zip->close();
+				$zip->close();
+				$result['result_download_file'] = true;
 			} else {
+				$result['result_download_file'] = false;
 			    // echo 'failed';
 			}
 

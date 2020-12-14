@@ -14,6 +14,7 @@
 				<div class="row">
 					<div class="col-12">
 						<p class="text-success">connect public network and click button update for update patch.</p>
+						<p id="msg"></p>
 					</div>
 				</div>
 				<div class="row">
@@ -38,16 +39,17 @@
 <script>
 	$(function(e){
 		$('#btn-update').click(function(e){
-			$('#btn-update').prop('disabled', true);
 			$('#btn-update').text('Loading...');
+			$('#btn-update').attr('disabled','disabled');
+			$('#msg').html('<img src="assets/loading.gif" height="30" />Loading...');
 			$.ajax({
 				url: 'index.php?route=config/update_source',
 				type: 'POST',
 				dataType: 'json'
 			})
 			.done(function(json) {
-				$('#btn-update').prop('disabled', false);
-				$('#btn-update').text('Update');
+				$('#btn-update').removeAttr('disabled').html('Update');
+				$('#msg').html("Update success");
 				// alert('download success');
 				console.log(json);
 				console.log("success");
@@ -56,6 +58,8 @@
 				console.log(a);
 				console.log(b);
 				console.log(c);
+				$('#btn-update').removeAttr('disabled').html('Update');
+				$('#msg').html("Update fail");
 			})
 			.always(function() {
 				console.log("complete");

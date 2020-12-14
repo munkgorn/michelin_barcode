@@ -60,7 +60,7 @@
                     </div>
                     
                 </div>
-                <div class="row"><div class="col-sm-12"><hr /><a href="index.php?route=config/update" class="btn btn-primary">Patch Update</a></div></div>
+                <div class="row"><div class="col-sm-12"><hr /><a href="index.php?route=config/update" class="btn btn-primary">Patch</a></div></div>
 			
 		</div>
 	</div>
