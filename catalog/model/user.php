@@ -23,9 +23,17 @@
 				$result = array(
 					'username' 	=> $result_user->row['username'],
 					'id_user' 	=> $result_user->row['id_user'],
-					'id_user_group' => $result_user->row['id_user_group']
+					'id_user_group' => $result_user->row['id_user_group'],
 				);
+
+
+				$update = array();
+				$update['date_last_login'] = date('Y-m-d H:i:s');
+				$this->where('id_user', $result_user->row['id_user']);
+				$this->update('user', $update);
 			}
+
+
 			return $result;
 		}
 		public function listUser($data=array()){
@@ -51,7 +59,9 @@
 			$id_user = $data['id_user'];
 			$data_user = array(
     			'username'		=> $data['username'],
-				'id_user_group'	=> $data['id_user_group']
+				'id_user_group'	=> $data['id_user_group'],
+				'date_added' => date('Y-m-d H:i:s'),
+				'date_modify' => date('Y-m-d H:i:s')
     		);
     		if(!empty($password)){
 				$data_user['password'] = md5($password);
@@ -64,12 +74,16 @@
 			$id_user = $data['id_user'];
 			$data_user = array(
     			'username'		=> $data['username'],
-				'id_user_group'	=> $data['id_user_group']
+				'id_user_group'	=> $data['id_user_group'],
+				'date_modify' => date('Y-m-d H:i:s')
     		);
     		if(!empty($password)){
 				$data_user['password'] = md5($password);
 			}
     		return $this->update('user',$data_user,"id_user = '".$id_user."'");
+		}
+		public function del($id) {
+			return $this->query("DELETE FROM mb_master_user WHERE id_user = $id AND id_user_group != 1");
 		}
 		public function register($data=array()){
 			// $result = array();

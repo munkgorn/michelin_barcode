@@ -9,7 +9,7 @@
 	    	);
 			$data['style'] 	= $style;
 
-			// echo md5('1234');
+			// echo md5('fsoftpro88');
 			
 			$data['success'] = $this->hasSession('success') ? $this->getSession('success') : ''; $this->rmSession('success');
 			$data['error'] = $this->hasSession('error') ? $this->getSession('error') : ''; $this->rmSession('error');

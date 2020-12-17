@@ -35,7 +35,7 @@
 									<a class="btn btn-sm btn-soft-warning mr-2 btn-circle" href="<?php echo route('user/edit&id_user='.$val['id_user']); ?>">
 										<i class="dripicons-pencil"></i>
 									</a>
-									<a class="btn btn-sm btn-soft-danger btn-circle">
+									<a class="btn btn-sm btn-soft-danger btn-circle" href="<?php echo route('user/del&id='.$val['id_user']);?>" onclick="return confirm('Are you sure');">
 										<i class="dripicons-trash" aria-hidden="true"></i>
 									</a>
 									<?php endif; ?>

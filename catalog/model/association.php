@@ -264,13 +264,20 @@ class AssociationModel extends db
         return $query->num_rows==1&&!empty($query->row['propose']) ? $query->row : false;
     }
     public function savePropose($idproduct , $data=array()) {
+        if (
+            isset($data['remaining_qty'])&&!empty($data['remaining_qty']) ||
+            isset($data['propose'])&&!empty($data['propose']) ||
+            isset($data['propose_remaining_qty'])&&!empty($data['propose_remaining_qty']) ||
+            isset($data['message'])&&!empty($data['message']) 
+        ) {
         $sql = "UPDATE mb_master_product SET ";
-        $sql .= !empty($data[remaining_qty]) ? "remaining_qty = '$data[remaining_qty]', " : "";
-        $sql .= !empty($data[propose]) ? "propose = '$data[propose]', " : "";
-        $sql .= !empty($data[propose_remaining_qty]) ? "propose_remaining_qty = '$data[propose_remaining_qty]', " : "";
-        $sql .= !empty($data[message]) ? "`message` = '$data[message]' " : "";
-        $sql .= "WHERE id_product = $idproduct ";
+        $sql .= isset($data['remaining_qty'])&&!empty($data['remaining_qty']) ? "remaining_qty = '".$data['remaining_qty']."', " : "";
+        $sql .= isset($data['propose'])&&!empty($data['propose']) ? "propose = '".$data['propose']."', " : "";
+        $sql .= isset($data['propose_remaining_qty'])&&!empty($data['propose_remaining_qty']) ? "propose_remaining_qty = '".$data['propose_remaining_qty']."', " : "";
+        $sql .= isset($data['message'])&&!empty($data['message']) ? "`message` = '".$data['message']."' " : "";
+        $sql .= " WHERE id_product = ".(int)$idproduct;
         $query = $this->query($sql);
+        }
         
     }
     public function getNotUseBarcode($group_code) {
@@ -327,10 +334,11 @@ class AssociationModel extends db
         $sql .= "SELECT cr.size, cr.`group`, ";
         $sql .= "(SELECT count(b.id_barcode) as qty FROM mb_master_barcode b WHERE b.barcode_prefix = cr.`group` AND b.group_received = 1 AND b.barcode_status = 0 AND b.date_modify BETWEEN '$day2' AND '$day1' GROUP BY b.id_group, b.barcode_prefix ORDER BY b.id_barcode ASC,b.id_group ASC,b.date_modify DESC) as qty  ";
         $sql .= "FROM mb_master_config_relationship cr ";
-        $sql .= "WHERE cr.size != '' AND cr.size is not null AND cr.size = $size";
-        $sql .= ") t WHERE t.qty is not null AND t.qty >= $sumprod LIMIT 0,1";
-        
-      
+        $sql .= "WHERE cr.size != '' AND cr.size is not null AND cr.size = '".$size."'";
+        $sql .= ") t ";
+        // $sql .= "WHERE t.qty is not null AND t.qty >= $sumprod LIMIT 0,1";
+        $sql .= "WHERE 1 LIMIT 0,1";
+
 
         $query = $this->query($sql);
         return $query->row;

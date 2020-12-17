@@ -81,6 +81,9 @@
 
             $this->where('date_added', '0000-00-00 00:00:00');
             $this->update('config_barcode', array('date_added'=>date('Y-m-d H:i:s')));
+
+            $this->where('date_added is null', '', '');
+            $this->update('config_barcode', array('date_added'=>date('Y-m-d H:i:s')));
             return $result;
 		}
         public function getBarcodes($filter=array()) {

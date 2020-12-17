@@ -63,7 +63,13 @@
 		    	$data['listUserGroup'] = $listUserGroup;
 	 	    	$this->view('user/form',$data);
 	 	    }
-	    }
+		}
+		public function del() {
+			$user = $this->model('user');
+			$id = get('id');
+			$user->del($id);
+			$this->redirect('user');
+		}
 	    public function group() {
 	    	$data = array();
 	    	$data['title'] = "user";

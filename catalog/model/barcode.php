@@ -827,26 +827,6 @@
 			$query = $this->query($sql);
 			$rows = $query->rows;
 
-			/*
-			foreach ($rows as $row) {
-				$queryfind = $this->query("SELECT * FROM mb_master_memory WHERE `group` = ".(int)$row['barcode_prefix']." AND `type` = ".$status." AND `barcode_start` = ".$row['start']." AND `barcode_end`=".$row['end']);
-				if ($queryfind->num_rows==0) {
-
-					$sql = "INSERT INTO `mb_master_memory` ";
-					$sql .= "(`group`, `barcode_start`, `barcode_end`, `total`, `type`) VALUES ";
-					$sql .= "(".$row['barcode_prefix'].", ".$row['start'].", ".$row['end'].", ".$row['qty'].", ".$row['barcode_status'].") ";
-				} else {
-					$sql = "UPDATE `mb_master_memory` SET ";
-					$sql .= "`group`=".$row['barcode_prefix'].", ";
-					$sql .= "`barcode_start`=".$row['start'].", ";
-					$sql .= "`barcode_end`=".$row['end'].", ";
-					$sql .= "`total`=".$row['qty'].", ";
-					$sql .= "`type`=".$row['barcode_status']." ";
-					$sql .= "WHERE id=".$queryfind->row['id'];
-				}
-				$this->query($sql);
-			}
-			*/ 
 			
 			return $rows;
 		}

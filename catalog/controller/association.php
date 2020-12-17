@@ -23,8 +23,8 @@ class AssociationController extends Controller
         if (!empty($data['date_wk'])) {
             $data['list'] = $this->getLists($data['date_wk']);
 
-            $checkValidated = $association->checkValidatedDate($data['date_wk']);
-            $data['hasValidated'] = $checkValidated > 0 ? true : false;
+            // $checkValidated = $association->checkValidatedDate($data['date_wk']);
+            // $data['hasValidated'] = $checkValidated > 0 ? true : false;
         } else {
             if (isset($_GET['date_wk'])) {
                 $this->setSession('error', 'Not found date');
@@ -228,7 +228,7 @@ class AssociationController extends Controller
             $freegroup[$v['group']] = $v['qty'];
         }
 
-        // Config Relationship
+        // getgroup Config Relationship
         $config_relation = array();
         $temprelation = $config->getRelationship();
         foreach ($temprelation as $tr) {
@@ -251,18 +251,18 @@ class AssociationController extends Controller
             $relation_group = $association->getRelationshipBySize($value['size'], $value['sum_prod']);
             $lists[$key]['relation_group'] = $relation_group;
 
-            if ($value['sum_prod']>0) {
-                if (!empty($relation_group['group']) && !empty($relation_group['qty'])) {
-                    if (!in_array((int)$relation_group['group'],$notuse)) {
-                        $notuse[] = (int)$relation_group['group'];
-                    }
-                }
-                else if ($remaining_qty >= $value['sum_prod']) {
-                    if (!in_array((int)$last_week,$notuse)) {
-                        $notuse[] = (int)$last_week;
-                    }
-                }
-            }
+            // if ($value['sum_prod']>0) {
+            //     if (!empty($relation_group['group']) && !empty($relation_group['qty'])) {
+            //         if (!in_array((int)$relation_group['group'],$notuse)) {
+            //             $notuse[] = (int)$relation_group['group'];
+            //         }
+            //     }
+            //     else if ($remaining_qty >= $value['sum_prod']) {
+            //         if (!in_array((int)$last_week,$notuse)) {
+            //             $notuse[] = (int)$last_week;
+            //         }
+            //     }
+            // }
         }
 
         foreach ($lists as $key => $value) {
@@ -298,23 +298,23 @@ class AssociationController extends Controller
                     $free = '';
                     $free_qty = '';
 
-                    if (count($freegroup)>0) {
-                        foreach ($freegroup as $keyfirst => $fgqty) {
-                            if (!in_array($keyfirst,$beforeSync)) {
-                                if ($fgqty>=$value['sum_prod'] && !in_array($keyfirst, $config_relation) && !in_array($keyfirst, $notuse) ) {
-                                    $free = $keyfirst;
-                                    $free_qty = $freegroup[$keyfirst];   
-                                    unset($freegroup[$keyfirst]); 
-                                    break;
-                                }
-                            }
-                        }
-                    }
-                    if (!empty($free)&&!empty($free_qty)) {
-                        $propose = $free;
-                        $propose_remaining_qty = $free_qty;
-                        $message = !empty($free) ? '<span class="text-danger">Free Group</span>' : '';
-                    }
+                    // if (count($freegroup)>0) {
+                    //     foreach ($freegroup as $keyfirst => $fgqty) {
+                    //         if (!in_array($keyfirst,$beforeSync)) {
+                    //             if ($fgqty>=$value['sum_prod'] && !in_array($keyfirst, $config_relation) && !in_array($keyfirst, $notuse) ) {
+                    //                 $free = $keyfirst;
+                    //                 $free_qty = $freegroup[$keyfirst];   
+                    //                 unset($freegroup[$keyfirst]); 
+                    //                 // break;
+                    //             }
+                    //         }
+                    //     }
+                    // }
+                    // if (!empty($free)&&!empty($free_qty)) {
+                    //     $propose = $free;
+                    //     $propose_remaining_qty = $free_qty;
+                    //     $message = !empty($free) ? '<span class="text-danger">Free Group</span>' : '';
+                    // }
                 }
             }
 

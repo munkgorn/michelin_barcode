@@ -533,6 +533,7 @@ class ExportController extends Controller {
         // $datas = $this->calcurateBarcode();
         $datas = $this->calcurateBarcode($_GET['group']);
 
+
         foreach ($datas as $val) {
             if (!isset($temp[$val['barcode_prefix']])) {
                 $temp[$val['barcode_prefix']]['start'] = $val['start'];
@@ -803,7 +804,8 @@ class ExportController extends Controller {
         foreach ($results as $value) {
             $excel[] = array(
                 '="'.sprintf('%03d',$value['group']).'"',
-                $value['size']
+                $value['size'],
+                $value['comment']
             );
         }
 
@@ -824,7 +826,7 @@ class ExportController extends Controller {
         $data = array();
         $barcode = $this->model('barcode');
         $date = '';
-        $data = $barcode->getRangeBarcode($group, 0, $date);
+        $data = $barcode->getRangeBarcode($group, '0', $date, 0);
         return $data;
     }
     private function calcurateBarcode2($date_wk='') {

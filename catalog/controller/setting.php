@@ -117,7 +117,7 @@
 
 						fclose($fp);
 						$config->importRelationship($csv_file);
-						$this->generateJsonFreeGroup();
+						// $this->generateJsonFreeGroup();
 
 						$this->setSession('success', 'Import file config relationship successful.');
 					} else {
@@ -212,7 +212,7 @@
 						fclose($fp);
 						$config_barcode->importBarcode($path_csv.$file_csv);
 
-						$this->generateJsonFreeGroup();
+						// $this->generateJsonFreeGroup();
 
 						$this->setSession('success', 'Import file config barcode successful.');
 					} else {
