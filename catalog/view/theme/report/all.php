@@ -75,7 +75,7 @@ $(document).ready(function(){
 
 	table.html(trnotfound);
 
-	$.post("index.php?route=barcode/ajaxGroupReceived", {},
+	$.post("index.php?route=barcode/ajaxGroupReceived", {status:0},
 		function (data, textStatus, jqXHR) {
 			let tr = '';
 			if (data.length > 0) {
@@ -111,49 +111,84 @@ $(document).ready(function(){
 			// console.log(valuegroup);
 			$.post("index.php?route=barcode/calcurateBarcode", {header:false, group: valuegroup, status:0, flag:0},
 				function (data, textStatus, jqXHR) {
-					num++;
-					console.log(num+' '+countall);
 					// console.log(data);
-					if (data.length==0) {
-						$(ele).parent('td').parent('tr.trgroup'+valuegroup).remove();
-						// console.info('%c Group:'+valuegroup+' not found range, remove it! ', failure);
-					} else {
-						// console.log('Group : ' + valuegroup + ', Found : ' + data.length);
-						
-						let grouprange = [];
-						let groupqty = [];
-						$.each(data, function(i,v){
-							grouprange.push(v.start + ' - ' + v.end);
-							groupqty.push(addCommas(v.qty));
-							
-						});
-						json.push(
-							{
-								group: valuegroup,
-								range: grouprange,
-								qty: groupqty
-							}
-						);
-						console.info('%c Group:'+valuegroup+' Found : ' + data.length, success);
-						if (grouprange.length>0) {
-							$(ele).html(grouprange.join('<br>'));
-							// console.table(grouprange);
-						}
-						if (groupqty.length>0) {
-							$(ele).parent('td').next('td').children('.loadqty[data-group='+valuegroup+']').html(groupqty.join('<br>'));
+					// if (data.length>1) {
+						// console.log(data);
+					// }
+					let group = {};
+					
+					$.each(data, (i,v) => {
+						if (typeof group[v.group_code] == 'undefined') {
+							group[v.group_code] = [];
 						}
 
+						// console.log(v);
+						group[v.group_code].push({
+							range: v.barcode_start+' - '+v.barcode_end,
+							qty: v.barcode_qty
+						});
+
+					});
+
+					$.each(group, (i,v) => {
+						// console.log(i);
+						let stringrange = '';
+						let stringqty = '';
+						$.each(v, (index, value) => {
+							stringrange += value.range + "<br>";
+							stringqty += value.qty + "<br>";
+						});
+						$('.loadrange[data-group='+i+']').html(stringrange);
+						$('.loadqty[data-group='+i+']').html(stringqty);
+					});
+
+
+
+					$('#linkexport').removeAttr('disabled').removeClass('disabled');
+					// num++;
+					// console.log(num+' '+countall);
+					// console.log(data);
+					// if (data.length==0) {
+					// 	$(ele).parent('td').parent('tr.trgroup'+valuegroup).remove();
+					// 	// console.info('%c Group:'+valuegroup+' not found range, remove it! ', failure);
+					// } else {
+
+						// console.log('Group : ' + valuegroup + ', Found : ' + data.length);
 						
-						if (num==countall) {
-							// console.log(JSON.stringify(json));
-							$.post("index.php?route=report/saveJson", {data: JSON.stringify(json)},
-								function (data2, textStatus2, jqXHR2) {
-									alert('You can export all group in type excel');
-									$('#linkexport').removeAttr('disabled').removeClass('disabled');
-								}
-							);
-						}
-					}
+						// let grouprange = [];
+						// let groupqty = [];
+						// $.each(data, function(i,v){
+						// 	grouprange.push(v.start + ' - ' + v.end);
+						// 	groupqty.push(addCommas(v.qty));
+							
+						// });
+						// json.push(
+						// 	{
+						// 		group: valuegroup,
+						// 		range: grouprange,
+						// 		qty: groupqty
+						// 	}
+						// );
+						// console.info('%c Group:'+valuegroup+' Found : ' + data.length, success);
+						// if (grouprange.length>0) {
+						// 	$(ele).html(grouprange.join('<br>'));
+						// 	// console.table(grouprange);
+						// }
+						// if (groupqty.length>0) {
+						// 	$(ele).parent('td').next('td').children('.loadqty[data-group='+valuegroup+']').html(groupqty.join('<br>'));
+						// }
+
+						
+						// if (num==countall) {
+						// 	// console.log(JSON.stringify(json));
+						// 	$.post("index.php?route=report/saveJson", {data: JSON.stringify(json)},
+						// 		function (data2, textStatus2, jqXHR2) {
+						// 			alert('You can export all group in type excel');
+						// 			$('#linkexport').removeAttr('disabled').removeClass('disabled');
+						// 		}
+						// 	);
+						// }
+					// }
 				},
 				"json"
 			);

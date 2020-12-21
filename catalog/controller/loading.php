@@ -154,4 +154,61 @@ class LoadingController extends Controller
             }
         }
     }
+
+    public function updateTable() {
+        $range = $this->model('range');
+        $range->createTable();
+    }
+
+    public function range() {
+        $data = array();
+        
+        if (method_post()) {
+            $round = 1;
+            $group = 12;
+            $status = 1;
+            $flag = 0;
+        } else {
+            $round = $_GET['round'];
+            $group = $_GET['group'];
+            $status = $_GET['status'];
+            $flag = $_GET['flag'];  
+        }
+        
+
+        $data['status'] = $status; // status = 1 is consum / 0 is remaining
+        $data['round'] = $round;
+
+        $barcode = $this->model('barcode');
+        $list = $barcode->getBarcodeWithGroup($group, $status, $flag);
+        $data['list'] = json_encode($list);
+
+        $this->view('loading/range', $data);
+    }
+
+    public function rangeall() {
+        $data = array();
+        
+        if (method_post()) {
+            $round = 1;
+            $group = 12;
+            $status = 1;
+            $flag = 0;
+        } else {
+            $round = $_GET['round'];
+            $group = $_GET['group'];
+            $status = $_GET['status'];
+            $flag = $_GET['flag'];  
+        }
+        
+
+        $data['status'] = $status; // status = 1 is consum / 0 is remaining
+        $data['round'] = $round;
+
+        $barcode = $this->model('barcode');
+        $list = $barcode->getBarcodeWithGroup($group, $status, 0);
+        $data['list'] = json_encode($list);
+
+        $this->view('loading/rangeall', $data);
+    }
 }

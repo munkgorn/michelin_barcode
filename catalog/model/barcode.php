@@ -1,5 +1,19 @@
 <?php 
 	class BarcodeModel extends db {
+
+		public function getBarcodeWithGroup($group, $status=null, $flag=null) {
+			$this->select('id_group, barcode_prefix, barcode_code, barcode_status, barcode_flag');
+			$this->where('barcode_prefix', (int)$group);
+			if ($status!==null) {
+				$this->where('barcode_status', (int)$status);
+			}
+			if ($flag!==null) {
+				$this->where('barcode_flag', (int)$flag);
+			}
+			
+			$query = $this->get('barcode');
+			return $query->rows;
+		}
 		public function getBarcode($data='') {
 			if (!empty($data['date'])) {
 				$this->where('b.date_modify', $data['date'].'%', 'LIKE');
@@ -11,46 +25,19 @@
 			return $query->rows;
 		}
 		public function findAndUpdateBarcode($group, $barcode, $date='') {
-
 			$sql = "UPDATE mb_master_barcode SET barcode_status = 1, date_modify = '" . date('Y-m-d') . "' WHERE barcode_prefix = $group AND barcode_code = $barcode";
 			return $this->query($sql);
-
-			
-			// $this->where('barcode_code', $barcode);
-			// $this->where('date_modify', $date.'%', 'LIKE');
-			// $query = $this->update('barcode', array('barcode_status'=>1,'date_modify'=>date('Y-m-d H:i:s')));
-			// $numrow = $query->num_rows>0?true:false;
-			// if ($numrow==true) {
-			// 	$result = $query->row;
-			// 	$this->where('id_barcode', $result['id_barcode']);
-			// 	// $this->where('barcode_code', $barcode);
-			// 	// $this->where('date_modify', $date.'%', 'LIKE');
-			// 	$this->update('barcode', array('barcode_status'=>1,'date_modify'=>date('Y-m-d H:i:s')));
-
-			// 	// $insert = array(
-			// 	// 	'id_user' => $_SESSION['id_user'],
-			// 	// 	'barcode' => $barcode,
-			// 	// 	'date_wk' => $date,
-			// 	// 	'date_added' => date('Y-m-d H:i:s'),
-			// 	// 	'date_modify' => date('Y-m-d H:i:s'),
-			// 	// );
-			// 	// $this->insert('import_barcode', $insert);
-			// }
-			// return $numrow;
-			
-			// $query = $this->get('barcode');
-			// if ($query->num_rows)
-			// return $query->num_rows>0 ? true : false;
+		}
+		public function UpdateMultipleBarcode($barcode) {
+			$barcode = implode(', ', $barcode);
+			echo $sql = "UPDATE mb_master_barcode SET barcode_status = 1, date_modify = '" . date('Y-m-d') . "' WHERE barcode_code IN (".$barcode."); ";
+			return $this->query($sql);
 		}
 		public function checkBarcode($barcode) {
 			$this->where('config_key', 'config_date_year');
 			$query = $this->get('config');
 			$config = $query->row['config_value'];
 
-			// $this->where('date_modify', "DATE_ADD(CURDATE(),INTERVAL-".$config." DAY)", '>');
-			// $this->where('barcode_code', $barcode);
-			// $this->order_by('date_modify', 'DESC');
-			// $query = $this->get('barcode');
 			$sql = "SELECT * FROM mb_master_barcode WHERE date_modify > DATE_ADD(CURDATE(),INTERVAL-".$config." DAY)   AND  barcode_code = '$barcode'  ORDER BY date_modify DESC";
 			$query = $this->query($sql);
 			return $query->row;
@@ -69,13 +56,9 @@
 			$result = array();
 			$id_group = (int)$data['id_group'];
 
-			// $sql = "DELETE FROM ".PREFIX."group WHERE id_group = '".$id_group."'";
-			// $result_delete = $this->query($sql);
 			$this->where('id_group', $id_group);
 			$this->update('group', array('del'=>1));
 
-			// $sql = "DELETE FROM ".PREFIX."barcode WHERE id_group = '".$id_group."'";
-			// $result_delete = $this->query($sql);
 			$this->where('id_group', $id_group);
 			$this->update('barcode', array('del'=>1));
 
@@ -128,12 +111,6 @@
 			$result = array();
 			$date = $data['date'];
 
-			/*
-			$sql = "SELECT *,".PREFIX."group.date_added AS date_added,".PREFIX."group.id_group
-			FROM ".PREFIX."group 
-			LEFT JOIN ".PREFIX."user ON ".PREFIX."group.id_user = ".PREFIX."user.id_user
-			WHERE DATE(".PREFIX."group.date_added) = '".$date."' ORDER BY ABS(".PREFIX."group.group_code) ASC "; 
-			*/
 			$sql = "SELECT ";
 			$sql .= "g.id_group, ";
 			$sql .= "g.group_code, ";
@@ -164,8 +141,6 @@
 			$date_now = date('Y-m-d H:i:s');
 			$this->where('date_added', '0000-00-00 00:00:00');
 			$this->update('barcode', array('date_added'=>$date_now,'date_modify'=>$date_now,'date_wk'=>$date_wk));
-
-			// return $result;
 			return $date_now;
 		}
 		public function import_product($path){
@@ -178,8 +153,6 @@
 			$date_now = date('Y-m-d H:i:s');
 			$this->where('date_added', '0000-00-00 00:00:00');
 			$this->update('product', array('date_wk'=>$date_now,'date_added'=>$date_now,'date_modify'=>$date_now));
-
-			// return $result;
 			return $date_now;
 		}
 		public function updateOneBarcodeUse($barcode) {
@@ -193,22 +166,13 @@
 		}
 		public function import_range_barcode($path, $date_wk){
 			$result = array();
-			// $full_name = $data['full_name'];
-			// $date = $data['date'];
 
-			// $sql = "LOAD DATA LOCAL INFILE '" . $full_name . "' INTO TABLE ".PREFIX."group FIELDS TERMINATED BY ',' LINES TERMINATED BY '\n' IGNORE 1 ROWS ( id_user,group_code,start,end,remaining_qty);";
 			$sql = "LOAD DATA LOCAL INFILE '" . $path . "' INTO TABLE ".PREFIX."import_barcode FIELDS TERMINATED BY ',' 
 			LINES TERMINATED BY '\n' IGNORE 1 ROWS (`id_user`,`barcode`,`date_wk`,`date_added`,`date_modify`);";
 			$this->query($sql);
 			$date_now = date('Y-m-d H:i:s');
 			$sql = "UPDATE ".PREFIX."import_barcode SET date_wk = '".$date_wk." 00:00:00', date_added = '".$date_now."', date_modify = '".$date_now."' WHERE date_added = '0000-00-00 00:00:00' AND date_modify = '0000-00-00 00:00:00'; ";
 			$this->query($sql);
-			// $sql_update_date = "UPDATE ".PREFIX."group SET 
-			// date_wk = '".$date."',
-			// date_added = '".$date."',
-			// date_modify = '".$date."' 
-			//  WHERE date_added = '0000-00-00 00:00:00' OR date_added IS NULL";
-			// $this->query($sql_update_date);
 			$result = array(
 				'result' => 'success'
 			);
@@ -239,6 +203,10 @@
 						$cal = $startupdate - (int)$oldgroup['default_end']; // ส่วนต่างที่เกิน
 						$cal2 = (int)$oldgroup['default_start'] + $cal;
 						$startupdate = $cal2 - 1; 
+						$this->query("UPDATE mb_master_group SET `round` = `round` + 1 WHERE del=0 AND id_group = '".$oldgroup['id_group']."'");
+					} else if ($startupdate == $oldgroup['default_end']) {
+						$startupdate = (int)$oldgroup['default_start'];
+						$this->query("UPDATE mb_master_group SET `round` = `round` + 1 WHERE del=0 AND id_group = '".$oldgroup['id_group']."'");
 					} 
 					
 					$this->where('id_group', $oldgroup['id_group']);
@@ -266,12 +234,24 @@
 
 					// หายอดคงเหลือ ของ วันก่อน
 					$findold = $this->query("SELECT * FROM ".PREFIX."group WHERE group_code = '$group_code' GROUP BY date_added ORDER BY date_added DESC;");
+
+					$startupdate = $config_barcode['start'];
+					
+					if ($startupdate > $config_barcode['end']) {
+						$cal = $startupdate - (int)$config_barcode['end']; // ส่วนต่างที่เกิน
+						$cal2 = (int)$config_barcode['start'] + $cal;
+						$startupdate = $cal2 - 1; 
+						$this->query("UPDATE mb_master_group SET `round` = `round` + 1 WHERE del=0 AND id_group = '".$oldgroup['id_group']."'");
+					} else if ($startupdate == $config_barcode['end']) {
+						$startupdate = (int)$config_barcode['start'];
+						$this->query("UPDATE mb_master_group SET `round` = `round` + 1 WHERE del=0 AND id_group = '".$oldgroup['id_group']."'");
+					}
 					
 
 					$insert = array(
 						'id_user' => isset($data['user']) ? $data['user'] : 0,
 						'group_code' => $group_code,
-						'start' => 0,
+						'start' => $startupdate,
 						'end' => 0,
 						'remaining_qty' => $val,
 						'default_start' => $config_barcode['start'],
@@ -294,7 +274,7 @@
 						// if ($config_barcode['start']+$val > $config_barcode['end']) {
 						// 	$insert['start'] = (int)$config_barcode['start'] + (int)$val;
 						// } else {
-							$insert['start'] = (int)$config_barcode['start'] + (int)$val;
+							// $insert['start'] = (int)$config_barcode['start'] + (int)$val;
 						// }
 
 						// $startupdate = (int)$oldgroup['start']+(int)$val-1;
@@ -368,28 +348,6 @@
 			
 			return $result;
 
-			// if($type=="default_start"){
-			// 	$this->where('id_group',$data['id_group']);
-			// 	$this->where('del',0);
-			// 	$this->update('group', array($data['type']=>$data['value']));
-			// 	// $sql = "UPDATE ".PREFIX."group SET ".$data['type']." = '".$data['value']."' 
-			// 	// WHERE id_group='".$data['id_group']."'";
-			// 	// $result_update_group = $this->query($sql);
-
-			// }
-			// if($type=="default_end"){
-			// 	$sql = "UPDATE ".PREFIX."group SET ".$data['type']." = '".$data['value']."' 
-			// 	WHERE id_group='".$data['id_group']."'";
-			// 	$result_update_group = $this->query($sql);
-
-			// }
-			// if($type=="default_range"){
-			// 	$sql = "UPDATE ".PREFIX."group SET ".$data['type']." = '".$data['value']."' 
-			// 	WHERE id_group='".$data['id_group']."'";
-			// 	$result_update_group = $this->query($sql);
-
-			// }
-			// return $result;
 		}
 		public function getgroup($data = array()){
 			$result = array();
@@ -729,7 +687,13 @@
 			$query = $this->query($sql);
 			return $query->rows;
 		}
-
+		public function getGroupOfRange($status=1) {
+			$this->select('group_code');
+			$this->where('barcode_status', $status);
+			$this->group_by('group_code');
+			$query = $this->get('barcode_range');
+			return $query->rows;
+		}
 		public function getGroupOnDate($date='') {
 			// $sql = "SELECT barcode_prefix FROM mb_master_barcode ";
 			// $sql .= !empty($date) ? "WHERE date_modify = '$date' " : '';
@@ -758,7 +722,7 @@
 
 				$sql = "UPDATE mb_master_barcode SET barcode_flag = 1 WHERE barcode_status = 0 AND barcode_flag = 0 AND group_received = 1 AND barcode_prefix = $group AND (".implode(' ',$where).")";
 				$query = $this->query($sql);
-				// echo $query;
+				echo $sql;
 			}
 			
 		}
@@ -769,7 +733,16 @@
 			$query = $this->query($sql);
 			return $query->rows;
 		}
-
+		public function getSaveRangeBarcode($group, $status=1) {
+			if ($group!='all') {
+				$this->where('group_code', $group);
+			}
+			if ($status==1||$status==0) {
+				$this->where('barcode_status', $status);
+			}
+			$query = $this->get('barcode_range');
+			return $query->rows;
+		}
 		public function getRangeBarcode($group=0, $status=null, $date='', $flag = false) {
 			$sql = "SELECT a.barcode_status, a.barcode_prefix, (MIN(c.barcode_code) - a.barcode_code) + 1 as qty ";
 			$sql .= ", LPAD(a.barcode_code, 8, \"0\") as start ";

@@ -56,7 +56,12 @@
             // echo '<br>';
             return $query->rows;
         }
-
+        public function getGroup($id) {
+            $this->where('id_group', $id);
+            $this->where('del', 0);
+            $query = $this->get('group');
+            return $query->row;
+        }
         public function changeStatus($id, $status) {
             $this->where('id_group', $id);
             $this->update('barcode', array('group_received' => 1));

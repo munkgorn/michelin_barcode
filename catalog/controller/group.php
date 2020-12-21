@@ -114,7 +114,10 @@
             $url .= !empty($filter_group) ? "&group=$filter_group" : '';
             $url .= !empty($filter_status) ? "&status=$filter_status" : '';
 
-            $this->redirect('group'.$url );
+            $group_info = $group->getGroup($id);
+
+            // $this->redirect('group'.$url );
+            $this->redirect('loading/rangeall&round=1&status=1&flag=0&group='.$group_info['group_code'].'&max='.$group_info['group_code'].'&redirect=group');
         }
 
         public function checkall() {

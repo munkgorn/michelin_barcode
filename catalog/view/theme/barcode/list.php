@@ -13,12 +13,12 @@
 					<form>
 						<input type="hidden" name="route" value="barcode">
 						<div class="row">
-							<div class="col-3">
+							<!-- <div class="col-3">
 								<label class="">Date</label>
 								<select name="date" id="datefilter" class="form-control select2date">
 								<option></option>
 								</select>
-							</div>
+							</div> -->
 							<div class="col-3">
 									<label for="">Group Prefix</label>
 									<select name="" id="groupFilter" class="form-control select2group">
@@ -79,9 +79,9 @@
 				<table class="table table-bordered" id="table_result">
 					<thead>
 						<tr>
-							<th width="25%">Group Prefix</th>
-							<th>Range Barcode</th>
-							<th>Qty</th>
+							<th class="text-center" width="25%">Group Prefix</th>
+							<th class="text-center">Range Barcode</th>
+							<th class="text-center" width="25%">Qty</th>
 						</tr>
 					</thead>
 					<tbody>
@@ -193,6 +193,17 @@ $(document).ready(function(){
 });
 </script>
 <script>
+function addCommas(nStr) {
+	nStr += '';
+	x = nStr.split('.');
+	x1 = x[0];
+	x2 = x.length > 1 ? '.' + x[1] : '';
+	var rgx = /(\d+)(\d{3})/;
+	while (rgx.test(x1)) {
+		x1 = x1.replace(rgx, '$1' + ',' + '$2');
+	}
+	return x1 + x2;
+}
 $(document).ready(function(){
 	const trnotfound = '<tr><td colspan="3" class="text-center">Please filter date and group</td></tr>';
 	const trloading = '<tr><td colspan="3" class="text-center"><img src="assets/loading.gif" height="30" /><br>Loading...</td></tr>';
@@ -200,28 +211,52 @@ $(document).ready(function(){
 	const inputDate = $('#datefilter');
 	const inputGroup = $('#groupFilter');
 
-	inputGroup.select2({placeholder: "Please select date."});
-	inputDate.html('<option>Loading...</option>');
+	
+	// inputDate.html('<option>Loading...</option>');
 	$('#btnsearch').attr('disabled','disabled');
 
-	$.post("index.php?route=barcode/ajaxDateBarcode", {},
+	// $.post("index.php?route=barcode/ajaxDateBarcode", {},
+	// 	function (data, textStatus, jqXHR) {
+	// 		console.log("Loadding barcode success");
+	// 		const result = jQuery.parseJSON(data);
+	// 		console.log(result);
+	// 		if (result.length>0) {
+	// 			let option = '<option></option>';
+	// 			$.each(result, function(index, value){
+	// 				option += '<option value="'+value.date_modify+'">'+value.date_modify+'</option>';
+	// 			});
+	// 			inputDate.html(option).select2({
+	// 				placeholder: "Select date"
+	// 			});
+	// 		} else {
+	// 			option = '<option></option>';
+	// 			inputDate.html(option).select2({
+	// 				placeholder: "Not found date barcode used"
+	// 			});
+	// 		}
+	// 	},
+	// 	"json"
+	// );
+	$.post("index.php?route=barcode/ajaxGroupReceived", {status: 1},
 		function (data, textStatus, jqXHR) {
-			console.log("Loadding barcode success");
-			const result = jQuery.parseJSON(data);
-			console.log(result);
-			if (result.length>0) {
-				let option = '<option></option>';
-				$.each(result, function(index, value){
-					option += '<option value="'+value.date_modify+'">'+value.date_modify+'</option>';
+			// let tr = '';
+			let option = '<option></option>';
+			if (data.length > 0) {
+				option += '<option value="all">All</option>';
+				$.each(data, function(i, v){
+					option += '<option value="'+v.group_code+'">'+v.group_code+'</option>';
+					// tr += '<tr class="trgroup'+v.group_code+'">';
+					// 	tr += '<td class="text-center">'+v.group_code+'</td>';
+					// 	tr += '<td class="text-center"><span class="loadrange" data-group="'+v.group_code+'">'+loading+'</span></td>';
+					// 	tr += '<td class="text-center"><span class="loadqty" data-group="'+v.group_code+'">'+loading+'</span></td>';
+					// tr += '</tr>';
+					
 				});
-				inputDate.html(option).select2({
-					placeholder: "Select date"
-				});
-			} else {
-				option = '<option></option>';
-				inputDate.html(option).select2({
-					placeholder: "Not found date barcode used"
-				});
+				inputGroup.html(option);
+				// table.html(tr);
+				// getAll();
+				inputGroup.select2({placeholder: "Please select date."});
+				$('#btnsearch').removeAttr('disabled');
 			}
 		},
 		"json"
@@ -230,24 +265,41 @@ $(document).ready(function(){
 	table.html(trnotfound);
 	$('#btnsearch').click(function(){
 		table.html(trloading);
+		let group = inputGroup.val();
 		const filterDate = inputDate.val();
-		$.post("index.php?route=barcode/calcurateBarcode", {group: inputGroup.val(), status: 1, date: filterDate},
+		$.post("index.php?route=barcode/calcurateBarcode", {header:true, group:group, status: 1},
 			function (data, textStatus, jqXHR) {
 				console.log(data);
-				console.log(data.length);
-				if (data.length > 0) {
-					let html = '';
-					$.each(data, function(index,value) {
-						html += '<tr>';
-						html += '<td class="text-center">'+value.barcode_prefix+'</td>';
-						html += '<td class="text-center">'+value.start+' - '+value.end+'</td>';
-						html += '<td class="text-center">'+value.qty+'</td>';
-						html += '</tr>';
-					});
-					table.html(html);
-				} else {
-					table.html(trnotfound);
-				}
+				let html = '';
+				let sum = 0;
+				$.each(data, (i,v) => {
+					html += '<tr>';
+					html += '<td class="text-center">'+v.group_code+'</td>';
+					html += '<td class="text-center">'+v.barcode_start+' - '+v.barcode_end+'</td>';
+					html += '<td class="text-center">'+addCommas(v.barcode_qty)+'</td>';
+					html += '</tr>';
+					sum += parseInt(v.barcode_qty);
+				});
+
+				html += '<tr>';
+				html += '<td class="text-right" colspan="2">Total</td>';
+				html += '<td class="text-center">'+addCommas(sum)+'</td>';
+				html += '</tr>';
+				table.html(html);
+				// console.log(data.length);
+				// if (data.length > 0) {
+				// 	let html = '';
+				// 	$.each(data, function(index,value) {
+				// 		html += '<tr>';
+				// 		html += '<td class="text-center">'+value.barcode_prefix+'</td>';
+				// 		html += '<td class="text-center">'+value.start+' - '+value.end+'</td>';
+				// 		html += '<td class="text-center">'+value.qty+'</td>';
+				// 		html += '</tr>';
+				// 	});
+				// 	table.html(html);
+				// } else {
+				// 	table.html(trnotfound);
+				// }
 			},
 			"json"
 		);
@@ -297,7 +349,7 @@ let textRange = () => {
 	let start = $('#ModalAddMenual [name="barcode_code_start"]').val();
 	let end = $('#ModalAddMenual [name="barcode_code_end"]').val();
 	console.log(parseInt(start)+ ' ' + parseInt(end));
-	let alert = (parseInt(end) < parseInt(start) || isNaN(parseInt(start)) || isNaN(parseInt(end)) || parseInt(start)==parseInt(end)) ? true : false;
+	let alert = (parseInt(end) < parseInt(start) || isNaN(parseInt(start)) || isNaN(parseInt(end))) ? true : false;
 	prefix = sprintf(3, '0', prefix);
 	start = sprintf(5, '0', start);
 	end = sprintf(5, '0', end);

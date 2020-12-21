@@ -73,14 +73,14 @@ $(document).ready(function(){
 
 	linkexport.attr('disabled','disabled').addClass('disabled');
 
-	$.post("index.php?route=barcode/ajaxGetGroupByDate", {},
+	$.post("index.php?route=barcode/ajaxGetGroupByDate", {status:0},
 		function (data, textStatus, jqXHR) {
 			let option = '<option></option>';
 			option += '<option value="0">All Group</option>';
 			$.each(data, function(index,value) {
 				// option += '<option value="'+value.barcode_prefix+'">'+value.barcode_prefix+'</option>';
 				option += '<option value="'+value.group_code+'">'+value.group_code+'</option>';
-				console.log(value);
+				// console.log(value);
 			});
 			$('#groupFilter').html(option).select2({
 				placeholder: "Select group"
@@ -110,6 +110,7 @@ $(document).ready(function(){
 		if ($break==false) {
 			$.post("index.php?route=barcode/calcurateBarcode", {group: filterGroup, status: 0, flag: true},
 				function (data, textStatus, jqXHR) {
+					console.log(data);
 					if (data.length > 0) {
 						let sum = 0;
 						let start = '';
@@ -118,16 +119,16 @@ $(document).ready(function(){
 						let html = '';
 						$.each(data, function(index,value) {
 							if (start=='') {
-								start = value.start;
+								start = value.barcode_start;
 							}
-							prefix = value.barcode_prefix;
-							end = value.end;
+							prefix = value.group_code;
+							end = value.barcode_end;
 							html += '<tr>';
-							html += '<td class="text-center">'+value.barcode_prefix+'</td>';
-							html += '<td class="text-center">'+value.start+' - '+value.end+'</td>';
-							html += '<td class="text-center">'+value.qty+'</td>';
+							html += '<td class="text-center">'+value.group_code+'</td>';
+							html += '<td class="text-center">'+value.barcode_start+' - '+value.barcode_end+'</td>';
+							html += '<td class="text-center">'+(value.barcode_qty)+'</td>';
 							html += '</tr>';
-							sum += parseInt(value.qty);
+							sum += parseInt(value.barcode_qty);
 						});
 
 						html += '<tr>';

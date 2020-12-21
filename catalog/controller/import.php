@@ -28,6 +28,7 @@ class ImportController extends Controller
 
         $table = array(
             'mb_master_barcode',
+            'mb_master_barcode_range',
             'mb_master_group',
             'mb_master_product'
         );
@@ -472,11 +473,11 @@ class ImportController extends Controller
 
         $data['tablerm'] = array(
             'mb_master_barcode',
+            'mb_master_barcode_range',
             'mb_master_group',
-            'mb_master_product'
+            'mb_master_product',
         );
 
-       
 
         $table = $import->getTables();
         $data['table'] = array();

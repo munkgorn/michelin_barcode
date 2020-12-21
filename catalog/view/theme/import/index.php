@@ -17,6 +17,7 @@
                 </div>
                 <div class="card-body">
                     <form action="#" method="post" enctype="multipart/form-data" id="form-import-group">
+                    
                         <div class="form-group">
                             <label for="">File</label>
                             <div class="input-group">
@@ -29,6 +30,9 @@
                                 </div>
                             </div>
                             <div id="result_submit_form"></div>
+                        </div>
+                        <div class="progress mt-2">
+                        <div class="progress-bar progress-bar-striped progress-bar-animated" id="barload" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100" style="width: 0%"></div>
                         </div>
                     </form>
                 </div>
@@ -158,7 +162,14 @@
     </div>
 </div>
 
-
+<style>
+#barload {
+    -webkit-transition: width 300ms;
+    -moz-transition: width 300ms;
+    -o-transition: width 300ms;
+    transition: width 300ms;
+}
+</style>
 <script>
 $(document).ready(function () {
     $('[type="file"]').on('change', function(e){
@@ -166,84 +177,100 @@ $(document).ready(function () {
 		$(this).next('label.custom-file-label').html('<span class="text-dark">'+fileName+'</span>');
 		console.log(fileName);
 	});
-});
-$( "#form-import-group" ).submit(function( event ) {
-    $('#result_submit_form').html('');
-    // var jform = new FormData();
-    // jform.append('import_file',$('#import_file_group').val());
 
-    var fd = new FormData();
-    var files = $('#import_file_group')[0].files[0];
-    fd.append('import_file',files);
+    let loading = (percent) => {
+        console.log(percent);
+        const eleload = $('#barload')
+        eleload.attr('aria-valuenow', percent).css('width', percent+'%');
+    }
+
+    $( "#form-import-group" ).submit(function( event ) {
+        $('#result_submit_form').html('');
+        // var jform = new FormData();
+        // jform.append('import_file',$('#import_file_group').val());
+
+        var fd = new FormData();
+        var files = $('#import_file_group')[0].files[0];
+        fd.append('import_file',files);
 
 
-    $.ajax({
-        url: 'index.php?route=import/importAll',
-        type: 'POST',
-        data: fd,
-        // dataType: 'html',
-        mimeType: 'multipart/form-data', // this too
-        contentType: false,
-        cache: false,
-        processData: false,
-        dataType: 'json',
-    })
-    .done(function(data) {
-        console.log(data);
-        $('#result_submit_form').html('Upload '+data.status+'. Please waiting for create file...');
-        if(data.status=="Success"){
-            $.ajax({
-                url: 'index.php?route=import/importAll_gen_barcode',
-                type: 'GET',
-                data: {
-                    xlsx: data.xlsx
-                },
-                // dataType: 'html',
-                // mimeType: 'multipart/form-data', // this too
+        $.ajax({
+            url: 'index.php?route=import/importAll',
+            type: 'POST',
+            data: fd,
+            // dataType: 'html',
+            mimeType: 'multipart/form-data', // this too
+            contentType: false,
+            cache: false,
+            processData: false,
+            dataType: 'json',
+        })
+        .done(function(data) {
+            console.log(data);
+            loading(10);
+            $('#result_submit_form').html('Upload '+data.status+'. Please waiting for create file...');
+            if(data.status=="Success"){
+                $.ajax({
+                    url: 'index.php?route=import/importAll_gen_barcode',
+                    type: 'GET',
+                    data: {
+                        xlsx: data.xlsx
+                    },
+                    // dataType: 'html',
+                    // mimeType: 'multipart/form-data', // this too
 
-                // contentType: false,
-                // cache: false,
-                // processData: false,
-                dataType: 'json',
-            })
-            .done(function(data_ajax2) {
-                // console.log(data);
-                $('#result_submit_form').html('Create file '+data_ajax2.result +' File count: '+ data_ajax2.count_file);
-                for (i = 1; i <= data_ajax2.count_file; i++) {
-                    console.log(i);
-                    $.ajax({
-                        url: 'index.php?route=import/importAll_import_barcode',
-                        type: 'GET',
-                        dataType: 'html',
-                        data: {file_name: i},
-                        async: false
-                    })
-                    .done(function() {
+                    // contentType: false,
+                    // cache: false,
+                    // processData: false,
+                    dataType: 'json',
+                })
+                .done(function(data_ajax2) {
+                    // console.log(data);
+                    loading(20);
+                    $('#result_submit_form').html('Create file '+data_ajax2.result +' File count: '+ data_ajax2.count_file);
 
-                        $('#result_submit_form').html('Import csv to database : ' + i + '/' + data_ajax2.count_file);
-                        console.log("success"+'importAll_import_barcode');
-                    })
-                    .fail(function() {
-                        console.log("error"+'importAll_import_barcode');
-                    })
-                    .always(function() {
-                        console.log("complete"+'importAll_import_barcode');
-                    });
-                    
-                }
-            })
-            .fail(function(a,b,c) {
-                console.log(a);
-                console.log(b);
-                console.log(c);
-            });
-        }
-    })
-    .fail(function(a,b,c) {
-        console.log(a);
-        console.log(b);
-        console.log(c);
+                    let peritem = 80 / parseInt(data_ajax2.count_file);
+                    let count = 20;
+                    for (i = 1; i <= data_ajax2.count_file; i++) {
+                        console.log(i);
+                        $.ajax({
+                            url: 'index.php?route=import/importAll_import_barcode',
+                            type: 'GET',
+                            dataType: 'html',
+                            data: {file_name: i},
+                            async: true
+                        })
+                        .done(function() {
+                            $('#result_submit_form').html('Importing csv to database : ' + data_ajax2.count_file);
+                            console.log("success"+'importAll_import_barcode');
+                        })
+                        .fail(function() {
+                            console.log("error"+'importAll_import_barcode');
+                        })
+                        .always(function() {
+                            console.log("complete"+'importAll_import_barcode');
+                            count += peritem;
+                            loading(count);
+                            if (count+1 >= 100) {
+                                $('#result_submit_form').html('Import success!!');
+                            }
+                        });
+                        
+                    }
+                })
+                .fail(function(a,b,c) {
+                    console.log(a);
+                    console.log(b);
+                    console.log(c);
+                });
+            }
+        })
+        .fail(function(a,b,c) {
+            console.log(a);
+            console.log(b);
+            console.log(c);
+        });
+    event.preventDefault();
     });
-  event.preventDefault();
 });
 </script>

@@ -10,6 +10,9 @@
 		<div class="card-body bootstrap-select-1">
 			<div class="row">
 				<div class="col-sm-12">
+
+					<?php echo !empty($success) ? '<div class="alert alert-success border-0" role="alert">'.$success.'</div>' : '';?>
+					<?php echo !empty($error) ? '<div class="alert alert-danger border-0" role="alert">'.$error.'</div>' : '';?>
                     <form action="<?php echo $action_import; ?>" method="post" enctype="multipart/form-data">
                         <div class="form-group row">
                             <label for="" class="col-sm-12 text-left">Import CSV</label>
@@ -33,55 +36,7 @@
 
 		</div>
 	</div>
-	<div class="card">
-		<?php echo !empty($success) ? '<div class="alert alert-success border-0" role="alert">'.$success.'</div>' : '';?>
-		<?php echo !empty($error) ? '<div class="alert alert-danger border-0" role="alert">'.$error.'</div>' : '';?>
-		<div class="card-header">
-
-			<span class="float-left">
-				
-			</span>
-			<span class="float-right">
-				<!-- <button type="button" class="btn btn-sm btn-outline-primary waves-effect waves-light" data-toggle="modal" data-target="#ModalAddMenual">Add Barcode</button> -->
-			</span>
-		</div>
-		<!--end card-header-->
-		<div class="card-body">
-
-		<div class="progress mb-3" style="height:20px;">
-			<div id="mainload" class="progress-bar progress-bar-striped progress-bar-animated" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100" style="width: 0%">0%</div>
-		</div>
-
-			<div class="table-responsive">
-				<table class="table table-bordered" id="table_result">
-					<thead>
-						<tr>
-							<th>Group Prefix</th>
-							<th width="50%">Loading</th>
-							<th width="25%">Message</th>
-							<!-- <th width="15%">Action</th> -->
-						</tr>
-					</thead>
-					<tbody>
-                    <?php foreach ($group as $value) : ?>
-                        <tr>
-                            <td><?php echo sprintf('%03d',$value);?></td>
-							<td>
-								<div class="progress">
-									<div class="load<?php echo $value;?> progress-bar progress-bar-striped progress-bar-animated" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100" style="width: 0%"></div>
-								</div>
-							</td>
-							<td></td>
-							<!-- <td><button class="findrange btn btn-primary btn-sm" data-toggle="modal" data-target="#modal_show_range" data-group="<?php echo (int)$value;?>">Find range not used.</button></td> -->
-                        </tr>
-                    <?php endforeach; ?>
-					</tbody>
-				</table>
-			</div>
-		</div>
-		<!--end card-body-->
-	</div>
-	<!--end card-->
+	
 </div>
 
 
@@ -182,57 +137,57 @@ $(document).ready(function () {
 		$('.load'+groupcode).attr('aria-valuenow','5').css('width','5%');
 		console.log(groupcode + ' start loading...');
 		msg.html('Start loading...');
-		$.ajax({
-			type: "POST",
-			url: "index.php?route=barcode/ajaxGetRange",
-			data: {group:groupcode},
-			dataType: "json",
-			success: function (response) {
-				// console.info('%c '+groupcode+' success get range', success);
-				if (response.length>0) {
-					$('.load'+groupcode).attr('aria-valuenow','20').css('width','20%');
-					let nowwidth = parseInt($('.load'+groupcode).attr('aria-valuenow'));
-					$.each(response, function(i,v){
-						if (v.qty < parseInt('<?php echo $maximum;?>')) {
-							barcodeRange.push(v.start+'-'+v.end);
-							nowwidth++;
-							$('.load'+groupcode).attr('aria-valuenow',nowwidth).css('width',nowwidth+'%');
-						}
-					});
+		// $.ajax({
+		// 	type: "POST",
+		// 	url: "index.php?route=barcode/ajaxGetRange",
+		// 	data: {group:groupcode},
+		// 	dataType: "json",
+		// 	success: function (response) {
+		// 		// console.info('%c '+groupcode+' success get range', success);
+		// 		if (response.length>0) {
+		// 			$('.load'+groupcode).attr('aria-valuenow','20').css('width','20%');
+		// 			let nowwidth = parseInt($('.load'+groupcode).attr('aria-valuenow'));
+		// 			$.each(response, function(i,v){
+		// 				if (v.qty < parseInt('<?php echo $maximum;?>')) {
+		// 					barcodeRange.push(v.start+'-'+v.end);
+		// 					nowwidth++;
+		// 					$('.load'+groupcode).attr('aria-valuenow',nowwidth).css('width',nowwidth+'%');
+		// 				}
+		// 			});
 
-					// console.log('Barcode Range : ');
-					console.info('%c '+groupcode+' success get range ('+(barcodeRange.length)+') ', success);
-					if (barcodeRange.length>0) {
-						msg.html('Found barcode range < <?php echo $maximum;?> : '+barcodeRange.length+' unit.');
-						console.table(barcodeRange);
-						$.ajax({
-							type: "POST",
-							url: "index.php?route=barcode/ajaxRemoveRange",
-							data: {group:groupcode,barcode:JSON.stringify(barcodeRange)},
-							success: function (res) {
-								console.info('%c '+groupcode+' done ', success);
-								msg.html('Done, auto remove barcode range < <?php echo $maximum;?> success.');
-								setMain(perItem);
-								$('.load'+groupcode).attr('aria-valuenow','100').css('width','100%');
-							}
-						});
-					} else {
-						msg.html('Not found barcode range < <?php echo $maximum;?>');
-						console.info('%c '+groupcode+' not found range length < 50 ', failure);
-						setMain(perItem);
-						$('.load'+groupcode).attr('aria-valuenow','100').css('width','100%');
-					}
+		// 			// console.log('Barcode Range : ');
+		// 			console.info('%c '+groupcode+' success get range ('+(barcodeRange.length)+') ', success);
+		// 			if (barcodeRange.length>0) {
+		// 				msg.html('Found barcode range < <?php echo $maximum;?> : '+barcodeRange.length+' unit.');
+		// 				console.table(barcodeRange);
+		// 				$.ajax({
+		// 					type: "POST",
+		// 					url: "index.php?route=barcode/ajaxRemoveRange",
+		// 					data: {group:groupcode,barcode:JSON.stringify(barcodeRange)},
+		// 					success: function (res) {
+		// 						console.info('%c '+groupcode+' done ', success);
+		// 						msg.html('Done, auto remove barcode range < <?php echo $maximum;?> success.');
+		// 						setMain(perItem);
+		// 						$('.load'+groupcode).attr('aria-valuenow','100').css('width','100%');
+		// 					}
+		// 				});
+		// 			} else {
+		// 				msg.html('Not found barcode range < <?php echo $maximum;?>');
+		// 				console.info('%c '+groupcode+' not found range length < 50 ', failure);
+		// 				setMain(perItem);
+		// 				$('.load'+groupcode).attr('aria-valuenow','100').css('width','100%');
+		// 			}
 
 					
 					
-				} else {
-					msg.html('Not found someone, done!!');
-					console.info('%c '+groupcode+' not found range ', failure);
-					setMain(perItem);
-					$('.load'+groupcode).attr('aria-valuenow','100').css('width','100%');
-				}
-			}
-		});
+		// 		} else {
+		// 			msg.html('Not found someone, done!!');
+		// 			console.info('%c '+groupcode+' not found range ', failure);
+		// 			setMain(perItem);
+		// 			$('.load'+groupcode).attr('aria-valuenow','100').css('width','100%');
+		// 		}
+		// 	}
+		// });
 	});
 	// let table = $('#table_result');
 	// table.children('tbody').each('tr', function(index, value){
