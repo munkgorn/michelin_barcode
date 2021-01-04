@@ -55,6 +55,11 @@ $(document).ready(function(){
 	const inputGroup = $('#groupFilter');
 	const linkexport = $('#linkexport');
 
+	let pad = (str, max) => { // zero left pad
+		str = str.toString();
+		return str.length < max ? pad("0" + str, max) : str;
+	}
+
 
 	function addCommas(nStr) {
 		nStr += '';
@@ -81,7 +86,7 @@ $(document).ready(function(){
 			if (data.length > 0) {
 				$.each(data, function(i, v){
 					tr += '<tr class="trgroup'+v.group_code+'">';
-						tr += '<td class="text-center">'+v.group_code+'</td>';
+						tr += '<td class="text-center">'+pad(v.group_code,3)+'</td>';
 						tr += '<td class="text-center"><span class="loadrange" data-group="'+v.group_code+'">'+loading+'</span></td>';
 						tr += '<td class="text-center"><span class="loadqty" data-group="'+v.group_code+'">'+loading+'</span></td>';
 					tr += '</tr>';
@@ -124,7 +129,7 @@ $(document).ready(function(){
 
 						// console.log(v);
 						group[v.group_code].push({
-							range: v.barcode_start+' - '+v.barcode_end,
+							range: pad(v.barcode_start,8)+' - '+pad(v.barcode_end,8),
 							qty: v.barcode_qty
 						});
 
@@ -136,7 +141,7 @@ $(document).ready(function(){
 						let stringqty = '';
 						$.each(v, (index, value) => {
 							stringrange += value.range + "<br>";
-							stringqty += value.qty + "<br>";
+							stringqty += addCommas(value.qty) + "<br>";
 						});
 						$('.loadrange[data-group='+i+']').html(stringrange);
 						$('.loadqty[data-group='+i+']').html(stringqty);

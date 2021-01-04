@@ -2,17 +2,19 @@
 	class PurchaseModel extends db {
 
         public function getStartEndDateOfYearAgo($datestart, $dateend) {
-            $sql = "SELECT min(date_modify) as date_start, max(date_modify) as date_end FROM mb_master_barcode WHERE date_modify BETWEEN '$datestart' AND '$dateend' LIMIT 0,1";
+            // $sql = "SELECT min(date_modify) as date_start, max(date_modify) as date_end FROM mb_master_barcode WHERE date_modify BETWEEN '$datestart' AND '$dateend' LIMIT 0,1";
+            $sql = "SELECT min(date_modify) as date_start, max(date_modify) as date_end FROM mb_master_barcode_range WHERE barcode_status = 1 AND date_modify BETWEEN '$datestart' AND '$dateend' ORDER BY date_modify ASC LIMIT 0,1";
             $query = $this->query($sql);
             return isset($query->row['date_start'])&&isset($query->row['date_end']) ? $query->row : array('date_start'=>'','date_end'=>'') ;
         }
 
         public function getBarcodeStartEndOfGroup($datestart, $dateend) {
-            $sql = "SELECT  ";
-            $sql .= "cb.`group`,  ";
-            $sql .= "(SELECT b.barcode_code FROM mb_master_barcode b WHERE cb.`group` = b.barcode_prefix AND (b.date_modify BETWEEN '$datestart' AND '$dateend') ORDER BY b.id_barcode ASC LIMIT 0,1) as barcode_start, ";
-            $sql .= "(SELECT b.barcode_code FROM mb_master_barcode b WHERE cb.`group` = b.barcode_prefix AND (b.date_modify BETWEEN '$datestart' AND '$dateend') ORDER BY b.id_barcode DESC LIMIT 0,1) as barcode_end ";
-            $sql .= "FROM mb_master_config_barcode cb ";
+            // $sql = "SELECT  ";
+            // $sql .= "cb.`group`,  ";
+            // $sql .= "(SELECT b.barcode_code FROM mb_master_barcode b WHERE cb.`group` = b.barcode_prefix AND (b.date_modify BETWEEN '$datestart' AND '$dateend') ORDER BY b.id_barcode ASC LIMIT 0,1) as barcode_start, ";
+            // $sql .= "(SELECT b.barcode_code FROM mb_master_barcode b WHERE cb.`group` = b.barcode_prefix AND (b.date_modify BETWEEN '$datestart' AND '$dateend') ORDER BY b.id_barcode DESC LIMIT 0,1) as barcode_end ";
+            // $sql .= "FROM mb_master_config_barcode cb ";
+            echo $sql = "SELECT group_code AS `group`,barcode_start,barcode_end FROM mb_master_barcode_range WHERE date_modify BETWEEN '$datestart' AND '$dateend';";
 
             // $sql = "SELECT barcode_prefix, min(barcode_code) as barcode_start, max(barcode_code) as barcode_end FROM mb_master_barcode WHERE date_modify BETWEEN '$datestart' AND '$dateend' AND barcode_prefix = $group LIMIT 0,1";
             $query = $this->query($sql);

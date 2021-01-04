@@ -9,6 +9,8 @@
 	    	);
 			$data['style'] 	= $style;
 
+			$data['skip'] = isset($_GET['skip']) ? get('skip') : '';
+
 			// echo md5('fsoftpro88');
 			
 			$data['success'] = $this->hasSession('success') ? $this->getSession('success') : ''; $this->rmSession('success');
@@ -19,7 +21,8 @@
 	    	$data = array();
 	    	$user = $this->model('user');
 	    	$username = post('username');
-	    	$password = post('password');
+			$password = post('password');
+			$skip = get('skip');
 	    	$data_select = array(
 	    		'username' => $username,
 	    		'password' => $password

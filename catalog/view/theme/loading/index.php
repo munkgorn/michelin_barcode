@@ -13,6 +13,7 @@
                     </tr>
                 </thead>
                 <tbody>
+                    <?php if (count($loading)>0) : ?>
                     <?php foreach ($loading as $key => $load) : ?>
                     <tr>
                         <td>
@@ -23,6 +24,11 @@
                         </td>
                     </tr>
                     <?php endforeach; ?>
+                    <?php else: ?>
+                    <tr>
+                        <td colspan="2" class="text-center">Not found data loading please wait redirect. if not redirect you can click this <a href="index.php?route=dashboard">Link</a></td>
+                    </tr>
+                    <?php endif; ?>
                 </tbody>
             </table>
         </div>
@@ -68,7 +74,7 @@ $(document).ready(function () {
     });
     <?php endforeach; ?>
 
-    var tid = setTimeout(checkCompleted, 1000);
+    var tid = setTimeout(checkCompleted, 100);
     function checkCompleted() {
         let arr = new Array();
         $('.progress').each(function(){
@@ -81,10 +87,10 @@ $(document).ready(function () {
             clearTimeout(tid);
             setTimeout(function () {
                 window.location.href = "index.php?route=<?php echo $redirect;?>";
-            }, 1000); //
+            }, 100); //
             
         } else {
-            tid = setTimeout(checkCompleted, 1000);
+            tid = setTimeout(checkCompleted, 100);
         }
     }
 });

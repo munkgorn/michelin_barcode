@@ -76,6 +76,7 @@ class AssociationController extends Controller
         $this->json($json);
     }
 
+
     public function ajaxCheckOldSync() {
         $association = $this->model('association');
         // Group barcode use with old association in config day
@@ -97,6 +98,64 @@ class AssociationController extends Controller
         $data['message'] =  isset($_POST['message'])&&!empty($_POST['message']) ? $_POST['message'] : '';
         $association = $this->model('association');
         $association->savePropose($idproduct, $data);
+    }
+
+    public function ajaxRelation() {
+        $size = $_POST['size'];
+        $sumprod = str_replace(',','',$_POST['sum_prod']);
+        $last_week = $_POST['last_wk'];
+        $remaining_qty = $_POST['qty'];
+        $not = isset($_POST['not'])&&!empty($_POST['not']) ? $_POST['not'] : array();
+
+        $association = $this->model('association');
+        $config = $this->model('config');
+        $relation_group = $association->getRelationshipBySize($size, $sumprod, $not);
+
+        // Config Relationship
+        $config_relation = array();
+        $temprelation = $config->getRelationship();
+        foreach ($temprelation as $tr) {
+            $config_relation[] = (int)$tr['group'];
+        }
+
+
+        // Group barcode use with old association in config day
+        $oldSync = $association->getOldSync(); 
+        $beforeSync = array(); 
+        foreach ($oldSync as $v) {
+            $beforeSync[] = $v['group_code'];
+        }
+
+        $json = array();
+        
+        if (in_array($relation_group['group'], $config_relation) && !in_array($relation_group['group'],$beforeSync) && !empty($relation_group['group'])) {
+            $propose = $relation_group['group'];
+            $propose_remaining_qty = $relation_group['qty'];
+            $message = '<span class="text-primary">Relationship</span>';
+            
+            $json = array(
+                'size' => $size,
+                'sum_prod' => $sumprod,
+                'last_wk0' => !empty($last_week) ? sprintf('%03d', $last_week) : '',
+                'remaining_qty' => number_format((int) round($remaining_qty,0), 0),
+                'propose' => !empty(strip_tags($propose)) ? ($propose!=$last_week?''.sprintf('%03d', $propose).'':sprintf('%03d', $propose)) : '',
+                'propose_remaining_qty' => round($propose_remaining_qty,0) > 0 ? ($propose!=$last_week?''.number_format((int) round($propose_remaining_qty,0), 0).'':number_format((int) round($propose_remaining_qty,0), 0)) : '',
+                'message' => $message,
+                'plain_message' => strip_tags($message),
+            );
+        }
+        if (!in_array($relation_group['group'], $config_relation)) {
+            $json['error_message'] = 'None in config relation';
+        }
+        if (empty($relation_group['group'])) {
+            $json['error_message'] = 'Empty Group';
+        }
+        if (in_array($relation_group['group'],$beforeSync)) {
+            $json['error_message'] = 'Before sync';
+        }
+        
+
+        $this->json($json);
     }
 
     public function ajaxCondition() {
@@ -141,12 +200,14 @@ class AssociationController extends Controller
                 }
             }
 
+
             // Config Relationship
             $config_relation = array();
             $temprelation = $config->getRelationship();
             foreach ($temprelation as $tr) {
                 $config_relation[] = (int)$tr['group'];
             }
+
 
             // Group barcode use with old association in config day
             $oldSync = $association->getOldSync(); 
@@ -179,12 +240,17 @@ class AssociationController extends Controller
                 }
             }
 
-            if (empty($last_week)) {
-                $propose = '';
-                $propose_remaining_qty = '';
-                $message = '';
-            }
+            // if (empty($last_week)) {
+            //     $propose = '';
+            //     $propose_remaining_qty = '';
+            //     $message = '';
+            // }
 
+            // if (in_array($propose, $config_relation) || in_array($propose, $notuse) || in_array($propose, $beforeSync)) {
+            //     $propose = '';
+            //     $propose_remaining_qty = '';
+            //     $message = '';
+            // }
 
             $json = array(
                 'size' => $size,
@@ -224,9 +290,13 @@ class AssociationController extends Controller
         $temp_freegroup = json_decode($free_group, true);
         $temp_freegroup = json_decode($temp_freegroup[0], true);
         $freegroup = array();
-        foreach ($temp_freegroup as $v) {
-            $freegroup[$v['group']] = $v['qty'];
+        if (count($temp_freegroup)>0) {
+            // print_r($temp_freegroup);
+            foreach ($temp_freegroup as $v) {
+                $freegroup[$v['group']] = (int)$v['qty'];
+            }
         }
+        
 
         // getgroup Config Relationship
         $config_relation = array();
@@ -349,8 +419,6 @@ class AssociationController extends Controller
 
             $date_wk = '';
 
-            
-
             $dir = 'uploads/association/';
             $path = DOCUMENT_ROOT . $dir;
             $path_csv = DOCUMENT_ROOT . $dir;
@@ -412,9 +480,14 @@ class AssociationController extends Controller
                 }
             }
 
-            // $this->generateJsonFreeGroup();
-            $this->redirect('loading/someone&key=freegroup,year,barcode&redirect=association');
-            $this->redirect('association&date_wk=' . $date_wk);
+            $this->model('config')->setConfig('load_freegroup', 1);
+            $this->model('config')->setConfig('load_year', 1);
+            $this->model('config')->setConfig('load_barcode', 1);
+            // $this->model('config')->setConfig('load_freegroup', 1);
+            $this->setSession('redirect','association&date_wk=' . $date_wk);
+            $this->redirect('loading');
+            
+            // $this->redirect('association&date_wk=' . $date_wk);
         } else {
             $this->setSession('error', 'Not found post');
             $this->redirect('association&date_wk=' . get('date_wk'));
@@ -482,9 +555,10 @@ class AssociationController extends Controller
             if (in_array(false, $resultMapping)) {
                 $this->setSession('error', 'Fail some group cannot validated');
             } else {
-                //$this->generateJsonFreeGroup();
+
                 $this->setSession('success', 'Successfil validated group');
-                redirect('loading/someone','&key=freegroup&redirect=association');
+                // redirect('loading/someone','&key=freegroup&redirect=association');
+                $this->redirect('association&date_wk=' . post('date_wk'));
             }
         } else {
             $this->setSession('error', 'Not found post');
@@ -544,15 +618,25 @@ class AssociationController extends Controller
     }
     public function generateJsonFreeGroup()
     {
+        // Config Relationship
+        $config_relation = array();
+        $temprelation = $this->model('config')->getRelationship();
+        foreach ($temprelation as $tr) {
+            $config_relation[] = (int)$tr['group'];
+        }
+
         $association = $this->model('association');
         $lists = $association->getFreeGroup();
         $json = array();
         foreach ($lists as $value) {
-            $json[] = $value;
+            if (!in_array($value['group'], $config_relation)) {
+                $json[] = $value;
+            }
         }
         $fp = fopen(DOCUMENT_ROOT . 'uploads/freegroup.json', 'w');
         fwrite($fp, json_encode($json));
         fclose($fp);
+        $this->model('config')->setConfig('load_freegroup', 0);
         return $json;
     }
     // JSON FILE

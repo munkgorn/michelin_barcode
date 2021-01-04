@@ -159,6 +159,31 @@
                 </div>
             </div>
         </div>
+        <div class="col-sm-6">
+            <div class="card">
+                <div class="card-header"><h3>Update Config</h3></div>
+                <div class="card-body">
+                    <form action="index.php?route=import/updateConfig" method="post">
+                        <?php foreach ($configm as $kt=> $t) : ?>
+                        <div class="form-check">
+                            <input class="form-check-input" name="listconfig[]" type="checkbox" value="<?php echo $t;?>" id="config<?php echo $kt;?>">
+                            <label class="form-check-label" for="config<?php echo $kt;?>"><?php echo $t;?></label>
+                        </div>
+                        <?php endforeach;?>
+                        <input type="text" class="form-control" name="numvalue" value="1" />
+                        <input type="submit" class="btn btn-outline-danger mt-2" value="update" />
+                    </form>
+                </div>
+            </div>
+        </div>
+        <div class="col-sm-6">
+            <div class="card">
+                <div class="card-header"><h3>Update Date Barcode Range with date in barcode</h3></div>
+                <div class="card-body">
+                    <a href="index.php?route=import/updateDateRange" class="btn btn-primary" onclick="return confirm('Are you sure?');">Update</a>
+                </div>
+            </div>
+        </div>
     </div>
 </div>
 

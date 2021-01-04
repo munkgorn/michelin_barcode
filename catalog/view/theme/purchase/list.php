@@ -303,6 +303,8 @@ let loadBarcode = () => {
 		success: function (response) {
 			console.log("Load barcode success");
 			const obj = jQuery.parseJSON(response);
+			$('.load_default_start').html('');
+			$('.load_default_end').html('');
 			$.each(obj, function(index, value){
 				$('.load_default_start[data-group='+pad(index,3)+']').html(value.start);
 				$('.load_default_end[data-group='+pad(index,3)+']').html(value.end);

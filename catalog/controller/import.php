@@ -23,6 +23,26 @@ class ImportController extends Controller
         exit();
     }
 
+    public function updateConfig() {
+        $config = array(
+            'load_freegroup',
+            'load_year',
+            'load_barcode',
+            'load_date',
+        );
+        $modelconfig = $this->model('config');
+        $listconfig = $_POST['listconfig'];
+        foreach ($listconfig as $t) {
+            if (in_array($t, $config)) {
+                $result = $modelconfig->setConfig($t, $_POST['numvalue']);
+                echo 'Update config '.$t.' : '.($result==1?'success':'fail').'<br>';
+            }
+        }
+        echo '<br>';
+        echo '<a href="index.php?route=loading">Loading</a>';
+        $this->linkIndex();
+
+    }
     public function removeData() {
         $import = $this->model('import');
 
@@ -465,6 +485,15 @@ class ImportController extends Controller
         // echo $this->linkIndex();
     }
 
+    public function updateDateRange() {
+        $range = $this->model('range');
+        $range->updateDateRange();
+
+        echo 'Copy date barcode <br>';
+
+        $this->linkIndex();
+    }
+
     public function index()
     {
         $data = array();
@@ -476,6 +505,12 @@ class ImportController extends Controller
             'mb_master_barcode_range',
             'mb_master_group',
             'mb_master_product',
+        );
+        $data['configm'] = array(
+            'load_freegroup',
+            'load_year',
+            'load_barcode',
+            // 'load_date',
         );
 
 

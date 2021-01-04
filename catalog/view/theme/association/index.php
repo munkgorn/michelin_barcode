@@ -239,96 +239,164 @@ $(document).ready(function () {
 
 	const loading = '<img src="assets/loading.gif" height="30" />Loading...';
 
+	let notuse_relation = [];
+
 	$('.tdqty').each(function (index, element) {
 		// console.log(element);
 		let idproduct = $(element).data('idproduct');
 		let idgroup = $('.tdlast[data-idproduct='+idproduct+'] .last_wk').html();
-		let idsize =  parseInt($('.tdsize[data-idproduct='+idproduct+']').html());
+		let idsize =  $('.tdsize[data-idproduct='+idproduct+']').html();
 		let idsumprod =  $('.tdsumprod[data-idproduct='+idproduct+']').html();
 		let oldmsg = $('.tdmsg[data-idproduct='+idproduct+']').data('text');
 
-		$('.tdqty[data-idproduct='+idproduct+']').html(loading);
-		$('.tdpropose[data-idproduct='+idproduct+']').html(loading);
-		$('.tdproposeqty[data-idproduct='+idproduct+']').html(loading);
+		
 		if (oldmsg!='Relationship') {
+			$('.tdpropose[data-idproduct='+idproduct+']').html(loading);
+			$('.tdproposeqty[data-idproduct='+idproduct+']').html(loading);
+			$('.tdqty[data-idproduct='+idproduct+']').html(loading);
 			$('.tdmsg[data-idproduct='+idproduct+']').html(loading);
-		}
-		if (idgroup>0) {
+		} 
+		if (oldmsg=='Relationship') {
+			// console.log(idsize);
+			// console.log(notuse_relation);
+			// $('.tdmsg[data-idproduct='+idproduct+']').html(loading);
 			$.ajax({
 				type: "POST",
-				url: "index.php?route=association/ajaxCountBarcodeNotuse",
-				data: {group: idgroup, id_product: idproduct},
+				url: "index.php?route=association/ajaxRelation",
+				data: {size: idsize, sum_prod: idsumprod, id_product: idproduct, last_wk: idgroup, qty: 0, not: notuse_relation},
 				dataType: "json",
-				async: true,
+				async: false,
 				cache:true,
-				success: function (data) {
-					console.log('Size '+idsize+' Group '+idgroup+' Qty '+data);
-
-					if (data>0) {
-						$(element).html(addCommas(data));
-					} else {
-						$(element).html(0);
+				success: function (data2) {
+					if (typeof data2.error_message != 'undefined') {
+						console.log('Error : ' + data2.error_message);
 					}
 
-					$.ajax({
-						type: "POST",
-						url: "index.php?route=association/ajaxCondition",
-						data: {size: idsize, sum_prod: idsumprod, last_wk: idgroup, qty: data, id_product: idproduct},
-						dataType: "json",
-						async: false,
-						cache:true,
-						success: function (data2) {
-							if (data2.propose!=null) {
-								$('.tdpropose[data-idproduct='+idproduct+']').html(data2.propose);
-								$('.txt_propose[data-key='+idproduct+']').val(data2.propose);
-							}
-							if (data2.propose_remaining_qty!=null) {
-								$('.tdproposeqty[data-idproduct='+idproduct+']').html(data2.propose_remaining_qty);
-							}
-							if (data2.message!=null) {
-								$('.tdmsg[data-idproduct='+idproduct+']').html(data2.message);
-								if (data2.message=='Free Group') {
-									$('.tdpropose[data-idproduct='+idproduct+']').addClass('text-danger');
-									$('.tdproposeqty[data-idproduct='+idproduct+']').addClass('text-danger');
-									$('.tdmsg[data-idproduct='+idproduct+']').addClass('text-danger');
-								}
-							}
+					let thisprq_str = data2.propose_remaining_qty;
+					let thisprq = thisprq_str.replace(',','');
 
-							let thisprq_str = data2.propose_remaining_qty;
-							let thisprq = thisprq_str.replace(',','');
-
-							$.ajax({
-								type: "POST",
-								url: "index.php?route=association/ajaxSavePropose",
-								data: {id_product: idproduct, remaining_qty: data, propose: data2.propose, propose_remaining_qty: thisprq, message: data2.message},
-								dataType: "json",
-								async: false,
-								success: function (response) {
-									console.log(response);
-								}
-							});
+					if (parseInt(thisprq)>0 && jQuery.inArray(data2.propose, notuse_relation)==-1)  {
+						notuse_relation.push(data2.propose);
+						console.log(notuse_relation);
+						if (data2.propose!=null) {
+							$('.tdpropose[data-idproduct='+idproduct+']').html('<span class="text-primary">'+data2.propose+'</span>');
+							$('.txt_propose[data-key='+idproduct+']').val(data2.propose);
 						}
-					});
+						if (data2.propose_remaining_qty!=null) {
+							$('.tdproposeqty[data-idproduct='+idproduct+']').html('<span class="text-primary">'+data2.propose_remaining_qty+'</span>');
+						}
+						if (data2.message!=null) {
+							$('.tdmsg[data-idproduct='+idproduct+']').html(data2.message);
+							if (data2.message=='Free Group') {
+								$('.tdpropose[data-idproduct='+idproduct+']').addClass('text-danger');
+								$('.tdproposeqty[data-idproduct='+idproduct+']').addClass('text-danger');
+								$('.tdmsg[data-idproduct='+idproduct+']').addClass('text-danger');
+							}
+						}
+					} else {
+						$('.tdqty[data-idproduct='+idproduct+']').html('');
+						$('.tdpropose[data-idproduct='+idproduct+']').html('');
+						$('.tdproposeqty[data-idproduct='+idproduct+']').html('');
+						$('.tdmsg[data-idproduct='+idproduct+']').html('<span class="text-primary">Relationship</span>');
+					}
 
-				},
-				error: function (xhr, ajaxOptions, thrownError) {
-					console.log('Group '+idgroup+' Error');
-					console.log(xhr.status);
-					console.log(thrownError);
-					$(element).html('');
+
+					// $.ajax({
+					// 	type: "POST",
+					// 	url: "index.php?route=association/ajaxSavePropose",
+					// 	data: {id_product: idproduct, remaining_qty: data, propose: data2.propose, propose_remaining_qty: thisprq, message: data2.message},
+					// 	dataType: "json",
+					// 	async: false,
+					// 	success: function (response) {
+					// 		console.log(response);
+					// 	}
+					// });
 				}
-
 			});
+
 		} else {
-			$('.tdqty[data-idproduct='+idproduct+']').html('');
-			$('.tdpropose[data-idproduct='+idproduct+']').html('');
-			$('.tdproposeqty[data-idproduct='+idproduct+']').html('');
-			if (oldmsg!='Relationship') {
-				$('.tdmsg[data-idproduct='+idproduct+']').html('');	
+			if (idgroup>0) {
+				$.ajax({
+					type: "POST",
+					url: "index.php?route=association/ajaxCountBarcodeNotuse",
+					data: {group: idgroup, id_product: idproduct},
+					dataType: "json",
+					async: true,
+					cache:true,
+					success: function (data) {
+						console.log('Size '+idsize+' Group '+idgroup+' Qty '+data);
+
+						if (data>0) {
+							$(element).html(addCommas(data));
+						} else {
+							$(element).html(0);
+						}
+
+						$.ajax({
+							type: "POST",
+							url: "index.php?route=association/ajaxCondition",
+							data: {size: idsize, sum_prod: idsumprod, last_wk: idgroup, qty: data, id_product: idproduct},
+							dataType: "json",
+							async: false,
+							cache:true,
+							success: function (data2) {
+								if (data2.propose!=null) {
+									$('.tdpropose[data-idproduct='+idproduct+']').html(data2.propose);
+									$('.txt_propose[data-key='+idproduct+']').val(data2.propose);
+								}
+								if (data2.propose_remaining_qty!=null) {
+									$('.tdproposeqty[data-idproduct='+idproduct+']').html(data2.propose_remaining_qty);
+								}
+								if (data2.message!=null) {
+									$('.tdmsg[data-idproduct='+idproduct+']').html(data2.message);
+									if (data2.message=='Free Group') {
+										$('.tdpropose[data-idproduct='+idproduct+']').addClass('text-danger');
+										$('.tdproposeqty[data-idproduct='+idproduct+']').addClass('text-danger');
+										$('.tdmsg[data-idproduct='+idproduct+']').addClass('text-danger');
+									} else {
+										$('.tdpropose[data-idproduct='+idproduct+']').removeClass('text-danger');
+										$('.tdproposeqty[data-idproduct='+idproduct+']').removeClass('text-danger');
+										$('.tdmsg[data-idproduct='+idproduct+']').removeClass('text-danger');
+									}
+								}
+
+								let thisprq_str = data2.propose_remaining_qty;
+								let thisprq = thisprq_str.replace(',','');
+
+								// $.ajax({
+								// 	type: "POST",
+								// 	url: "index.php?route=association/ajaxSavePropose",
+								// 	data: {id_product: idproduct, remaining_qty: data, propose: data2.propose, propose_remaining_qty: thisprq, message: data2.message},
+								// 	dataType: "json",
+								// 	async: false,
+								// 	success: function (response) {
+								// 		console.log(response);
+								// 	}
+								// });
+							}
+						});
+
+					},
+					error: function (xhr, ajaxOptions, thrownError) {
+						console.log('Group '+idgroup+' Error');
+						console.log(xhr.status);
+						console.log(thrownError);
+						$(element).html('');
+					}
+
+				});
 			} else {
-				$('.tdmsg[data-idproduct='+idproduct+']').html('<span class="text-primary">Relationship</span>');	
+				$('.tdqty[data-idproduct='+idproduct+']').html('');
+				$('.tdpropose[data-idproduct='+idproduct+']').html('');
+				$('.tdproposeqty[data-idproduct='+idproduct+']').html('');
+				if (oldmsg!='Relationship') {
+					$('.tdmsg[data-idproduct='+idproduct+']').html('');	
+				} else {
+					$('.tdmsg[data-idproduct='+idproduct+']').html('<span class="text-primary">Relationship</span>');	
+				}
 			}
 		}
+		
 	});
 
 	pasteFreegroup();
@@ -364,12 +432,23 @@ $(document).ready(function () {
 			let indexFree = [];
 			// let difference = []; // not use
 			$.grep(jsonfreeuse, function(el, index) {
+				console.log(index);
 				if (jQuery.inArray(el, oldsync) == -1) {
 					indexFree.push(index); // Save index freegroup
 					// difference.push(el); // save group (not use)
 				}
 			});
 			// console.log(difference);
+
+			// save not use again
+			let notuse = [];
+			$('.tdpropose').each(function(index,value){
+				let num = parseInt($(this).html());
+				if (!isNaN(num)) {
+					notuse.push(parseInt($(this).html()));
+				}
+				
+			});
 
 			var i = 0;
 			$('.tdpropose').each(function(index,value){
@@ -388,22 +467,45 @@ $(document).ready(function () {
 				var last_wk = parseInt($('.tdlast[data-idproduct='+idproduct+'] .last_wk').html());
 				var thissave = $('.txt_group[data-key='+idproduct+']').val();
 
+
 				if (last_wk!=$(this).html()&&thismsg!='Relationship') {
 					$(this).addClass('text-danger');
 					// $(this).addClass('text-danger');
 					$('.tdproposeqty[data-idproduct='+idproduct+']').addClass('text-danger');
 					$('.tdmsg[data-idproduct='+idproduct+']').addClass('text-danger');
 				}
-
-				if (isNaN(thishtml)&&thissave.length==0 && typeof temp[indexFree[i]] != 'undefined' && thissumpod > 0&&thismsg!='Relationship') {
+				console.log($('.tdsize[data-idproduct="'+idproduct+'"]').html());
+				console.log("Not found propose " +isNaN(thishtml));
+				console.log(typeof temp[indexFree[i]]);
+				console.log(typeof temp[indexFree[i]].group);
+				console.log(thissumpod);
+				console.log(thismsg);
+				if (isNaN(thishtml)&&thissave.length==0 && typeof temp[indexFree[i]] != 'undefined' && typeof temp[indexFree[i]].group != 'undefined' && thissumpod > 0 &&thismsg!='Relationship' ) {
 					// var oldqty = $(this).parent('td').prev('td').prev('td').prev('td').html();
 					let thisgroup = pad(temp[indexFree[i]].group, 3); 
+					// next
+					if (jQuery.inArray(parseInt(thisgroup), notuse) !== -1) {
+						i++;
+						thisgroup = pad(temp[indexFree[i]].group, 3); 
+						if (jQuery.inArray(parseInt(thisgroup), notuse) !== -1) {
+							i++;
+							thisgroup = pad(temp[indexFree[i]].group, 3); 
+						}
+						
+					}
 					let thisqty_str = temp[indexFree[i]].qty;
 					let thisqty = parseInt(thisqty_str.replace(',',''));
-					$(this).html(thisgroup);
-					$('.txt_propose[data-key='+idproduct+']').val(thisgroup);
-					$('.tdproposeqty[data-idproduct='+idproduct+']').html(addCommas(thisqty));
-					$('.tdmsg[data-idproduct='+idproduct+']').html('Free Group');
+
+					console.log(thisgroup);
+					console.log(notuse);
+					console.log(jQuery.inArray(parseInt(thisgroup),notuse));
+					if (jQuery.inArray(parseInt(thisgroup), notuse) == -1 && thisqty >= thissumpod) {
+						$(this).html(thisgroup);
+						$('.txt_propose[data-key='+idproduct+']').val(thisgroup);
+						$('.tdproposeqty[data-idproduct='+idproduct+']').html(addCommas(thisqty));
+						$('.tdmsg[data-idproduct='+idproduct+']').html('Free Group');
+					}
+					
 					if (last_wk!=thisgroup) { // free group is not save 
 						// $.ajax({
 						// 	type: "POST",
@@ -481,31 +583,34 @@ $(document).ready(function () {
 		let thisvalue = $(this).val();
 		let thiskey = $(this).data('key');
 
-		$('.txt_propose').each(function(i,ele){
-			let proposesize = $(ele).data('size');
-			let elevalue = parseInt($(ele).val());
-			let keyvalue = parseInt(thisvalue);
-			let key = $(ele).data('key');
-			if (key!=thiskey && elevalue==keyvalue) {
-				alert('Incorrect propose with size : ' + proposesize);
-			}
-		});
+		if (thisvalue.length==3) {
+			$('.txt_propose').each(function(i,ele){
+				let proposesize = $(ele).data('size');
+				let elevalue = parseInt($(ele).val());
+				let keyvalue = parseInt(thisvalue);
+				let key = $(ele).data('key');
+				if (key!=thiskey && elevalue==keyvalue) {
+					alert('Incorrect propose with size : ' + proposesize);
+				}
+			});
 
-		$('.txt_group').each(function(i,ele){
-			let size = $(ele).data('size');
-			let elevalue = parseInt($(ele).val());
-			let key = $(ele).data('key');
-			if (key!=thiskey && elevalue==thisvalue) {
-				alert('Incorrect validated with size : ' + size);
-			}
-		});
-		
+			$('.txt_group').each(function(i,ele){
+				let size = $(ele).data('size');
+				let elevalue = parseInt($(ele).val());
+				let key = $(ele).data('key');
+				if (key!=thiskey && elevalue==thisvalue) {
+					alert('Incorrect validated with size : ' + size);
+				}
+			});
+			
 
-		if (isNaN(parseInt(thisvalue))==false && parseInt(thisvalue)>0) {
-			$('[name="checkbox['+thiskey+']"]').prop('checked', true);
-		} else {
-			$('[name="checkbox['+thiskey+']"]').prop('checked', false);
+			if (isNaN(parseInt(thisvalue))==false && parseInt(thisvalue)>0) {
+				$('[name="checkbox['+thiskey+']"]').prop('checked', true);
+			} else {
+				$('[name="checkbox['+thiskey+']"]').prop('checked', false);
+			}
 		}
+		
 	});
 	$(document).on('focusin','.txt_group',function(e){
 		var row = $(this).parent('td').parent('tr').index();

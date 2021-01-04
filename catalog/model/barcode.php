@@ -2,7 +2,7 @@
 	class BarcodeModel extends db {
 
 		public function getBarcodeWithGroup($group, $status=null, $flag=null) {
-			$this->select('id_group, barcode_prefix, barcode_code, barcode_status, barcode_flag');
+			$this->select('id_group, barcode_prefix, barcode_code, barcode_status, barcode_flag, date_added');
 			$this->where('barcode_prefix', (int)$group);
 			if ($status!==null) {
 				$this->where('barcode_status', (int)$status);
@@ -10,8 +10,8 @@
 			if ($flag!==null) {
 				$this->where('barcode_flag', (int)$flag);
 			}
-			
 			$query = $this->get('barcode');
+
 			return $query->rows;
 		}
 		public function getBarcode($data='') {
@@ -30,7 +30,7 @@
 		}
 		public function UpdateMultipleBarcode($barcode) {
 			$barcode = implode(', ', $barcode);
-			echo $sql = "UPDATE mb_master_barcode SET barcode_status = 1, date_modify = '" . date('Y-m-d') . "' WHERE barcode_code IN (".$barcode."); ";
+			$sql = "UPDATE mb_master_barcode SET barcode_status = 1, date_modify = '" . date('Y-m-d') . "' WHERE barcode_code IN (".$barcode."); ";
 			return $this->query($sql);
 		}
 		public function checkBarcode($barcode) {
@@ -722,7 +722,20 @@
 
 				$sql = "UPDATE mb_master_barcode SET barcode_flag = 1 WHERE barcode_status = 0 AND barcode_flag = 0 AND group_received = 1 AND barcode_prefix = $group AND (".implode(' ',$where).")";
 				$query = $this->query($sql);
-				echo $sql;
+				// echo $sql;
+			}
+			
+		}
+
+		public function checkGroup($group=array()) {
+			
+			if (count($group)>0) {
+				$now = implode(',', $group);
+				$sql = "SELECT group_code FROM mb_master_group  WHERE group_code IN (".$now.")";
+				$query = $this->query($sql);
+				return $query->rows;
+			} else {
+				return false;
 			}
 			
 		}

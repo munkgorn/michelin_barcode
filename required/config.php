@@ -1,8 +1,12 @@
 <?php
 ini_set("memory_limit", "-1");
 set_time_limit(0);
+date_default_timezone_set("Asia/Bangkok");
 
-  	define('DEBUG_MODE',true);
+	  define('DEBUG_MODE',true);
+
+	ini_set('upload_max_filesize', '10M');
+	  
 	ini_set('display_errors', 1);
 	ini_set('display_startup_errors', 1);
 	error_reporting(E_ALL);

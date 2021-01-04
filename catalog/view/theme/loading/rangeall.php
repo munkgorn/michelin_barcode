@@ -7,7 +7,7 @@
     <div class="row">
         <div class="col-12">
             <div class="progress">
-            <div class="progress-bar progress-bar-striped progress-bar-animated" id="barload" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100" style="width: 0%"></div>
+            <div class="progress-bar progress-bar-striped progress-bar-animated" id="barload" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="1" style="width: 0%"></div>
             </div>
             <textarea class="form-control mt-2" id="msg" cols="6" rows="20"></textarea>
         </div>
@@ -15,13 +15,13 @@
 </div>
 <style>
 #barload {
-    -webkit-transition: width 300ms;
-    -moz-transition: width 300ms;
-    -o-transition: width 300ms;
-    transition: width 300ms;
+    -webkit-transition: width 10ms;
+    -moz-transition: width 10ms;
+    -o-transition: width 10ms;
+    transition: width 10ms;
 }
 </style>
-<script type="text/javascript">
+<script>
 $(document).ready(function () {
    
 
@@ -38,34 +38,44 @@ $(document).ready(function () {
         const eleload = $('#barload')
         eleload.attr('aria-valuenow', percent).css('width', percent+'%');
     }
+
     
     let process_split = (list) => {
+        // console.log(list);
         console.log('process split');
         let indexofarray = 0;
-        let result = new Object();
-        console.log(list);
+        let result = {};
+        // console.log(list);
+
+        let olddate = null;
+        
         $.each(list, (index,val) => {
             let group = parseInt(val.barcode_prefix);
-            let barcode = parseInt(val.barcode_code);
+            let barcodecode = parseInt(val.barcode_code);
+            let valuedate = val.date_added.replace(/-/g, '').toString();
+            let textgroup = group+'_'+valuedate;
             let prev = (typeof list[index-1] !== 'undefined') ? parseInt(list[index-1].barcode_code) : '';
             let next = (typeof list[index+1] !== 'undefined') ? parseInt(list[index+1].barcode_code) : '';
 
+
             if (typeof result[group] === 'undefined') {
-                result[group] = [];
+                result[group] = {};
                 showmsg('Calcurate with group '+group, true);
-                loading(10);
-            }
-            if (typeof result[group][indexofarray] === 'undefined') {
-                result[group][indexofarray] = [];
-                let temp = indexofarray+1;
-                showmsg('Found new range '+temp, false);
+                loading(5);
             }
 
-            if ( barcode+1 == next) {
-                result[group][indexofarray].push(barcode);
+            if (typeof result[group][valuedate] === 'undefined') {
+                result[group][valuedate] = [];
+                // showmsg('Found new range '+temp, false);
+            }
+            
+
+
+            if ( barcodecode+1 == next) {
+                result[group][valuedate].push(barcodecode);
             } else {
-                result[group][indexofarray].push(barcode);
-                indexofarray++;
+                result[group][valuedate].push(barcodecode);
+                // indexofarray++;
             }
             
         });
@@ -78,25 +88,30 @@ $(document).ready(function () {
     let process_pattern = (result, round) => {
         console.log('process pattern');
         let output = [];
-        $.each(result, (index,val) => {
-            $.each(val, (i,v) => {
-                let start = v[0];
-                let end = v[v.length-1];
-                let qty = end - start + 1;
-                showmsg('GroupRange ('+(parseInt(i)+1)+') '+start+'-'+end+' = '+qty);      
-                output.push({
-                    round: round,
-                    group: index,
-                    start: start,
-                    end: end,
-                    qty: qty,
-                    // status: status
-                });
+        $.each(result, function (index, valuegroup) { // loop group
+            $.each(valuegroup, function (i, v) { // loop date in group
+                // val.forEach((v,i) => { // loop barcode in date
+                    let start = v[0];
+                    let end = v[v.length-1];
+                    let qty = end - start + 1;
+                    let newdate = i.substr(0,4)+'-'+i.substr(4,2)+'-'+i.substr(6,2);
+                    showmsg('GroupRange ('+(newdate)+') '+start+'-'+end+' = '+qty);      
+                    output.push({
+                        round: round,
+                        group: index,
+                        start: start,
+                        end: end,
+                        qty: qty,
+                        date: newdate
+                        // status: status
+                    });
+                // });
             });  
         });
 
         loading(50);
         showmsg('Process pattern done!', true);
+        console.log(output);
         return output;
     }
 
@@ -179,7 +194,7 @@ $(document).ready(function () {
                 v.status = status;
                 datainput.push(v);
             });
-            // console.log(datainput);
+            console.log(datainput);
             var ajaxTime = new Date().getTime();
             $.ajax({
                 type: "POST",
@@ -190,12 +205,12 @@ $(document).ready(function () {
                 cache: true,
                 success: function (response) {
                     var totalTime = new Date().getTime()-ajaxTime;
-                    if (response==true) {
+                    if (response.status==true) {
                         showmsg('Add group range in DB ['+totalTime+' sec.]', true);
                     } else {
                         showmsg('Fail response Add group range in DB ['+totalTime+' sec.]', true, false);
                     }
-                    loading(100);
+                    loading(1);
                     process_redirect();
                 },
                 error: (jqXHR, textStatus, errorThrown) => {
@@ -203,6 +218,7 @@ $(document).ready(function () {
                 }
             });
         }
+
 
         let clean_repeat_group = [];
         findGroup(output);
@@ -222,12 +238,12 @@ $(document).ready(function () {
                 
             }
             time--;
-        }, 100);
+        }, 10);
     }
 
     let redirectAuto = () => {
-        let urlgroup = parseInt("<?php echo $_GET['group'];?>");
-        let urlstatus = parseInt("<?php echo $_GET['status'];?>");
+        let urlgroup = parseInt("<?php echo isset($_GET['group']) ? $_GET['group'] : '';?>");
+        let urlstatus = parseInt("<?php echo isset($_GET['status']) ? $_GET['status'] : '';?>");
         let urlredirect = "<?php echo isset($_GET['redirect']) ? $_GET['redirect'] : '';?>";
         if (urlstatus==1) {
             urlstatus = 0;
@@ -236,7 +252,7 @@ $(document).ready(function () {
             urlstatus = 1;
         }
         
-        let max = parseInt("<?php echo $_GET['max'];?>");
+        let max = parseInt("<?php echo isset($_GET['max']) ? $_GET['max'] : '';?>");
         console.log((urlgroup-1)+' '+max+' '+urlstatus);
         if ((urlgroup-1)==max&&urlstatus==1&&urlredirect.length>0) {
             window.location.href = "index.php?route="+urlredirect;
@@ -244,6 +260,7 @@ $(document).ready(function () {
         
         if (max!=0&&(urlgroup<=max||urlstatus==0)) {
             let url = "index.php?route=loading/rangeall&round=1&status="+urlstatus+"&flag=0&group="+urlgroup+"&max="+max;
+            // let url = "index.php?route=loading/rangeall&round=1&status="+urlstatus+"&flag=0&storeage=true";
             if (urlredirect.length>0) {
                 url += '&redirect='+urlredirect
             }
@@ -252,7 +269,13 @@ $(document).ready(function () {
         
     }
 
-   
+	
+	
+//    let storeage = localStorage.getItem('savegroup');
+//    let list = storeage.split(',');
+
+//    console.log(typeof list);
+	// console.log(retrievedUsername); 
 
     const round = <?php echo $round;?>;
     const list = <?php echo $list;?>;
@@ -272,8 +295,8 @@ $(document).ready(function () {
                 loading(100);
                 process_redirect();
             }
-        }, 100);
-    }, 100);
+        }, 10);
+    }, 10);
 
     $('#msg').on('change', function() {
         $('#msg').scrollTop($('#msg')[0].scrollHeight);

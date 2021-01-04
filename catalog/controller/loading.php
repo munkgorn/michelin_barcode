@@ -24,31 +24,45 @@ class LoadingController extends Controller
         
         $this->trash();
 
-        $data['redirect'] = isset($_GET['redirect']) ? $_GET['redirect'] : 'dashboard';
+        $data['redirect'] = isset($_GET['redirect']) ? $_GET['redirect'] : ($this->hasSession('redirect') ? $this->getSession('redirect') : 'dashboard');
+        if ($data['redirect']=='loading') {
+            $data['redirect']='dashboard';
+        }
+
+        $config = $this->model('config');
+        $config->getConfig('load_freegroup');
 
         $data['loading'] = array();
-        $data['loading']['freegroup'] = array(
-            'name' => 'Free Group',
-            'url' => 'index.php?route=association/generateJsonFreeGroup',
-        );
+        if ($config->getConfig('load_freegroup')==1) {
+            $data['loading']['freegroup'] = array(
+                'name' => 'Free Group',
+                'url' => 'index.php?route=association/generateJsonFreeGroup',
+            );
+        }
         /*
         $data['loading']['count'] = array(
             'name' => 'Count barcode not used',
             'url' => 'index.php?route=association/generateJsonCountBarcode',
         );
         */
-        $data['loading']['year'] = array(
-            'name' => 'Default Year',
-            'url' => 'index.php?route=purchase/generateJsonDefaultYear',
-        );
-        $data['loading']['barcode'] = array(
-            'name' => 'Default group barcode all group start and end in 3 year',
-            'url' => 'index.php?route=purchase/generateJsonDefaultBarcode',
-        );
-        $data['loading']['date'] = array(
-            'name' => 'Default Group Date',
-            'url' => 'index.php?route=barcode/generateJsonDateBarcode'
-        );
+        if ($config->getConfig('load_year')==1) {
+            $data['loading']['year'] = array(
+                'name' => 'Default Year',
+                'url' => 'index.php?route=purchase/generateJsonDefaultYear',
+            );
+        }
+        if ($config->getConfig('load_barcode')==1) {
+            $data['loading']['barcode'] = array(
+                'name' => 'Default group barcode all group start and end in 3 year',
+                'url' => 'index.php?route=purchase/generateJsonDefaultBarcode',
+            );
+        }   
+        // if ($config->getConfig('load_date')==1) {
+        //     $data['loading']['date'] = array(
+        //         'name' => 'Default Group Date',
+        //         'url' => 'index.php?route=barcode/generateJsonDateBarcode'
+        //     );
+        // }
 
         $this->view('loading/index', $data);
     }
@@ -77,10 +91,10 @@ class LoadingController extends Controller
             'name' => 'Default group barcode all group start and end in 3 year',
             'url' => 'index.php?route=purchase/generateJsonDefaultBarcode',
         );
-        $loading['date'] = array(
-            'name' => 'Default Group Date',
-            'url' => 'index.php?route=barcode/generateJsonDateBarcode'
-        );
+        // $loading['date'] = array(
+        //     'name' => 'Default Group Date',
+        //     'url' => 'index.php?route=barcode/generateJsonDateBarcode'
+        // );
 
         $data['loading'] = array();
         if (is_array($key)) {
@@ -145,7 +159,7 @@ class LoadingController extends Controller
             //'countbarcode.json',
             'default_year.json',
             'default_purchase.json',
-            'default_datebarcode.json'
+            // 'default_datebarcode.json'
         );
         foreach ($files as $file) {
             $path = DOCUMENT_ROOT . 'uploads/'. $file;
@@ -158,6 +172,25 @@ class LoadingController extends Controller
     public function updateTable() {
         $range = $this->model('range');
         $range->createTable();
+
+        // $range->updateTable();
+
+        $this->model('config')->setConfig('load_freegroup', 0);
+        $this->model('config')->setConfig('load_year', 0);
+        $this->model('config')->setConfig('load_barcode', 0);
+        $this->model('config')->setConfig('load_date', 0);
+    }
+
+    public function updateTable2() {
+        $range = $this->model('range');
+        // $range->createTable();
+
+        $range->updateTable();
+
+        $this->model('config')->setConfig('load_freegroup', 0);
+        $this->model('config')->setConfig('load_year', 0);
+        $this->model('config')->setConfig('load_barcode', 0);
+        $this->model('config')->setConfig('load_date', 0);
     }
 
     public function range() {
@@ -186,6 +219,11 @@ class LoadingController extends Controller
         $this->view('loading/range', $data);
     }
 
+    public function showdb() {
+        var_dump(DB_USER);
+        var_dump(DB_PASS);
+    }
+
     public function rangeall() {
         $data = array();
         
@@ -195,10 +233,10 @@ class LoadingController extends Controller
             $status = 1;
             $flag = 0;
         } else {
-            $round = $_GET['round'];
-            $group = $_GET['group'];
-            $status = $_GET['status'];
-            $flag = $_GET['flag'];  
+            $round = isset($_GET['round']) ? $_GET['round'] : 1;
+            $group = isset($_GET['group']) ? $_GET['group'] : '';
+            $status = isset($_GET['status']) ? $_GET['status'] : '';
+            $flag = isset($_GET['flag']) ? $_GET['flag'] : '';  
         }
         
 
@@ -210,5 +248,12 @@ class LoadingController extends Controller
         $data['list'] = json_encode($list);
 
         $this->view('loading/rangeall', $data);
+    }
+
+    public function ajaxGetBarcodeWithGroup($group, $status) {
+        $barcode = $this->model('barcode');
+        $list = $barcode->getBarcodeWithGroup($group, $status, 0);
+        // $data['list'] = json_encode($list);
+        $this->json($list);
     }
 }

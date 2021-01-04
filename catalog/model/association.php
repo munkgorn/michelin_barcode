@@ -321,7 +321,7 @@ class AssociationModel extends db
         // echo $this->last_query();
         return !empty($query->row['remaining_qty']) ? $query->row['remaining_qty'] : '';
     }
-    public function getRelationshipBySize($size, $sumprod=0)
+    public function getRelationshipBySize($size, $sumprod=0, $not=array())
     {
         $day1 = $this->query("SELECT config_value FROM mb_master_config WHERE config_key = 'config_date_size';")->row['config_value'];
         $day1 = date('Y-m-d', strtotime('-'.$day1.'day'));
@@ -329,16 +329,24 @@ class AssociationModel extends db
         $day2 = $this->query("SELECT config_value FROM mb_master_config WHERE config_key = 'config_date_year';")->row['config_value'];
         $day2 = date('Y-m-d', strtotime('-'.$day2.'day'));
 
+        $notnow = '';
+        if (count($not)>0) {
+            $notnow = implode(',',  $not);
+        }
+        
+
         $sql = "SELECT * FROM  ";
         $sql .= "(  ";
         $sql .= "SELECT cr.size, cr.`group`, ";
         $sql .= "(SELECT count(b.id_barcode) as qty FROM mb_master_barcode b WHERE b.barcode_prefix = cr.`group` AND b.group_received = 1 AND b.barcode_status = 0 AND b.date_modify BETWEEN '$day2' AND '$day1' GROUP BY b.id_group, b.barcode_prefix ORDER BY b.id_barcode ASC,b.id_group ASC,b.date_modify DESC) as qty  ";
         $sql .= "FROM mb_master_config_relationship cr ";
-        $sql .= "WHERE cr.size != '' AND cr.size is not null AND cr.size = '".$size."'";
+        $sql .= "WHERE cr.size != '' AND cr.size is not null AND cr.size = '".$size."' ";
+        $sql .= !empty($notnow) ? "AND cr.`group` NOT IN (".$notnow.") " : "";
         $sql .= ") t ";
         // $sql .= "WHERE t.qty is not null AND t.qty >= $sumprod LIMIT 0,1";
         $sql .= "WHERE 1 LIMIT 0,1";
-
+        // echo $sql;
+        // echo '<br>';
 
         $query = $this->query($sql);
         return $query->row;
@@ -352,13 +360,15 @@ class AssociationModel extends db
 
         // $sqlbarcode = "SELECT count(b.id_barcode) as qty FROM mb_master_barcode b WHERE b.barcode_prefix = 192 AND group_received = 1 AND barcode_status = 0 AND b.date_modify BETWEEN '$day2' AND '$day1' GROUP BY b.id_group, b.barcode_prefix ORDER BY b.id_barcode ASC,b.id_group ASC,b.date_modify DESC";
 
-        $sql = "SELECT * FROM ( ";
-            $sql .= "SELECT  ";
-            $sql .= "g.group_code as `group`, ";
-            $sql .= "(SELECT count(b.id_barcode) as qty FROM mb_master_barcode b WHERE b.barcode_prefix = g.group_code AND b.group_received = 1 AND b.barcode_flag = 0 AND b.barcode_status = 0 AND b.date_modify BETWEEN '$day2' AND '$day1' GROUP BY b.id_group, b.barcode_prefix ORDER BY b.id_barcode,b.id_group) as qty ";
-            $sql .= "FROM mb_master_group g ";
-        $sql .= ") t ";
-        $sql .= "WHERE t.qty is not null ";
+        // $sql = "SELECT * FROM ( ";
+        //     $sql .= "SELECT  ";
+        //     $sql .= "g.group_code as `group`, ";
+        //     $sql .= "(SELECT count(b.id_barcode) as qty FROM mb_master_barcode b WHERE b.barcode_prefix = g.group_code AND b.group_received = 1 AND b.barcode_flag = 0 AND b.barcode_status = 0 AND b.date_modify BETWEEN '$day2' AND '$day1' GROUP BY b.id_group, b.barcode_prefix ORDER BY b.id_barcode,b.id_group) as qty ";
+        //     $sql .= "FROM mb_master_group g ";
+        // $sql .= ") t ";
+        // $sql .= "WHERE t.qty is not null ";
+
+        $sql = "SELECT group_code as `group`, sum(barcode_qty) as qty FROM mb_master_barcode_range WHERE barcode_status = 0 AND date_modify BETWEEN '$day2' AND '$day1' GROUP BY group_code ;";
         // echo $sql;
 
         $query = $this->query($sql);

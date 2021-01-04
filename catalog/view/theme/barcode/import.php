@@ -13,21 +13,25 @@
 
 					<?php echo !empty($success) ? '<div class="alert alert-success border-0" role="alert">'.$success.'</div>' : '';?>
 					<?php echo !empty($error) ? '<div class="alert alert-danger border-0" role="alert">'.$error.'</div>' : '';?>
-                    <form action="<?php echo $action_import; ?>" method="post" enctype="multipart/form-data">
-                        <div class="form-group row">
-                            <label for="" class="col-sm-12 text-left">Import CSV</label>
+					<form action="#" method="post" enctype="multipart/form-data" id="form-import-group">
+                        <div class="form-group row mb-0">
+                            <label for="" class="col-sm-12 text-left">Import Fyt (.csv)</label>
                             <div class="col-sm-12">
                                 <div class="input-group">
-                                    <div class="custom-file">
-                                        <!-- <input type="hidden" name="date_wk" value="<?php echo $_GET['date_wk']; ?>">-->
-                                        <input type="file" name="import_file" class="custom-file-input" id="inputImportConfigFlexibleGroup" aria-describedby="inputGroupFileAddon04" required  />  >
-                                        <label class="custom-file-label" for="inputImportConfigFlexibleGroup">Browse CSV File (.csv)</label>
-                                    </div>
+									<div class="custom-file">
+										<input type="file" name="import_file_group" class="custom-file-input" id="import_file_group" aria-describedby="inputGroupFileAddon04" required accept=".csv" />
+										<label class="custom-file-label" for="import_file_group">Browse Fyt File (.csv)</label>
+									</div>
                                     <div class="input-group-append">
-                                        <button class="btn btn-outline-primary" type="submit" id="">Import</button>
+                                        <button class="btn btn-outline-primary" type="button" id="btnupload">Import</button>
                                     </div>
                                 </div>
                             </div>
+							
+							<div id="result_submit_form" class="col-sm-12">Message</div>
+                        </div>
+						<div class="progress mt-0">
+                        <div class="progress-bar progress-bar-striped progress-bar-animated py-1" id="barload" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100" style="width: 0%">Loading 0%</div>
                         </div>
                     </form>
 				
@@ -75,14 +79,246 @@
 </div>
 
 
-<script>
+<style>
+#barload {
+    -webkit-transition: width 100ms;
+    -moz-transition: width 100ms;
+    -o-transition: width 100ms;
+    transition: width 100ms;
+}
+</style>
+<script type="text/javascript">
 $(document).ready(function () {
 	$('[type="file"]').on('change', function(e){
 		var fileName = e.target.files[0].name;
 		$(this).next('label.custom-file-label').html('<span class="text-dark">'+fileName+'</span>');
-		console.log(fileName);
 	});
 
+	let loading = (percent) => {
+        // console.log(percent+'%');
+        const eleload = $('#barload')
+        eleload.attr('aria-valuenow', percent.toFixed(2)).css('width', percent.toFixed(2)+'%').html('Loading '+percent.toFixed(2)+'%');
+    }
+
+	let pad = (str, max) => {
+		str = str.toString();
+		return str.length < max ? pad("0" + str, max) : str;
+	}
+
+	
+
+	let uploadForm = (fd) => {
+		let filename = '';
+		var ajaxTime = new Date().getTime();
+		$.ajax({
+			url: 'index.php?route=barcode/importCSV',
+			type: 'POST',
+			data: fd,
+			mimeType: 'multipart/form-data', // this too
+			contentType: false,
+			cache: true,
+			async: false,
+			processData: false,
+			dataType: 'json',
+			success: function(data) {
+				console.log(data);
+				var totalTime = new Date().getTime()-ajaxTime;
+				loading(10);
+				filename = data.file;
+				$('#result_submit_form').html('Upload file csv successfull.');
+			}
+		});
+		return filename;
+	}
+
+	let read_group = (pathfile) => {
+		
+		let result = {};
+		let url = pathfile.split('/');
+		console.log('<?php echo MURL;?>uploads/import_cutbarcode/'+url[url.length-1]);
+		$.ajax({
+			type: "POST",
+			url: '<?php echo MURL;?>uploads/import_cutbarcode/'+url[url.length-1],
+			// dataType: "json",
+			cache: true,
+			async: false,
+			success: function (response) {
+				// console.log(response);	
+				result.barcode = [];
+				let rows = response.split(/\r\n|\n/);
+				rows.forEach((value,index) => {
+					let cols = value.split(";");
+					if (typeof cols[9] != 'undefined') {
+						let str = cols[9].replace(/"/g,"");
+						let thisbarcode = parseInt(str);
+						if (isNaN(thisbarcode)==false) {
+							result.barcode.push(thisbarcode);
+						}
+					}
+				});
+			}
+		});
+		console.log(result);
+
+		localStorage.setItem('savegroup', null);
+		return result;
+	}
+
+	let loop_group = (response) => {
+		let realgroup = [];
+		let barcode = [];
+
+		let percent = 10 / parseInt(response.barcode.length);
+		let nowpercent = 10;
+		response.barcode.forEach(value => {
+			let thisbarcode = pad(value, 8);
+			barcode.push(thisbarcode);
+
+			let groupcode = thisbarcode.substr(0,3);
+			if (jQuery.inArray(groupcode, realgroup) == -1) {
+				realgroup.push(groupcode);
+			}
+			nowpercent += percent;
+			loading(nowpercent);
+		});
+		loading(20);
+		$('#result_submit_form').html('Loop get group in file successfull');
+
+
+
+		setTimeout(() => {
+			get_group(realgroup,barcode);
+		},100);
+	}
+
+	let get_group = (filegroup,barcode) => {
+		let dbgroup = [];
+		$.ajax({
+			type: "POST",
+			url: "index.php?route=barcode/ajaxGetGroup",
+			dataType: "json",
+			cache:false,
+			async:false,
+			success: function (response) {
+				$.each(response, (index,value) => {
+					dbgroup.push(value.group_code);
+				});
+				loading(25);
+				$('#result_submit_form').html('Get group in db successfull.');
+				setTimeout(() => {
+					check_group(filegroup, dbgroup, barcode);
+				},100);
+			}
+		});
+	}
+	
+	let check_group = (filegroup, dbgroup, barcode) => {
+		let realgroup = [];
+		// console.log(filegroup);
+		// console.log(realgroup);
+		// loop db condition with in file
+		dbgroup.forEach((value,index) => {
+			if (jQuery.inArray(value,filegroup) && jQuery.inArray(value, realgroup)) {
+				realgroup.push(parseInt(value));
+			}
+		});
+		realgroup.sort();
+		localStorage.setItem('savegroup', realgroup);
+
+		// loop barcode only in real group for ready to check db
+		let barcode_forupdate = [];
+		barcode.forEach((value,index) => {
+		// $.each(barcode, (index,value) => {
+			let str = pad(value, 8);
+			let prefix = str.substr(0,3);
+			if (jQuery.inArray(prefix, realgroup)) {
+				barcode_forupdate.push(value);
+			}
+		});
+
+
+		loading(30);
+		$('#result_submit_form').html('Compere dbgroup and filegroup successfull.');
+		console.log('success compare group and gen list barcode');
+		// console.log(barcode_forupdate);
+		// console.log(realgroup[0]);
+		// console.log(realgroup[realgroup.length-1]);
+
+		setTimeout(() => {
+			sendToUpdate(barcode_forupdate, realgroup[0], realgroup[realgroup.length-1]);
+		},100);
+
+	}
+
+	let sendToUpdate = (barcodes, start, max) => {
+		let percent = 70 / (parseInt(barcodes.length));
+		let nowpercent = 30;
+		loading(nowpercent);
+		$.each(barcodes, (index,value) => {
+			setTimeout(() => {
+				$.ajax({
+					type: "POST",
+					url: "index.php?route=barcode/ajaxUpdate",
+					data: {barcode: value},
+					dataType: "json",
+					cache: false,
+					async:false,
+					success: function(response) {
+						nowpercent += percent;
+						$('#result_submit_form').html('Query to db for update this barcode ('+value+') is used.');
+						loading(nowpercent);
+						if (nowpercent+1 >= 100) {
+							loading(100);
+							redirect_success(start,max);
+							// redirect('loading/rangeall&round=1&status=1&flag=0&group='.$data['group'][0].'&max='.$data['group'][count($data['group'])-1].'&redirect=barcode/removeConditionRangeBarcode');
+						}
+					}
+				});
+			},100);
+		});
+	}
+
+	let redirect_success = (start,max) => {
+		let time = 10;
+		let timeid = false;
+		timeid = setInterval(() => {
+			time--;
+			$('#result_submit_form').html('Query successfull, please wait redirect page in '+time+' sec.');
+			if (time==0) {
+				clearInterval(timeid);
+				// let grouplocal = localStorage.getItem('savegroup', realgroup);
+				window.location.href="index.php?route=loading/rangeall&round=1&status=1&flag=0&group="+start+"&max="+max+"&redirect=loading";
+				// window.location.href="index.php?route=loading/rangeall&round=1&status=1&flag=0&storage=true&redirect=loading";
+			}
+
+		}, 1000);
+	}
+
+
+	// let filename = '';
+	let realgroup = [];
+	$( "#btnupload" ).click(function( event ) {
+		$('#result_submit_form').html('');
+		var fd = new FormData();
+		var files = $('#import_file_group')[0].files[0];
+		fd.append('import_file',files);
+
+		// console.log(fd);
+
+		let file = uploadForm(fd);
+		setTimeout(() => {
+			let result = read_group(file);
+			setTimeout(() => {
+				loop_group(result);
+			},100);
+		},100);
+		// console.log(filename);
+		
+	});
+});
+</script>
+<script>
+$(document).ready(function () {
 	function addCommas(nStr) {
 		nStr += '';
 		x = nStr.split('.');
@@ -94,210 +330,5 @@ $(document).ready(function () {
 		}
 		return x1 + x2;
 	}
-
-	const countall = parseInt('<?php echo count($group);?>');
-	const perItem = Math.ceil(100 / countall);
-
-	function setMain(add) {
-		const ele = $('#mainload');
-		let nowpercent = parseFloat(ele.attr('aria-valuenow'));
-		let newpercent = nowpercent + parseFloat(add);
-		if (newpercent>100) {
-			newpercent = 100.00;
-		} 
-		newpercent = newpercent.toFixed(2);
-
-		ele.attr('aria-valuenow', newpercent).css('width', newpercent+'%').html(newpercent+'%');
-
-		if (newpercent==100.00) {
-			// if (nowpercent!=100.00) {
-				alert('Process is successfull.');
-				// window.location.href="index.php?route=loading/someone&key=freegroup,barcode&redirect=barcode/clearSession";
-				window.location.href="index.php?route=barcode/clearSession";
-			// }
-			
-			//$.get("index.php?route=barcode/clearSession", data,
-			//	function (data, textStatus, jqXHR) {
-			//		window.location.href="index.php?route=loading/someone&redirect=association&key=freegroup,year,barcode";		
-			//	},
-			//);/
-			
-		}
-	}
-
-	const success = [ 'background: green', 'color: white', 'display: block', 'text-align: center'].join(';');
-	const failure = [ 'background: red', 'color: white', 'display: block', 'text-align: center'].join(';');
-
-	// Loop check all
-	$('#table_result tbody tr').each(function(index,value){
-		let el = $(this).children('td:eq(0)');
-		let groupcode = parseInt(el.html());
-		let msg = $(this).children('td:eq(2)');
-		let barcodeRange = [];
-		$('.load'+groupcode).attr('aria-valuenow','5').css('width','5%');
-		console.log(groupcode + ' start loading...');
-		msg.html('Start loading...');
-		// $.ajax({
-		// 	type: "POST",
-		// 	url: "index.php?route=barcode/ajaxGetRange",
-		// 	data: {group:groupcode},
-		// 	dataType: "json",
-		// 	success: function (response) {
-		// 		// console.info('%c '+groupcode+' success get range', success);
-		// 		if (response.length>0) {
-		// 			$('.load'+groupcode).attr('aria-valuenow','20').css('width','20%');
-		// 			let nowwidth = parseInt($('.load'+groupcode).attr('aria-valuenow'));
-		// 			$.each(response, function(i,v){
-		// 				if (v.qty < parseInt('<?php echo $maximum;?>')) {
-		// 					barcodeRange.push(v.start+'-'+v.end);
-		// 					nowwidth++;
-		// 					$('.load'+groupcode).attr('aria-valuenow',nowwidth).css('width',nowwidth+'%');
-		// 				}
-		// 			});
-
-		// 			// console.log('Barcode Range : ');
-		// 			console.info('%c '+groupcode+' success get range ('+(barcodeRange.length)+') ', success);
-		// 			if (barcodeRange.length>0) {
-		// 				msg.html('Found barcode range < <?php echo $maximum;?> : '+barcodeRange.length+' unit.');
-		// 				console.table(barcodeRange);
-		// 				$.ajax({
-		// 					type: "POST",
-		// 					url: "index.php?route=barcode/ajaxRemoveRange",
-		// 					data: {group:groupcode,barcode:JSON.stringify(barcodeRange)},
-		// 					success: function (res) {
-		// 						console.info('%c '+groupcode+' done ', success);
-		// 						msg.html('Done, auto remove barcode range < <?php echo $maximum;?> success.');
-		// 						setMain(perItem);
-		// 						$('.load'+groupcode).attr('aria-valuenow','100').css('width','100%');
-		// 					}
-		// 				});
-		// 			} else {
-		// 				msg.html('Not found barcode range < <?php echo $maximum;?>');
-		// 				console.info('%c '+groupcode+' not found range length < 50 ', failure);
-		// 				setMain(perItem);
-		// 				$('.load'+groupcode).attr('aria-valuenow','100').css('width','100%');
-		// 			}
-
-					
-					
-		// 		} else {
-		// 			msg.html('Not found someone, done!!');
-		// 			console.info('%c '+groupcode+' not found range ', failure);
-		// 			setMain(perItem);
-		// 			$('.load'+groupcode).attr('aria-valuenow','100').css('width','100%');
-		// 		}
-		// 	}
-		// });
-	});
-	// let table = $('#table_result');
-	// table.children('tbody').each('tr', function(index, value){
-	// 	console.log(value);
-		// $.ajax({
-		// 	type: "POST",
-		// 	url: "index.php?route=barcode/ajaxGetRange",
-		// 	data: {group:groupdata},
-		// 	dataType: "json",
-		// 	success: function (response) {
-		// 		console.log(response);
-		// 		$('.load'+groupdata).attr('aria-valuenow','100').css('width','100');
-		// 	}
-		// });
-		// $.post("index.php?route=barcode/ajaxGetRange", {group: groupdata},
-		// 	function (data, textStatus, jqXHR) {
-		// 		console.log(data);
-		// 		$('.load'+groupdata).attr('aria-valuenow','100').css('width','100');
-		// 	},
-		// 	"json"
-		// );
-	// });
-
-
-	// $('.findrange').click(function() {
-	// 	let group = $(this).data('group');
-	// 	let modal = $('#modal_show_range');
-
-	// 	modal
-	// 	console.log(group);
-	// });
-	$('.rmall').click(function(){
-		if (confirm('Are you sure remove all?')) {
-			var groupcode = $('#modal_show_range [name=barcodegroup]').val();
-			var b = $('#modal_show_range [name=barcodeall]').val();
-			if (groupcode>0) {
-				console.log('all' + groupcode);
-				$.post("index.php?route=barcode/ajaxRemoveRange", {group:groupcode, barcode: b},
-					function (data, textStatus, jqXHR) {
-						// if (data==1) {
-							$('#modal_show_range').modal('hide');
-						// }
-					}
-				);
-			}
-		}
-	});
-	$('.rmmax').click(function(){
-		if (confirm('Are you sure remove maximum?')) {
-			var groupcode = $('#modal_show_range [name=barcodegroup]').val();
-			var b = $('#modal_show_range [name=barcodemax]').val();
-			if (groupcode>0) {
-				console.log('max' + groupcode);
-				$.post("index.php?route=barcode/ajaxRemoveRange", {group:groupcode, barcode: b},
-					function (data, textStatus, jqXHR) {
-						// if (data==1) {
-							$('#modal_show_range').modal('hide');
-						// }
-					}
-				);
-			}
-		}
-	});
-	// $('#modal_show_range').on('show.bs.modal', function (event) {
-	// 	var button = $(event.relatedTarget) // Button that triggered the modal
-	// 	var groupdata = button.data('group') // Extract info from data-* attributes
-	// 	var modal = $(this)
-	// 	var table = $('#modallist');
-	// 	modal.find('#grouptitle').html(groupdata);
-	// 	modal.find('.btnrm').attr('data-group', groupdata);
-
-	// 	modal.find('[name=barcodeall],[name=barcodemax]').val('[]');
-	// 	modal.find('[name=barcodegroup]').val(groupdata);
-
-	// 	modal.find('button').attr('disabled','disabled').addClass('disabled');
-	// 	table.html('<tr><td colspan="2" class="text-center"><i class="fas fa-spinner fa-pulse"></i> Loading please wait...</td></tr>');
-	// 	$.post("index.php?route=barcode/ajaxGetRange", {group: groupdata},
-	// 		function (data, textStatus, jqXHR) {
-	// 			if (data.length==0) {
-	// 				table.html("<tr><td colspan='2' class='text-center'>Not found</td></tr>");
-	// 			} else if (data.length>0) {
-	// 				modal.find('button').removeAttr('disabled').removeClass('disabled');
-	// 				var html = '';
-	// 				var ball = JSON.parse(modal.find('[name=barcodeall]').val());
-	// 				var bmax = JSON.parse(modal.find('[name=barcodemax]').val());
-	// 				$.each(data, function (index,value) { 
-	// 					var style = '';
-	// 					ball.push(value.start+'-'+value.end);
-	// 					if (value.qty < parseInt('<?php echo $maximum;?>')) {
-	// 						style = 'text-danger';
-	// 						bmax.push(value.start+'-'+value.end);
-	// 					}
-	// 					 html += '<tr><td class="'+style+'">'+value.start+' - '+value.end+'</td><td class="'+style+'">'+addCommas(value.qty)+'</td></tr>';
-	// 				});
-	// 				modal.find('[name=barcodeall]').val(JSON.stringify(ball));
-	// 				modal.find('[name=barcodemax]').val(JSON.stringify(bmax));
-
-	// 				if (ball.length==0) {
-	// 					modal.find('button.rmall').attr('disabled','disabled').addClass('disabled');
-	// 				}
-	// 				if (bmax.length==0) {
-	// 					modal.find('button.rmmax').attr('disabled','disabled').addClass('disabled');
-	// 				}
-
-	// 				table.html(html);
-	// 			}
-	// 			// console.log(data.length);
-	// 		},
-	// 		"json"
-	// 	);
-	// })
 });
 </script>

@@ -46,12 +46,24 @@
 					'barcode_start' => $value['start'],
 					'barcode_end' => $value['end'],
 					'barcode_qty' => $value['qty'],
-					'barcode_status' => $value['status']
+					'barcode_status' => $value['status'],
+					'date_added' => $value['date'],
+					'date_modify' => $value['date'],
 				);
 			}
 			
 			$barcode_range = $this->model('range');
-			$result = $barcode_range->addRange($data);
+			$result = $barcode_range->addRange($data); // remove lower here, update date here
+
+			
+			$config = $this->model('config');
+			$config->setConfig('load_freegroup', 1);
+			$config->setConfig('load_year', 1);
+			$config->setConfig('load_barcode', 1);
+			$config->setConfig('load_date', 1);
+
+			$json = array();
+			$json['status'] = $result;
 			$this->json($result);
 		}
 		// -- loading range ---
@@ -64,6 +76,7 @@
 			foreach ($group as $value) {
 				$range[] = $barcode_range->findGroup($value, 0);
 			}
+
 
 			$remove = array();
 			$config = $this->model('config')->getConfig('config_maximum_alert');
@@ -78,9 +91,16 @@
 			foreach ($remove as $key => $value) {
 				$barcode->removeBarcodeRange($key, $value);
 			}
-			
-			redirect('loading/rangeall&round=1&status=1&flag=0&group='.$group[0].'&max='.$group[count($group)-1].'&redirect=barcode');
+
+			$config = $this->model('config');
+			$config->setConfig('load_freegroup', 1);
+			$config->setConfig('load_year', 1);
+			$config->setConfig('load_barcode', 1);
+			$config->setConfig('load_date', 1);
+			$this->setSession('redirect', 'barcode');
+			redirect('loading/rangeall&round=1&status=1&flag=0&group='.$group[0].'&max='.$group[count($group)-1].'&redirect=loading');
 		}
+		
 		public function ajaxRemoveRange() {
 			$group_code = $_POST['group'];
 			$barcode_range = json_decode($_POST['barcode'], true);
@@ -101,6 +121,120 @@
 			$data = $barcode->getGroupOfRange($status);
 			$this->json($data);
 		}
+
+		public function ajaxGetGroup() {
+			$barcode = $this->model('barcode');
+			$barcode_info = $barcode->getgroup();
+			$this->json($barcode_info);
+		}
+		
+		public function ajaxCheckGroup() {
+
+			$group = $_POST['group'];
+			$realgroup = array();
+			foreach ($group as $value) {
+				$realgroup[] = (int)$value;
+			}
+			$barcode = $this->model('barcode');
+			$result = $barcode->checkGroup($realgroup);
+			$json = array();
+			foreach ($result as $value) {
+				$json[] = $value['group_code'];
+			}
+			$this->json($json);
+
+			// $barcode = (int)sprintf('%08d', str_replace('"','',$_POST['barcode']));
+			// $groupcode = substr(sprintf('%08d', $barcode), 0, 3);
+			// $group = $this->model('group');
+			// $findgroup = $group->findIdGroup((int)$groupcode);
+			// if (empty($findgroup)) {
+				// $this->json(false);
+			// } else {
+				// $this->json(true);
+			// }
+		}
+		public function ajaxRead() {
+			if(method_post()){
+				$group = $this->model('group');
+				$file = $_POST['file'];
+
+				$data = array();
+				$data['group'] = array();
+				$row = 0;
+				$file = fopen($file, 'r');
+				$save = array();
+				$i=0;
+				while (($line = fgetcsv($file)) !== FALSE) {
+					if ($row>0) {
+						$col = explode(';', $line[0]);
+						$thisbarcode = (int)sprintf('%08d', str_replace('"','',$col[9]));
+						$groupcode = substr(sprintf('%08d',$thisbarcode), 0, 3);
+						// $data['group'][] = $groupcode;
+						// $findgroup = $group->findIdGroup((int)$groupcode);
+						// if (!empty($findgroup)) {
+							// if (!isset($save[$i])) {
+							// 	$save[$i] = array();
+							// }
+							// if (count($save[$i])==5) {
+							// 	$i++;
+							// }
+							// $save[$i][] = "'".$thisbarcode."'";
+							// // $res = $barcode->findAndUpdateBarcode($groupcode, $thisbarcode);
+							// if (in_array($groupcode, $data['group'])==false) {
+								$data['barcode'][] = "$thisbarcode";
+
+							// }
+						// }
+					}
+					$row++;
+				}
+				fclose($file);
+
+				sort($data['barcode']);
+				$this->json($data);
+
+				// $resultsave = array();
+				// if (count($save)==0) {
+				// 	redirect('barcode/removeConditionRangeBarcode');
+				// }
+				// foreach ($save as $value) {
+				// 	$resultsave[] = $barcode->UpdateMultipleBarcode($value);
+				// }
+
+
+				// sort($data['group']);
+				// if (count($data['group'])>0) {
+				// 	// $this->setSession('group_range', $data['group']);
+				// 	// redirect('loading/rangeall&round=1&status=1&flag=0&group='.$data['group'][0].'&max='.$data['group'][count($data['group'])-1].'&redirect=barcode/removeConditionRangeBarcode');
+				// }
+
+				// $this->json($data['group']);
+			}
+		}
+
+		public function ajaxUpdate() {
+			$data = false;
+			if(method_post()){
+				$thisbarcode = $_POST['barcode'];
+				$groupcode = substr(sprintf('%08d',$thisbarcode), 0, 3);
+
+				$barcode = $this->model('barcode');
+				$data = $barcode->findAndUpdateBarcode($groupcode, $thisbarcode);
+				// $data = array('group'=>'');
+				// $groups = $_POST['group'];
+				// $group = $this->model('group');
+				// foreach ($groups as $code) {
+				// 	$find = $group->findIdGroup((int)$code);
+				// 	if (!empty($find)) {
+				// 		$data['status'] = true;
+				// 	} else {
+				// 		$data['status'] = false;
+				// 	}
+				// }
+			}
+			$this->json($data);
+		}
+
 		public function import() {
 			$data = array();
 
@@ -113,8 +247,8 @@
 			$data['group'] = array();
 			if(method_post()){
 				$this->rmSession('import_group');
-				$this->importCSV();
-				$file = $this->getSession('import');
+				$file = $this->importCSV();
+				// $file = $this->getSession('import');
 				$row = 0;
 				$file = fopen($file, 'r');
 				$save = array();
@@ -124,7 +258,7 @@
 						$col = explode(';', $line[0]);
 						$thisbarcode = (int)sprintf('%08d', str_replace('"','',$col[9]));
 						$groupcode = substr(sprintf('%08d',$thisbarcode), 0, 3);
-						$findgroup = $group->findIdGroup($groupcode);
+						$findgroup = $group->findIdGroup((int)$groupcode);
 						if (!empty($findgroup)) {
 							if (!isset($save[$i])) {
 								$save[$i] = array();
@@ -134,9 +268,9 @@
 							}
 							$save[$i][] = "'".$thisbarcode."'";
 							// $res = $barcode->findAndUpdateBarcode($groupcode, $thisbarcode);
-							// if ($res==true && in_array($groupcode, $data['group'])==false) {
-								// $data['group'][] = $groupcode;
-							// }
+							if (in_array($groupcode, $data['group'])==false) {
+								$data['group'][] = $groupcode;
+							}
 						}
 					}
 					$row++;
@@ -144,6 +278,9 @@
 				fclose($file);
 
 				$resultsave = array();
+				if (count($save)==0) {
+					redirect('barcode');
+				}
 				foreach ($save as $value) {
 					$resultsave[] = $barcode->UpdateMultipleBarcode($value);
 				}
@@ -157,7 +294,8 @@
 				sort($data['group']);
 				if (count($data['group'])>0) {
 					$this->setSession('group_range', $data['group']);
-					redirect('loading/rangeall&round=1&status=1&flag=0&group='.$data['group'][0].'&max='.$data['group'][count($data['group'])-1].'&redirect=barcode/removeConditionRangeBarcode');
+					
+					redirect('loading/rangeall&round=1&status=1&flag=0&group='.$data['group'][0].'&max='.$data['group'][count($data['group'])-1].'&redirect=loading');
 				}
 			} else {
 
@@ -207,9 +345,18 @@
 					$returnfilename = $path.$newname;
 					$this->setSession('import', $returnfilename);
 				}
+			} else {
+				$returnfilename = 'error'.$file['error'].'filetype'.$fileType;
 			}
 
-			return $returnfilename;
+			$config = $this->model('config');
+			$config->setConfig('load_freegroup', 1);
+			$config->setConfig('load_year', 1);
+			$config->setConfig('load_barcode', 1);
+			// $config->setConfig('load_date', 1);
+
+			// return $returnfilename;
+			$this->json(array('file'=>$returnfilename));
 		}
 	    public function index() {
 	    	$data = array();
@@ -298,8 +445,14 @@
 				$this->setSession('success', 'Success add range barcode is used <b>'.$start.' - '.$end.'</b>');
 
 				$this->setSession('group_range', array($prefix));
+				$this->setSession('redirect', 'barcode');
+
+				$config = $this->model('config');
+				$config->setConfig('load_freegroup', 1);
+				$config->setConfig('load_year', 1);
+				$config->setConfig('load_barcode', 1);
 				
-				redirect('loading/rangeall&round=1&status=1&flag=0&group='.$prefix.'&max='.$prefix.'&redirect=barcode/removeConditionRangeBarcode');
+				redirect('loading/rangeall&round=1&status=1&flag=0&group='.$prefix.'&max='.$prefix.'&redirect=loading');
 			} else {
 				$this->setSession('error', 'Cannot add range barcode');
 				redirect('barcode');
@@ -477,7 +630,7 @@
 			
 			$json = array();
 			foreach ($lists as $value) {
-				$json[] = $value['group'];
+				$json[] = $value;
 			}
 			$fp = fopen(DOCUMENT_ROOT . 'uploads/freegroup.json', 'w');
 			fwrite($fp, json_encode($json));
@@ -908,20 +1061,20 @@
 
 						sort($group_barcode);
 
-						$config = $this->model('config');
-						$maximum = $config->getConfig('config_maximum_alert');
-						$json = array();
+						// $config = $this->model('config');
+						// $maximum = $config->getConfig('config_maximum_alert');
+						// $json = array();
 
-						$filter = array(
-							'barcode_status'=>0,
-							'group_received'=>1
-						);
-						$tmp = $barcode->getListBarcodeForCalcurate($filter);
-						$tempbarcode = array();
-						foreach ($tmp as $v) {
-							$tempbarcode[] = $v['barcode_code'];
-						}
-						$this->test2($tempbarcode);
+						// $filter = array(
+						// 	'barcode_status'=>0,
+						// 	'group_received'=>1
+						// );
+						// $tmp = $barcode->getListBarcodeForCalcurate($filter);
+						// $tempbarcode = array();
+						// foreach ($tmp as $v) {
+						// 	$tempbarcode[] = $v['barcode_code'];
+						// }
+						// $this->test2($tempbarcode);
 						// $temp = $this->calcurateBarcode(false, $group_barcode, 0); // ? ต้องเช็คเลขที่ไม่ถูกใช้งาน ให้ Flag ทิ้ง
 						// foreach ($temp as $v) {
 							// array_push($json, $v);	
@@ -1373,6 +1526,7 @@
 			fwrite($fp, json_encode($data));
 			fclose($fp);
 			// return 1;
+			$this->model('config')->setConfig('load_date', 0);
 			$this->json(array('status'=>true));
 		}
 	}

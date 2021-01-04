@@ -168,6 +168,7 @@
 			$fp = fopen(DOCUMENT_ROOT . 'uploads/default_year.json', 'w');
 			fwrite($fp, json_encode($data));
 			fclose($fp);
+			$this->model('config')->setConfig('load_year', 0);
 			return $data;
 		}
 
@@ -204,10 +205,16 @@
 			$beforeusesize = $config->getConfig('config_date_size');
 			$results = $purchase->getBarcodeStartEndOfGroup(date('Y-m-d', strtotime('-'.$dayofyear.'day')), date('Y-m-d', strtotime('-'.$beforeusesize.'day')));
 			foreach ($results as $value) {
-				$data[$value['group']] = array(
-					'start' => (int)$value['barcode_start']>0 ? sprintf('%08d', $value['barcode_start']) : '',
-					'end' => (int)$value['barcode_end']>0 ? sprintf('%08d', $value['barcode_end']) : '',
-				);
+				if (!isset($data[$value['group']])) {
+					$data[$value['group']] = array(
+						'start' => (int)$value['barcode_start']>0 ? sprintf('%08d', $value['barcode_start']) : '',
+						'end' => (int)$value['barcode_end']>0 ? sprintf('%08d', $value['barcode_end']) : '',
+					);
+				}
+				if (isset($data[$value['group']])) {
+					$data[$value['group']]['end'] = (int)$value['barcode_end']>0 ? sprintf('%08d', $value['barcode_end']) : '';
+				}
+				
 			}
 
 			// $groups = $config->getBarcodes();
@@ -227,6 +234,7 @@
 			$fp = fopen(DOCUMENT_ROOT . 'uploads/default_purchase.json', 'w');
 			fwrite($fp, json_encode($data));
 			fclose($fp);
+			$this->model('config')->setConfig('load_barcode', 0);
 			return $data;
 		}
 

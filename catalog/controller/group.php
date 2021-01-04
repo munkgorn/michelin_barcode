@@ -117,7 +117,9 @@
             $group_info = $group->getGroup($id);
 
             // $this->redirect('group'.$url );
-            $this->redirect('loading/rangeall&round=1&status=1&flag=0&group='.$group_info['group_code'].'&max='.$group_info['group_code'].'&redirect=group');
+            $this->setSession('redirect', 'group');
+            $this->model('config')->getConfig('load_freegroup', 1);
+            $this->redirect('loading/rangeall&round=1&status=1&flag=0&group='.$group_info['group_code'].'&max='.$group_info['group_code'].'&redirect=loading');
         }
 
         public function checkall() {
@@ -139,11 +141,18 @@
             $success = array();
             $error = array();
             $checkbox = post('checkbox');
+            $link_group = array();
             foreach ($checkbox as $key => $value) {
                 $id = $value;
                 $status = 1; // this id is `Receive` status
                 
                 $group = $this->model('group');
+                $group_info = $group->getGroup($id);
+                if (!in_array($group_info['group_code'], $link_group)) {
+                    $link_group[] = $group_info['group_code'];
+                }
+                
+
                 $result = $group->changeStatus($id, $status);
 
 
@@ -169,7 +178,10 @@
             $url .= !empty($filter_group) ? "&group=$filter_group" : '';
             $url .= !empty($filter_status) ? "&status=$filter_status" : '';
 
-            $this->redirect('group'.$url );
+            // $this->redirect('group'.$url );
+            $this->setSession('redirect', 'group');
+            $this->model('config')->setConfig('load_freegroup', 1);
+            $this->redirect('loading/rangeall&round=1&status=1&flag=0&group='.$link_group[0].'&max='.$link_group[count($link_group)-1].'&redirect=loading');
         }
 
         public function delGroup() {

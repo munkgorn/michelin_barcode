@@ -133,9 +133,7 @@
 						<div>
 						<select class="select2 form-control mb-3 custom-select" name="barcode_prefix">
 							<option hidden value="">Please select prefix barcode</option>
-						<?php foreach ($groups as $group): ?>
-							<option value="<?php echo $group['group'];?>"><?php echo sprintf('%03d',$group['group']); ?></option>
-						<?php endforeach;?>
+						
 						</select>
 						</div>
 					</div>
@@ -211,6 +209,11 @@ $(document).ready(function(){
 	const inputDate = $('#datefilter');
 	const inputGroup = $('#groupFilter');
 
+	let pad = (str, max) => { // zero left pad
+		str = str.toString();
+		return str.length < max ? pad("0" + str, max) : str;
+	}
+
 	
 	// inputDate.html('<option>Loading...</option>');
 	$('#btnsearch').attr('disabled','disabled');
@@ -241,10 +244,14 @@ $(document).ready(function(){
 		function (data, textStatus, jqXHR) {
 			// let tr = '';
 			let option = '<option></option>';
+			let option2 = '<option></option>';
 			if (data.length > 0) {
 				option += '<option value="all">All</option>';
+				option2 += '';
 				$.each(data, function(i, v){
-					option += '<option value="'+v.group_code+'">'+v.group_code+'</option>';
+					let html = '<option value="'+v.group_code+'">'+pad(v.group_code,3)+'</option>';
+					option += html;
+					option2 += html;
 					// tr += '<tr class="trgroup'+v.group_code+'">';
 					// 	tr += '<td class="text-center">'+v.group_code+'</td>';
 					// 	tr += '<td class="text-center"><span class="loadrange" data-group="'+v.group_code+'">'+loading+'</span></td>';
@@ -253,9 +260,29 @@ $(document).ready(function(){
 					
 				});
 				inputGroup.html(option);
+				$('[name="barcode_prefix"]').html(option2);
 				// table.html(tr);
 				// getAll();
-				inputGroup.select2({placeholder: "Please select date."});
+				inputGroup.select2({placeholder: "Please select group"});
+				$('[name="barcode_prefix"]').select2({placeholder: "Please select group"});
+				$('#btnsearch').removeAttr('disabled');
+			}
+		},
+		"json"
+	);
+
+	$.post("index.php?route=barcode/ajaxGroupReceived", {status: 0},
+		function (data, textStatus, jqXHR) {
+			let option2 = '<option></option>';
+			if (data.length > 0) {
+				option2 += '';
+				$.each(data, function(i, v){
+					let html = '<option value="'+v.group_code+'">'+pad(v.group_code,3)+'</option>';
+					option2 += html;
+					
+				});
+				$('[name="barcode_prefix"]').html(option2);
+				$('[name="barcode_prefix"]').select2({placeholder: "Please select group"});
 				$('#btnsearch').removeAttr('disabled');
 			}
 		},
@@ -274,8 +301,8 @@ $(document).ready(function(){
 				let sum = 0;
 				$.each(data, (i,v) => {
 					html += '<tr>';
-					html += '<td class="text-center">'+v.group_code+'</td>';
-					html += '<td class="text-center">'+v.barcode_start+' - '+v.barcode_end+'</td>';
+					html += '<td class="text-center">'+pad(v.group_code,3)+'</td>';
+					html += '<td class="text-center">'+pad(v.barcode_start,8)+' - '+pad(v.barcode_end,8)+'</td>';
 					html += '<td class="text-center">'+addCommas(v.barcode_qty)+'</td>';
 					html += '</tr>';
 					sum += parseInt(v.barcode_qty);

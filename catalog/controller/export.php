@@ -9,14 +9,14 @@ class ExportController extends Controller {
 
         $excel = array();
         $excel[] = array(
-            'ID',
+            // 'ID',
             'Size Product Code',
             'Sum Product',
             'Last Week 0',
-            'Last Week 0 Remaining QTY',
-            'Propose',
-            'Propose Remaining QTY',
-            'Message',
+            //'Last Week 0 Remaining QTY',
+            //'Propose',
+            //'Propose Remaining QTY',
+            //'Message',
             'Validated',
         );
 
@@ -121,15 +121,15 @@ class ExportController extends Controller {
             $text = $message;
 
             $excel[] = array(
-                'id_product' => $value['id_product'],
+                // 'id_product' => $value['id_product'],
                 'size' => $value['size'],
                 'sum_prod' => $value['sum_prod'],
-                'last_wk0' => $last_week,
-                'remaining_qty' => number_format((int)round($remaining_qty,0),0),
-                'propose' => $propose,
-                'propose_remaining_qty' => number_format((int)round($propose_remaining_qty,0),0),
-                'message' => $text,
-                'save' => $value['save']
+                'last_wk0' => (int)$last_week>0 ? sprintf('%03d', $last_week): '',
+                // 'remaining_qty' => number_format((int)round($remaining_qty,0),0),
+                // 'propose' => $propose,
+                // 'propose_remaining_qty' => number_format((int)round($propose_remaining_qty,0),0),
+                // 'message' => strip_tags($text),
+                'save' => (int)strip_tags($value['save'])>0 ? sprintf('%03d',strip_tags($value['save'])) : ''
             );
 
           
@@ -531,30 +531,32 @@ class ExportController extends Controller {
 
         $temp = array();
         // $datas = $this->calcurateBarcode();
-        $datas = $this->calcurateBarcode($_GET['group']);
+        // $datas = $this->calcurateBarcode($_GET['group']);
 
+        $range = $this->model('range');
+        $datas = $range->findAllByGroup($_GET['group'], 0);
 
         foreach ($datas as $val) {
-            if (!isset($temp[$val['barcode_prefix']])) {
-                $temp[$val['barcode_prefix']]['start'] = $val['start'];
-                $temp[$val['barcode_prefix']]['qty'] = 0;
+            if (!isset($temp[$val['group_code']])) {
+                $temp[$val['group_code']]['start'] = $val['barcode_start'];
+                $temp[$val['group_code']]['qty'] = 0;
             }
-            $temp[$val['barcode_prefix']]['end'] = $val['end'];
-            $temp[$val['barcode_prefix']]['qty'] += (int)$val['qty'];
+            $temp[$val['group_code']]['end'] = $val['barcode_end'];
+            $temp[$val['group_code']]['qty'] += (int)$val['barcode_qty'];
 
             $excel[] = array(
-                $val['barcode_prefix'],
-                $val['start'],
-                $val['end'],
-                $val['qty'],
+                sprintf('%03d',$val['group_code']),
+                sprintf('%08d',$val['barcode_start']),
+                sprintf('%08d',$val['barcode_end']),
+                $val['barcode_qty'],
             );
         }
 
         foreach ($temp as $key => $val) {
             $excel2[] = array(
-                $key,
-                $val['start'],
-                $val['end'],
+                sprintf('%03d',$key),
+                sprintf('%08d',$val['start']),
+                sprintf('%08d',$val['end']),
                 $val['qty']
             );
         }
@@ -650,38 +652,43 @@ class ExportController extends Controller {
         $temp = array();
         
 
-        $file_handle = fopen(DOCUMENT_ROOT . 'uploads/reportall.json', "r");
-        while (!feof($file_handle)) {
-            $line_of_text = fgets($file_handle);
-            $json = json_decode($line_of_text, true);
-            $json = json_decode($json,true);
-            foreach ($json as $value) {
-                foreach ($value['range'] as $k => $r) {
-                    $range = explode('-', $r);
 
-                    if (!isset($temp[$value['group']])) {
-                        $temp[$value['group']]['start'] = trim($range[0]);
-                        $temp[$value['group']]['qty'] = 0;
+        $range = $this->model('range');
+        $datas = $range->findAllByGroup('all', 0);
+        foreach ($datas as $value) {
+
+        // $file_handle = fopen(DOCUMENT_ROOT . 'uploads/reportall.json', "r");
+        // while (!feof($file_handle)) {
+            // $line_of_text = fgets($file_handle);
+            // $json = json_decode($line_of_text, true);
+            // $json = json_decode($json,true);
+            // foreach ($json as $value) {
+                // foreach ($value['range'] as $k => $r) {
+                    // $range = explode('-', $r);
+
+                    if (!isset($temp[$value['group_code']])) {
+                        $temp[$value['group_code']]['start'] = trim($value['barcode_start']);
+                        $temp[$value['group_code']]['qty'] = 0;
                     }
-                    $temp[$value['group']]['end'] = trim($range[1]);
-                    $temp[$value['group']]['qty'] += (int)str_replace(',','',$value['qty'][$k]);
+                    $temp[$value['group_code']]['end'] = trim($value['barcode_end']);
+                    $temp[$value['group_code']]['qty'] += $value['barcode_qty'];
 
                     $excel[] = array(
-                        '="'.$value['group'].'"',
-                        '="'.trim($range[0]).'"',
-                        '="'.trim($range[1]).'"',
-                        (int)str_replace(',','',$value['qty'][$k])
+                        '="'.sprintf('%03d',$value['group_code']).'"',
+                        '="'.sprintf('%08d',trim($value['barcode_start'])).'"',
+                        '="'.sprintf('%08d',trim($value['barcode_end'])).'"',
+                        $value['barcode_qty']
                     ); 
-                }
-            }
+                // }
+            // }
         }
-        fclose($file_handle);
+        // fclose($file_handle);
         
         foreach ($temp as $key => $val) {
             $excel2[] = array(
-                $key,
-                $val['start'],
-                $val['end'],
+                sprintf('%03d',$key),
+                sprintf('%08d',$val['start']),
+                sprintf('%08d',$val['end']),
                 $val['qty']
             );
         }
@@ -736,7 +743,7 @@ class ExportController extends Controller {
 			$index_char = 0;
 			$row++;
 		}
-		$objPHPExcel->getARRctiveSheet()->setTitle('Group Report');
+		$objPHPExcel->getActiveSheet()->setTitle('Group Report');
         $objPHPExcel->getSecurity()->setLockWindows(false);
         $objPHPExcel->getSecurity()->setLockStructure(false);
         $objPHPExcel->setActiveSheetIndex(1);

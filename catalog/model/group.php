@@ -5,6 +5,7 @@
             $this->where('del',0);
             $query = $this->get('group');
             // echo $this->last_query();
+            // echo '<br>';
             return !empty($query->row['id_group']) ? $query->row['id_group'] : '';
         }
         public function findCode($id) {
@@ -25,6 +26,7 @@
             $this->where('group_code', $group_code);
             $this->where('del',0);
             $this->where('remaining_qty', 0, '>=');
+            $this->where('date_purchase', '0000-00-00', '!=');
 			$query = $this->get('group');
 			return isset($query->row['barcode_use']) ? $query->row['barcode_use'] : false;
         }

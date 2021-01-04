@@ -70,6 +70,11 @@ $(document).ready(function(){
 	const inputGroup = $('#groupFilter');
 	const linkexport = $('#linkexport');
 
+	let pad = (str, max) => { // zero left pad
+		str = str.toString();
+		return str.length < max ? pad("0" + str, max) : str;
+	}
+
 
 	linkexport.attr('disabled','disabled').addClass('disabled');
 
@@ -79,7 +84,7 @@ $(document).ready(function(){
 			option += '<option value="0">All Group</option>';
 			$.each(data, function(index,value) {
 				// option += '<option value="'+value.barcode_prefix+'">'+value.barcode_prefix+'</option>';
-				option += '<option value="'+value.group_code+'">'+value.group_code+'</option>';
+				option += '<option value="'+value.group_code+'">'+pad(value.group_code,3)+'</option>';
 				// console.log(value);
 			});
 			$('#groupFilter').html(option).select2({
@@ -124,8 +129,8 @@ $(document).ready(function(){
 							prefix = value.group_code;
 							end = value.barcode_end;
 							html += '<tr>';
-							html += '<td class="text-center">'+value.group_code+'</td>';
-							html += '<td class="text-center">'+value.barcode_start+' - '+value.barcode_end+'</td>';
+							html += '<td class="text-center">'+pad(value.group_code,3)+'</td>';
+							html += '<td class="text-center">'+pad(value.barcode_start,8)+' - '+pad(value.barcode_end,8)+'</td>';
 							html += '<td class="text-center">'+(value.barcode_qty)+'</td>';
 							html += '</tr>';
 							sum += parseInt(value.barcode_qty);
