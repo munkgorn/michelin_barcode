@@ -25,7 +25,7 @@
 			return $query->rows;
 		}
 		public function findAndUpdateBarcode($group, $barcode, $date='') {
-			$sql = "UPDATE mb_master_barcode SET barcode_status = 1, date_modify = '" . date('Y-m-d') . "' WHERE barcode_prefix = $group AND barcode_code = $barcode";
+			$sql = "UPDATE mb_master_barcode SET barcode_status = 1, date_modify = '" . date('Y-m-d') . "' WHERE barcode_prefix = $group AND barcode_code = $barcode;";
 			return $this->query($sql);
 		}
 		public function UpdateMultipleBarcode($barcode) {
