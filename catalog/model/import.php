@@ -2,6 +2,52 @@
 <?php 
 	class ImportModel extends db {
 
+        public function backup($table) {
+            if ($table=='mb_master_barcode') {
+                $sql = "SELECT count(id_barcode) as `count` FROM mb_master_barcode;";
+                $query = $this->query($sql);
+                $count = (int)$query->row['count']; //23819000
+
+                $split = 1000000;
+                
+                $round = ceil($count/ $split); // 23.819 ~ 24
+
+                $limit = '';
+                for ($i=0; $i<$round; $i++) {
+                    $temp = ($i==0) ? 0 : ($i*$split);
+                    $limit = 'LIMIT '.$temp.','.$split;
+
+                    $file = DOCUMENT_ROOT."db/".$table."_".$i.".csv";
+                    if (file_exists($file)) {
+                        unlink($file);
+                    }
+                    $sql = "SELECT * INTO OUTFILE '".$file."' ";
+                    $sql .= "FIELDS TERMINATED BY ',' ";
+                    $sql .= "ENCLOSED BY '\"' ";
+                    $sql .= "LINES TERMINATED BY '\n' ";
+                    $sql .= "FROM ".$table." ".$limit.";";
+                    // echo $sql;
+                    // echo '<br>';
+                    $result = $this->query($sql);
+                }
+                return $result;
+               
+                // return $this->query($sql);
+            } else {
+                $file = DOCUMENT_ROOT."db/".$table.".csv";
+                if (file_exists($file)) {
+                    unlink($file);
+                }
+                $sql = "SELECT * INTO OUTFILE '".$file."' ";
+                $sql .= "FIELDS TERMINATED BY ',' ";
+                $sql .= "ENCLOSED BY '\"' ";
+                $sql .= "LINES TERMINATED BY '\n' ";
+                $sql .= "FROM ".$table.";";
+                return $this->query($sql);
+            }
+            
+        }
+
         public function removeTable($table) {
             return $this->query("truncate table $table");
         }

@@ -15,7 +15,7 @@
 							<?php foreach ($date_group as $date) : ?>
 							<option 
 								value="<?php echo date('Y-m-d', strtotime($date['date_purchase']));?>"
-								<?php echo date('Y-m-d', strtotime($date['date_purchase']))==$filter_date ? 'selected' : '';?>>
+								<?php echo !empty($filter_date)&&date('Y-m-d', strtotime($date['date_purchase']))==$filter_date ? 'selected' : '';?>>
 								<?php echo date('d/m/Y', strtotime($date['date_purchase']));?>
 							</option>
 							<?php endforeach; ?>

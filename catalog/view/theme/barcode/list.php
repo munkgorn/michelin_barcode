@@ -260,12 +260,15 @@ $(document).ready(function(){
 					
 				});
 				inputGroup.html(option);
-				$('[name="barcode_prefix"]').html(option2);
+				$('#ModalAddMenual [name="barcode_prefix"]').html(option2);
 				// table.html(tr);
 				// getAll();
 				inputGroup.select2({placeholder: "Please select group"});
-				$('[name="barcode_prefix"]').select2({placeholder: "Please select group"});
+				$('#ModalAddMenual [name="barcode_prefix"]').select2({placeholder: "Please select group"});
 				$('#btnsearch').removeAttr('disabled');
+
+				console.log(option);
+				console.log(option2);
 			}
 		},
 		"json"
@@ -281,8 +284,8 @@ $(document).ready(function(){
 					option2 += html;
 					
 				});
-				$('[name="barcode_prefix"]').html(option2);
-				$('[name="barcode_prefix"]').select2({placeholder: "Please select group"});
+				$('#ModalAddMenual [name="barcode_prefix"]').html(option2);
+				$('#ModalAddMenual [name="barcode_prefix"]').select2({placeholder: "Please select group"});
 				$('#btnsearch').removeAttr('disabled');
 			}
 		},

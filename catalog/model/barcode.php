@@ -12,6 +12,8 @@
 			}
 			$query = $this->get('barcode');
 
+			// echo $this->last_query();	
+
 			return $query->rows;
 		}
 		public function getBarcode($data='') {

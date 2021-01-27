@@ -110,6 +110,7 @@ $(document).ready(function () {
 	let uploadForm = (fd) => {
 		let filename = '';
 		var ajaxTime = new Date().getTime();
+		console.log('========== CHECK FILE ==========');
 		$.ajax({
 			url: 'index.php?route=barcode/importCSV',
 			type: 'POST',
@@ -121,11 +122,22 @@ $(document).ready(function () {
 			processData: false,
 			dataType: 'json',
 			success: function(data) {
-				console.log(data);
+				// console.log(data);
+
 				var totalTime = new Date().getTime()-ajaxTime;
 				loading(10);
 				filename = data.file;
-				$('#result_submit_form').html('Upload file csv successfull.');
+				if (filename.length<=0) {
+					console.log('%c Fail cannot upload csv ', 'color: #dc3545'); // success 198754 | danger dc3545
+					alert('Upload file fail. please try again');
+					$('#result_submit_form').html('Upload file csv fail.');
+				} else {
+					console.log('%c Upload success ', 'color: #198754'); // success 198754 | danger dc3545
+					$('#result_submit_form').html('Upload file csv successfull.');
+				}
+			},
+			error: function (request, status, error) {
+        alert(request.responseText);
 			}
 		});
 		return filename;
@@ -135,32 +147,44 @@ $(document).ready(function () {
 		
 		let result = {};
 		let url = pathfile.split('/');
-		console.log('<?php echo MURL;?>uploads/import_cutbarcode/'+url[url.length-1]);
-		$.ajax({
+		let thisurl = '<?php echo MURL;?>uploads/import_cutbarcode/'+url[url.length-1];
+		console.log('Read file on this path : '+thisurl);
+		// console.log('uploads/import_cutbarcode/'+url[url.length-1]);
+		$.ajax({	
 			type: "POST",
-			url: '<?php echo MURL;?>uploads/import_cutbarcode/'+url[url.length-1],
+			url: thisurl,
 			// dataType: "json",
-			cache: true,
+			cache: false,
 			async: false,
 			success: function (response) {
-				// console.log(response);	
+					
 				result.barcode = [];
-				let rows = response.split(/\r\n|\n/);
-				rows.forEach((value,index) => {
-					let cols = value.split(";");
-					if (typeof cols[9] != 'undefined') {
-						let str = cols[9].replace(/"/g,"");
-						let thisbarcode = parseInt(str);
-						if (isNaN(thisbarcode)==false) {
-							result.barcode.push(thisbarcode);
+				if (response.length>0) {
+					let rows = response.split(/\r\n|\n/);
+					rows.forEach((value,index) => {
+						let cols = value.split(";");
+						if (typeof cols[9] != 'undefined') {
+							let str = cols[9].replace(/"/g,"");
+							let thisbarcode = parseInt(str);
+							if (isNaN(thisbarcode)==false) {
+								result.barcode.push(thisbarcode);
+							}
 						}
-					}
-				});
+					});
+					console.log('%c Found '+result.barcode.length+' barcode in file ', 'color: #198754'); // success 198754 | danger dc3545
+				} else {
+					console.log('%c Fail cannot read file ', 'color: #dc3545'); // success 198754 | danger dc3545
+					alert('Fail read file.');
+				}
+				
+			},
+			error: function (request, status, error) {
+        alert(request.responseText);
 			}
 		});
-		console.log(result);
+		// console.log(result);
 
-		localStorage.setItem('savegroup', null);
+		// localStorage.setItem('savegroup', null);
 		return result;
 	}
 
@@ -174,7 +198,7 @@ $(document).ready(function () {
 			let thisbarcode = pad(value, 8);
 			barcode.push(thisbarcode);
 
-			let groupcode = thisbarcode.substr(0,3);
+			let groupcode = parseInt(thisbarcode.substr(0,3));
 			if (jQuery.inArray(groupcode, realgroup) == -1) {
 				realgroup.push(groupcode);
 			}
@@ -182,6 +206,8 @@ $(document).ready(function () {
 			loading(nowpercent);
 		});
 		loading(20);
+		// console.log('Found group in file');
+		// console.log(realgroup);
 		$('#result_submit_form').html('Loop get group in file successfull');
 
 
@@ -201,9 +227,11 @@ $(document).ready(function () {
 			async:false,
 			success: function (response) {
 				$.each(response, (index,value) => {
-					dbgroup.push(value.group_code);
+					dbgroup.push(parseInt(value.group_code));
 				});
 				loading(25);
+				// console.log('Get group in db');
+				// console.log(dbgroup);
 				$('#result_submit_form').html('Get group in db successfull.');
 				setTimeout(() => {
 					check_group(filegroup, dbgroup, barcode);
@@ -214,16 +242,20 @@ $(document).ready(function () {
 	
 	let check_group = (filegroup, dbgroup, barcode) => {
 		let realgroup = [];
-		// console.log(filegroup);
-		// console.log(realgroup);
+		console.log('========== CHECK ==========');
+		console.log('CHECK FILE GROUP');
+		console.log(filegroup);
+		console.log('CHECK DB GROUP');
+		console.log(dbgroup);
 		// loop db condition with in file
 		dbgroup.forEach((value,index) => {
-			if (jQuery.inArray(value,filegroup) && jQuery.inArray(value, realgroup)) {
+			if (jQuery.inArray(value,filegroup)!==-1 && jQuery.inArray(value, dbgroup)!==-1) {
 				realgroup.push(parseInt(value));
 			}
 		});
 		realgroup.sort();
-		localStorage.setItem('savegroup', realgroup);
+
+		// localStorage.setItem('savegroup', realgroup);
 
 		// loop barcode only in real group for ready to check db
 		let barcode_forupdate = [];
@@ -236,10 +268,12 @@ $(document).ready(function () {
 			}
 		});
 
+		// console.log(barcode_forupdate);
 
 		loading(30);
 		$('#result_submit_form').html('Compere dbgroup and filegroup successfull.');
-		console.log('success compare group and gen list barcode');
+		console.log('%c SUCCESS marge group ', 'color: #198754'); // success 198754 | danger dc3545
+		console.log(realgroup);
 		// console.log(barcode_forupdate);
 		// console.log(realgroup[0]);
 		// console.log(realgroup[realgroup.length-1]);
@@ -254,6 +288,7 @@ $(document).ready(function () {
 		let percent = 70 / (parseInt(barcodes.length));
 		let nowpercent = 30;
 		loading(nowpercent);
+		console.log('========== CHECK LOOP SEND BARCODE TO USED ==========');
 		$.each(barcodes, (index,value) => {
 			setTimeout(() => {
 				$.ajax({
@@ -265,6 +300,9 @@ $(document).ready(function () {
 					async:false,
 					success: function(response) {
 						nowpercent += percent;
+						if (response==false) {
+							console.log('%c Fail update barcode '+value, 'color: #dc3545'); // success 198754 | danger dc3545
+						}
 						$('#result_submit_form').html('Query to db for update this barcode ('+value+') is used.');
 						loading(nowpercent);
 						if (nowpercent+1 >= 100) {
@@ -279,6 +317,7 @@ $(document).ready(function () {
 	}
 
 	let redirect_success = (start,max) => {
+		console.log('Maybe send update success.');
 		let time = 10;
 		let timeid = false;
 		timeid = setInterval(() => {

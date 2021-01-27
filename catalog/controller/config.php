@@ -1,5 +1,9 @@
 <?php 
 	class ConfigController extends Controller {
+			public function message() {
+				$data = array();
+				$this->view('config/message',$data); 
+			}
 	    public function update() {
 	    	$data = array();
 	    	// echo getSession('id_user').'<';exit();

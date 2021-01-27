@@ -240,14 +240,53 @@ class LoadingController extends Controller
         }
         
 
-        $data['status'] = $status; // status = 1 is consum / 0 is remaining
+        $data['status'] = (int)$status; // status = 1 is consum / 0 is remaining
         $data['round'] = $round;
+        $data['group'] = $group;
+        
+        $config = $this->model('config');
+        $bs = $config->getBarcodes();
+
+        $start_barcode = (int)$bs[0]['group'];
+        $now_barcode = (int)$group;
+        $max_barcode = (int)$bs[count($bs)-1]['group'];
+
+        $data['percent'] = (($now_barcode-$start_barcode) / ($max_barcode - $start_barcode)) * 100;
 
         $barcode = $this->model('barcode');
         $list = $barcode->getBarcodeWithGroup($group, $status, 0);
         $data['list'] = json_encode($list);
 
+        $config = $this->model('config');
+        $config->setConfig('load_freegroup', 1);
+        $config->setConfig('load_year', 1);
+        $config->setConfig('load_barcode', 1);
+        $this->setSession('redirect', 'loading');
+
         $this->view('loading/rangeall', $data);
+    }
+
+    public function range_barcode() 
+    {
+        $data = array();
+        $data['groups'] = array();
+        $config = $this->model('config');
+        $barcodes = $config->getBarcodes();
+        foreach ($barcodes as $barcode) {
+            $data['groups'][] = $barcode['group'];
+        }
+
+        $data['groups'] = json_encode($data['groups']);
+        $this->view('loading/range_barcode', $data);
+    }
+
+    public function ajaxGetGroup() 
+    {
+        $group = $_POST['group'];
+        $status = $_POST['status'];
+        $barcode = $this->model('barcode');
+        $list = $barcode->getBarcodeWithGroup($group, $status, 0);
+        $this->json($list);
     }
 
     public function ajaxGetBarcodeWithGroup($group, $status) {

@@ -40,7 +40,7 @@
         </div>
     </div>
     <div class="row">
-        <div class="col-sm-6">
+        <div class="col-sm-4">
             <div class="card">
                 <div class="card-header">
                     <h3>Import Group Only</h3>
@@ -63,7 +63,7 @@
                 </div>
             </div>
         </div>
-        <div class="col-sm-6">
+        <div class="col-sm-4">
             <div class="card">
                 <div class="card-header">
                     <h3>Import Barcode Only</h3>
@@ -86,9 +86,7 @@
                 </div>
             </div>
         </div>
-    </div>
-    <div class="row">
-        <div class="col-sm-6">
+        <div class="col-sm-4">
             <div class="card">
                 <div class="card-header"><h3>Import Association With Date</h3></div>
                 <div class="card-body">
@@ -115,6 +113,7 @@
 
         </div>
     </div>
+
     <div class="row">
         <div class="col-sm-6">
 
@@ -153,20 +152,12 @@
     <div class="row">
         <div class="col-sm-6">
             <div class="card">
-                <div class="card-header"><h3>Production Ziping 'catalog/*'</h3></div>
-                <div class="card-body">
-                    <a href="index.php?route=import/zip" class="btn btn-outline-success">Zip file to production</a>
-                </div>
-            </div>
-        </div>
-        <div class="col-sm-6">
-            <div class="card">
                 <div class="card-header"><h3>Update Config</h3></div>
                 <div class="card-body">
                     <form action="index.php?route=import/updateConfig" method="post">
                         <?php foreach ($configm as $kt=> $t) : ?>
                         <div class="form-check">
-                            <input class="form-check-input" name="listconfig[]" type="checkbox" value="<?php echo $t;?>" id="config<?php echo $kt;?>">
+                            <input class="form-check-input" name="listconfig[]" type="checkbox" value="<?php echo $t;?>" id="config<?php echo $kt;?>" checked>
                             <label class="form-check-label" for="config<?php echo $kt;?>"><?php echo $t;?></label>
                         </div>
                         <?php endforeach;?>
@@ -178,9 +169,44 @@
         </div>
         <div class="col-sm-6">
             <div class="card">
+                <div class="card-header"><h3>Load range barcode</h3></div>
+                <div class="card-body">
+                <form target="new">
+                    <div class="row">
+                    <div class="col-sm-3"><div class="form-group"><label>route</label><input type="text" name="route" class='form-control' value="loading/rangeall" /></div></div>
+                    <div class="col-sm-3"><div class="form-group"><label>round</label><input type="number" name="round" class='form-control' value="1" /></div></div>
+                    <div class="col-sm-3"><div class="form-group"><label>status</label><input type="number" name="status" class='form-control' value="1" /></div></div>
+                    <div class="col-sm-3"><div class="form-group"><label>flag</label><input type="number" name="flag" class='form-control' value="0" /></div></div>
+                    <div class="col-sm-3"><div class="form-group"><label>redirect</label><input type="text" name="redirect" class='form-control' value="import" /></div></div>
+                    <div class="col-sm-3"><div class="form-group"><label>group</label><input type="number" name="group" class="form-control" placeholder="Start Group" value="<?php echo $group_start;?>" /></div></div>
+                    <div class="col-sm-3"><div class="form-group"><label>max</label><input type="number" name="max" class="form-control" placeholder="End Group" value="<?php echo $group_end;?>" /></div></div>
+                    </div>
+                    <button typye="submit" class="btn btn-danger mt-2" onclick="return confirm('Are you sure?');">Loading</button>
+                </form>
+                </div>
+            </div>
+            <!-- <div class="card">
                 <div class="card-header"><h3>Update Date Barcode Range with date in barcode</h3></div>
                 <div class="card-body">
                     <a href="index.php?route=import/updateDateRange" class="btn btn-primary" onclick="return confirm('Are you sure?');">Update</a>
+                </div>
+            </div> -->
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-sm-6">
+            <div class="card">
+                <div class="card-header"><h3>Production Ziping 'catalog/*'</h3></div>
+                <div class="card-body">
+                    <a href="index.php?route=import/zip" class="btn btn-outline-success" onclick="return confirm('Are you sure?')">Zip file to production</a>
+                </div>
+            </div>
+        </div>
+        <div class="col-sm-6">
+            <div class="card">
+                <div class="card-header"><h3>Backup DB</h3></div>
+                <div class="card-body">
+                    <a href="index.php?route=import/backup" target="new" class="btn btn-outline-danger" onclick="return confirm('Are you sure?')">BACKUP</a>
                 </div>
             </div>
         </div>

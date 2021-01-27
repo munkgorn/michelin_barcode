@@ -8,10 +8,44 @@
             $association = $this->model('association');
             $data['dateass'] = $association->getDateWK();
 
+            $data['configm'] = array(
+                'load_freegroup',
+                'load_year',
+                'load_barcode',
+                // 'load_date',
+            );
+
+            $config = $this->model('config');
+            $config_barcode = $config->getBarcodes();
+            $data['group_start'] = $config_barcode[0]['group'];
+            $data['group_end'] = $config_barcode[count($config_barcode)-1]['group'];
+
             $data['success'] = $this->hasSession('success') ? $this->getSession('success') : ''; $this->rmSession('success');
             $data['error'] = $this->hasSession('error') ? $this->getSession('error') : ''; $this->rmSession('error');
 
  	    	$this->view('clear/index',$data);
+        }
+
+        public function updateConfig() {
+            $config = array(
+                'load_freegroup',
+                'load_year',
+                'load_barcode',
+                'load_date',
+            );
+            $modelconfig = $this->model('config');
+            $listconfig = $_POST['listconfig'];
+            foreach ($listconfig as $t) {
+                if (in_array($t, $config)) {
+                    $result = $modelconfig->setConfig($t, $_POST['numvalue']);
+                    // echo 'Update config '.$t.' : '.($result==1?'success':'fail').'<br>';
+                }
+            }
+            // echo '<br>';
+            // // echo '<a href="index.php?route=loading">Loading</a>';
+            $this->setSession('redirect', 'clear');
+            redirect('loading');
+    
         }
 
         public function removeBarcode() {

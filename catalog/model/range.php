@@ -51,6 +51,7 @@
             $this->where('barcode_status', $status);
             $this->where('group_code', $group);
             $query = $this->get('barcode_range');
+            // echo $this->last_query();
 			return $query->rows;
         }
 
@@ -65,7 +66,7 @@
             $query = $this->get('barcode_range');
 			return $query->row;
         }
-        
+
         public function addRange($data) {
             $sql = "INSERT INTO mb_master_barcode_range (`round`,`group_code`,`barcode_start`,`barcode_end`,`barcode_qty`,`barcode_status`,`date_added`,`date_modify`) VALUES ";
             $values = array();
@@ -125,6 +126,12 @@
             }
             return $this->query($sql);
         }
+
+        public function clearRange($group, $status) {
+            $sql = "DELETE FROM mb_master_barcode_range WHERE group_code = '".$group."' AND barcode_status = '".$status."';";
+            return $this->query($sql);
+        }
+        
     }
 
 ?>

@@ -12,9 +12,9 @@
 			$data['skip'] = isset($_GET['skip']) ? get('skip') : '';
 
 			// echo md5('fsoftpro88');
-			
-			$data['success'] = $this->hasSession('success') ? $this->getSession('success') : ''; $this->rmSession('success');
-			$data['error'] = $this->hasSession('error') ? $this->getSession('error') : ''; $this->rmSession('error');
+				
+				$data['success'] = $this->hasSession('success') ? $this->getSession('success') : ''; $this->rmSession('success');
+				$data['error'] = $this->hasSession('error') ? $this->getSession('error') : ''; $this->rmSession('error');
  	    	$this->view('home',$data); 
 	    }
 	    public function login(){

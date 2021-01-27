@@ -15,6 +15,23 @@
 			exit();
 		}
 		// -- loading range ---
+		// public function 
+
+		public function ajaxFindConditionMinimumRemove() {
+			$config = $this->model('config');
+			$max = $config->getConfig('config_maximum_alert');
+			$this->json($max);
+		}
+
+		public function ajaxFlagRemoveBarcode() {
+			$data = $_POST['data'];
+			$result = array();
+			if (count($data)>0) {
+				$barcode = $this->model('barcode');
+				$result = $barcode->updateFlagBarcode($data);
+			}
+			$this->json($result);
+		}
 		public function ajaxFindRange() {
 			$group = $_POST['group'];
 			$status = $_POST['status'];
@@ -35,6 +52,13 @@
 			$id = implode(',', $data);
 			$barcode_range = $this->model('range');
 			$result = $barcode_range->delRange($id, $status);
+			$this->json($result);
+		}
+		public function ajaxClearRange() {
+			$group = $_POST['group'];
+			$status = $_POST['status'];
+			$barcode_range = $this->model('range');
+			$result = $barcode_range->clearRange($group, $status);
 			$this->json($result);
 		}
 		public function ajaxAddRange() {
@@ -358,7 +382,7 @@
 			// return $returnfilename;
 			$this->json(array('file'=>$returnfilename));
 		}
-	    public function index() {
+		public function index() {
 	    	$data = array();
 	    
 			$data['title'] = "List Barcode";
@@ -410,6 +434,7 @@
 			foreach ($config_barcode as $value) {
 				$data['groups'][]['group'] = $value['group'];
 			}
+
 
 			// modal
 			$data['textalert'] = $this->hasSession('textalert') ? $this->getSession('textalert') : false;

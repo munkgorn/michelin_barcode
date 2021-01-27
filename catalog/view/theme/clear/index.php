@@ -58,9 +58,43 @@
                             </div>
                         </form>
                     </div>
+                    <div class="col-sm-4">
+                        <form action="<?php echo route('loading/rangeall');?>">
+                            <input type="hidden" name="route" value="loading/rangeall" />
+                            <input type="hidden" name="round" value="1" />
+                            <input type="hidden" name="status" value="1" />
+                            <input type="hidden" name="flag" value="0" />
+                            <input type="hidden" name="redirect" value="clear" />
+                            <div class="form-group">
+                                <label for="">Load Range Barcode</label>
+                                <div>
+                                    <input type="number" name="group" class="form-control" placeholder="Start Group" value="<?php echo $group_start;?>" />
+                                    <input type="number" name="max" class="form-control" placeholder="End Group" value="<?php echo $group_end;?>" />
+                                </div>
+                                <button typye="submit" class="btn btn-danger mt-2">Loading</button>
+                            </div>
+                        </form>
+                    </div>
+                    <div class="col-sm-4">
+                        <form action="index.php?route=clear/updateConfig" method="post">
+                            <?php foreach ($configm as $kt=> $t) : ?>
+                            <div class="form-check">
+                                <input class="form-check-input" name="listconfig[]" type="checkbox" value="<?php echo $t;?>" id="config<?php echo $kt;?>" checked>
+                                <label class="form-check-label" for="config<?php echo $kt;?>"><?php echo $t;?></label>
+                            </div>
+                            <?php endforeach;?>
+                            <input type="text" class="form-control" name="numvalue" value="1" />
+                            <input type="submit" class="btn btn-danger mt-2" value="update" />
+                        </form>
+                    </div>
                     
                 </div>
-                <div class="row"><div class="col-sm-12"><hr /><a href="index.php?route=config/update" class="btn btn-primary">Patch</a></div></div>
+                <div class="row">
+                    <div class="col-sm-12"><hr />
+                        <a href="#" onclick="alert('เนื่องจาก ระบบ patch เป็นการเชื่อมต่ออินเตอร์เน็ตภายนอก และนำไฟล์เข้ามาใน server โดยไม่ได้ผ่านการ scan virus และติดปัญหา firewall จึงไม่ผ่าน Policy ของทาง michelin และไม่สามารถอัพเดทได้');" class="btn btn-primary">Patch</a>
+                        <a href="<?php echo route('config/message');?>" class="btn btn-secondary">How to patch</a>
+                    </div>
+                </div>
 			
 		</div>
 	</div>

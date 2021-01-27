@@ -529,6 +529,12 @@ class ImportController extends Controller
 
         }
 
+        $config = $this->model('config');
+        $config_barcode = $config->getBarcodes();
+        $data['group_start'] = $config_barcode[0]['group'];
+        $data['group_end'] = $config_barcode[count($config_barcode)-1]['group'];
+        
+
 
         $association = $this->model('association');
         $data['assdate'] = $association->getDateWK();
@@ -581,10 +587,76 @@ class ImportController extends Controller
             echo "Found : " . $zip->numFiles . "<br>";
             $zip->close();
         }
+        
+        // $this->ftp_fsp($filename);
 
         echo 'Zip to file '.$filename.'<br>';
         echo $this->linkIndex();
         exit();
+    }
+
+    public function backup() {
+        $import = $this->model('import');
+
+        $tables_info = $import->getTables();
+        $tables = array();
+        foreach ($tables_info as $value) {
+            $results[$value['TABLE_NAME']] = $import->backup($value['TABLE_NAME']);
+        }
+
+        $zip = new ZipArchive();
+        $file = "backup_".date('Y-m-d_H-i-s').".zip";
+        $filename = "./db/".$file;
+        $pathzip = 'db';
+
+        if ($zip->open($filename, ZipArchive::CREATE)!==TRUE) {
+            exit("cannot open <$filename>\n");
+        } else {
+            echo '<textarea cols="100" rows="20" style="margin-bottom:5px;">';
+            $result = $this->getDirContents($pathzip); 
+            foreach ($result as $key => $value) {
+                $ex = explode('.', $value);
+                if (end($ex)=='csv') {
+                    echo "Add file :: '$value' \n";
+                    $zip->addFile($value);    
+                }
+            }
+            echo '</textarea><br>';
+            echo "Found : " . $zip->numFiles . "<br>";
+            $zip->close();
+        }
+
+        foreach ($tables_info as $value) {
+            $table = $value['TABLE_NAME'];
+            $fileTable = DOCUMENT_ROOT."db/".$table.".csv";
+            if (file_exists($fileTable)) {
+                unlink($fileTable);
+            }
+        }
+
+        echo 'Zip to file <a href="'.MURL.'db/'.$file.'" target="new" download>'.$file.'</a>';
+        echo $this->linkIndex();
+        exit();
+
+    }
+
+    public function ftp_fsp($file) {
+        // $ch = curl_init();
+        // $localfile = $file;
+        // $remotefile = '/home/fsoftpro/domains/fsoftpro.com/public_html/production/michelin_barcode/update_source/Archive2TEST.zip';
+        // $fp = fopen($localfile, 'r');
+        // curl_setopt($ch, CURLOPT_URL, 'sftp://root:Fsps0lution@43.229.77.178/'.$remotefile);
+        // curl_setopt($ch, CURLOPT_UPLOAD, 1);
+        // curl_setopt($ch, CURLOPT_INFILE, $fp);
+        // curl_setopt($ch, CURLOPT_INFILESIZE, filesize($localfile));
+        // curl_exec ($ch);
+        // $error_no = curl_errno($ch);
+        // curl_close ($ch);
+        // if ($error_no == 0) {
+        //     $error = 'File uploaded succesfully.';
+        // } else {
+        //     $error = 'File upload error.';
+        // }
     }
 
     public function getDirContents($dir, &$results = array()) {

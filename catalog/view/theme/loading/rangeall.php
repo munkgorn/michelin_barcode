@@ -1,11 +1,14 @@
 <div class="container mt-5">
     <div class="row">
         <div class="col-12">
-            <h2><i class="fas fa-spinner fa-pulse"></i> Loading range barcode... </h2>
+            <h2><i class="fas fa-spinner fa-pulse"></i> <span id="headpercent"><?php echo round($percent,2);?>%</span> Loading range barcode... </h2>
         </div>
     </div>
     <div class="row">
         <div class="col-12">
+            <div class="progress mb-2" style="height:20px;">
+            <div class="progress-bar progress-bar-striped progress-bar-animated bg-danger" id="loadall" role="progressbar" aria-valuenow="<?php echo round($percent,2);?>" aria-valuemin="0" aria-valuemax="100" style="width: <?php echo round($percent,2);?>%;height:20px;"><?php echo round($percent,2);?>%</div>
+            </div>
             <div class="progress">
             <div class="progress-bar progress-bar-striped progress-bar-animated" id="barload" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="1" style="width: 0%"></div>
             </div>
@@ -27,6 +30,9 @@ $(document).ready(function () {
 
     let showmsg = (message='', tab=false, status=true) => {
         const elemsg = $('#msg')
+        if (status==false) {
+            alert('Error : ' + message);
+        }
         elemsg.append((status!=null?(status?'[Successful]':'[Error]'):'')+' '+message+'\n');
         if (tab==true) {
             elemsg.append('------------------------------\n');
@@ -41,7 +47,6 @@ $(document).ready(function () {
 
     
     let process_split = (list) => {
-        // console.log(list);
         console.log('process split');
         let indexofarray = 0;
         let result = {};
@@ -54,7 +59,9 @@ $(document).ready(function () {
             let barcodecode = parseInt(val.barcode_code);
             let valuedate = val.date_added.replace(/-/g, '').toString();
             let textgroup = group+'_'+valuedate;
+
             let prev = (typeof list[index-1] !== 'undefined') ? parseInt(list[index-1].barcode_code) : '';
+            let more = (typeof list[index] !== 'undefined') ? parseInt(list[index].barcode_code) : '';
             let next = (typeof list[index+1] !== 'undefined') ? parseInt(list[index+1].barcode_code) : '';
 
 
@@ -66,46 +73,79 @@ $(document).ready(function () {
 
             if (typeof result[group][valuedate] === 'undefined') {
                 result[group][valuedate] = [];
+                indexofarray = 0;
+                result[group][valuedate][indexofarray] = [];
                 // showmsg('Found new range '+temp, false);
             }
-            
+
+            if (typeof result[group][valuedate][indexofarray] === 'undefined'){
+                result[group][valuedate][indexofarray] = [];
+            }
 
 
-            if ( barcodecode+1 == next) {
-                result[group][valuedate].push(barcodecode);
-            } else {
-                result[group][valuedate].push(barcodecode);
-                // indexofarray++;
+            let obj = {thisbarcode:barcodecode, prevbarcode: prev, nextbarcode: next};
+
+            if (barcodecode-1!=prev && barcodecode+1!=next) {
+                if (result[group][valuedate][indexofarray].length > 0) {
+                    indexofarray++;
+                    result[group][valuedate][indexofarray] = [];
+                }
+                result[group][valuedate][indexofarray].push(barcodecode);
+                
+            }
+            else if (barcodecode-1!=prev && barcodecode+1==next) {
+                if (result[group][valuedate][indexofarray].length > 0) {
+                    indexofarray++;
+                    result[group][valuedate][indexofarray] = [];
+                }
+                result[group][valuedate][indexofarray].push(barcodecode);
+            }
+
+            else if (barcodecode-1==prev&&barcodecode+1!=next) {
+                result[group][valuedate][indexofarray].push(barcodecode);
+            }
+            else if (barcodecode-1==prev&&barcodecode+1==next) {
+                result[group][valuedate][indexofarray].push(barcodecode);
             }
             
         });
 
+        $.each(result, function (i, v) { 
+            showmsg('Process group '+i, true);
+        });
+
         loading(20);
         showmsg('Process split done!', true);
+        
+        console.log(result);
         return result;
     }
 
     let process_pattern = (result, round) => {
         console.log('process pattern');
         let output = [];
-        $.each(result, function (index, valuegroup) { // loop group
-            $.each(valuegroup, function (i, v) { // loop date in group
-                // val.forEach((v,i) => { // loop barcode in date
+        $.each(result, function (index, date) { // loop group
+            $.each(date, function (idate, vgroup) { // loop date in group
+                $.each(vgroup, function (i, v) { // loop date in group
+                // console.log(v);
                     let start = v[0];
                     let end = v[v.length-1];
                     let qty = end - start + 1;
-                    let newdate = i.substr(0,4)+'-'+i.substr(4,2)+'-'+i.substr(6,2);
-                    showmsg('GroupRange ('+(newdate)+') '+start+'-'+end+' = '+qty);      
-                    output.push({
-                        round: round,
-                        group: index,
-                        start: start,
-                        end: end,
-                        qty: qty,
-                        date: newdate
-                        // status: status
-                    });
-                // });
+                    let newdate = idate.substr(0,4)+'-'+idate.substr(4,2)+'-'+idate.substr(6,2);
+                    
+                    if (typeof start !== 'undefined' && typeof end !== 'undefined') {
+                        showmsg('GroupRange ('+(newdate)+') '+start+'-'+end+' = '+qty);      
+                        output.push({
+                            round: round,
+                            group: index,
+                            start: start,
+                            end: end,
+                            qty: qty,
+                            date: newdate,
+                            status: status
+                        });
+                    }
+                });
             });  
         });
 
@@ -116,114 +156,132 @@ $(document).ready(function () {
     }
 
     let process_db = (output, status) => {
+        console.log('Process DB');
+        // console.log(output);
 
-        let ajaxDel = (arrayID) => {
-            console.log('process del');
-            var ajaxTime = new Date().getTime();
-            $.ajax({
-                type: "POST",
-                url: "index.php?route=barcode/ajaxDelRange",
-                data: {data: arrayID, status: status},
-                dataType: "json",
-                async: false,
-                cache: true,
-                success: function (response) {
-                    var totalTime = new Date().getTime()-ajaxTime;
-                    // console.log(response);
-                    loading(80);
-                    if (response==true) {
-                        showmsg('Delete group range in DB ['+totalTime+' sec.]', false);
-                    } else {
-                        showmsg('Fail response Delete group range in DB ['+totalTime+' sec.]', false, false);
-                    }
-                    
-                },
-                error: (jqXHR, textStatus, errorThrown) => {
-                    showmsg('Fail delete something has wrong.', false, false);
-                }
+        const clearGroup = (output, status) => {
+            let groupForClear = [];
+            $.each(output, function (i, v) { 
+                 if ($.inArray(v.group, groupForClear) === -1) {
+                    groupForClear.push(v.group);
+                 }
             });
-        }
-
-        let findGroup = (output) => {
-            console.log('process find');
-            showmsg('Start find group range in DB', false);
-            $.each(output, (i,v) => {
-                let item = parseInt(v.group);
-                if ($.inArray(item, clean_repeat_group) === -1) {
-                    clean_repeat_group.push(item);
-                }
-            });
-            $.each(clean_repeat_group, (i,v) => {
-
-                let ajaxFind = (v) => {
-                    var ajaxTime = new Date().getTime();
-                    $.ajax({
-                        type: "POST",
-                        url: "index.php?route=barcode/ajaxFindRange",
-                        data: {group: v, status: status},
-                        dataType: 'JSON',
-                        async: false,
-                        cache: true,
-                        success: (response) => {
-                            var totalTime = new Date().getTime()-ajaxTime;
-                            if (response.length == 0) {
-                                showmsg('Not found group range in DB ['+totalTime+' sec.]', false);
-                                loading(80);
-                            } else if (response.length > 0) {
-                                showmsg('Found group range in DB ['+totalTime+' sec.]', false);
-                                loading(70);
-                                ajaxDel(response);
-                            } else {
-                                showmsg('Fail response find group range in DB ['+totalTime+' sec.]', false, false);
-                            }
-                        },
-                        error: (jqXHR, textStatus, errorThrown) => {
-                            showmsg('Fail find something has wrong.', false, false);
+            
+            $.each(groupForClear, function (i, v) { 
+                $.ajax({
+                    type: "POST",
+                    url: "index.php?route=barcode/ajaxClearRange",
+                    data: {group: v, status:status},
+                    dataType: "json",
+                    async: false,
+                    cache: false,
+                    success: function (response) {
+                        if (response) {
+                            console.log('Success Clear barcode_range '+v);
+                        } else {
+                            console.log('Fail Clear barcode_range '+v);
                         }
-                    });
-                };
-                ajaxFind(v);
-                
+                        
+                    }
+                });
             });
         }
 
-        let ajaxAdd = (output, status) => {
-            console.log('process add');
-            let datainput = [];
-            $.each(output, (i,v) => {
-                v.status = status;
-                datainput.push(v);
-            });
-            console.log(datainput);
-            var ajaxTime = new Date().getTime();
+        const findMaximum = () => {
+            let result = null;
             $.ajax({
                 type: "POST",
-                url: "index.php?route=barcode/ajaxAddRange",
-                data: {data: datainput},
+                url: "index.php?route=barcode/ajaxFindConditionMinimumRemove",
                 dataType: "json",
                 async: false,
                 cache: true,
                 success: function (response) {
-                    var totalTime = new Date().getTime()-ajaxTime;
-                    if (response.status==true) {
-                        showmsg('Add group range in DB ['+totalTime+' sec.]', true);
-                    } else {
-                        showmsg('Fail response Add group range in DB ['+totalTime+' sec.]', true, false);
-                    }
-                    loading(1);
-                    process_redirect();
-                },
-                error: (jqXHR, textStatus, errorThrown) => {
-                    showmsg('Fail add something has wrong.', true, false);
+                    result = response;
                 }
             });
+            return result;
         }
 
+        const loopCondition = (output, maximum, status) => {
+            let groupForFlagRemove = [];
+            let groupForAdd = [];
+            $.each(output, function (i, v) { 
+                 if (parseInt(v.qty) >= parseInt(maximum)) {
+                    groupForAdd.push(v);
+                 } else {
+                    for (let index = parseInt(v.start); index <= parseInt(v.end); index++) {
+                        if ($.inArray(index, groupForFlagRemove) === -1) {
+                            groupForFlagRemove.push(index);
+                        }
+                    }
+                 }
+            });
 
-        let clean_repeat_group = [];
-        findGroup(output);
-        ajaxAdd(output, status);
+            if (groupForAdd.length>0) {
+                $.ajax({
+                    type: "POST",
+                    url: "index.php?route=barcode/ajaxAddRange",
+                    data: {data: groupForAdd},
+                    dataType: "json",
+                    async: false,
+                    cache: false,
+                    success: function (response) {
+                        console.log(response);
+                    }
+                });
+            }
+
+            if (groupForFlagRemove.length>0) {
+                $.ajax({
+                    type: "POST",
+                    url: "index.php?route=barcode/ajaxFlagRemoveBarcode",
+                    data: {data: groupForFlagRemove},
+                    dataType: "json",
+                    async: false,
+                    cache: false,
+                    success: function (response) {
+                        console.log(response);
+                    }
+                });
+            }
+
+
+            loading(100);
+            process_redirect();            
+        }
+
+        clearGroup(output, status);
+        let maxRemove = findMaximum();
+        loopCondition(output, maxRemove, status);
+
         
+        
+    }
+
+    let clearData = (group,status) => {
+        var ajaxTime = new Date().getTime();
+        $.ajax({
+            type: "POST",
+            url: "index.php?route=barcode/ajaxClearRange",
+            data: {group: group, status: status},
+            dataType: "json",
+            async: false,
+            cache: true,
+            success: function (response) {
+                var totalTime = new Date().getTime()-ajaxTime;
+                // console.log(response);
+                loading(80);
+                if (response==true) {
+                    showmsg('Clear group range in DB ['+totalTime+' sec.]', true);
+                } else {
+                    showmsg('Fail response Clear group range in DB ['+totalTime+' sec.]', true, false);
+                }
+                
+            },
+            error: (jqXHR, textStatus, errorThrown) => {
+                showmsg('Fail delete something has wrong.', false, false);
+            }
+        });
     }
 
     let process_redirect = () => {
@@ -264,7 +322,7 @@ $(document).ready(function () {
             if (urlredirect.length>0) {
                 url += '&redirect='+urlredirect
             }
-            window.location.href=url
+            window.location.href=url;
         }
         
     }
@@ -280,8 +338,10 @@ $(document).ready(function () {
     const round = <?php echo $round;?>;
     const list = <?php echo $list;?>;
     const status = <?php echo $status;?>;
+    const nowgroup = <?php echo $group;?>;
     showmsg('Found data '+list.length+' rows', false);
-    showmsg('Calcurate with status '+status, false);
+    showmsg('Calcurate with group '+nowgroup+' status '+status, false);
+
    
     let result = process_split(list);
     setTimeout(() => {
@@ -291,7 +351,10 @@ $(document).ready(function () {
             if (list.length > 0) {
                 let query = process_db(output, status);
             } else {
-                showmsg('Not change someone in DB', true);
+                // showmsg('Not change someone in DB', true);
+                if (list.length == 0) {
+                    clearData(nowgroup, status);
+                }
                 loading(100);
                 process_redirect();
             }

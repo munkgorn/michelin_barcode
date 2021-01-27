@@ -237,182 +237,251 @@
 <script>
 $(document).ready(function () {
 
-	const loading = '<img src="assets/loading.gif" height="30" />Loading...';
+	const showMsg = (text, status=null) => {
+		let color = 'color:#ffffff';
+		if (status===true) { color = 'color:green;'; }
+		else if (status===false) { color = 'color:red;'; }
+		console.log('%c'+text, color);
+	}
 
-	let notuse_relation = [];
+	const pad = (str, max) => { // zero left pad
+		str = str.toString();
+		return str.length < max ? pad("0" + str, max) : str;
+	}
 
-	$('.tdqty').each(function (index, element) {
-		// console.log(element);
-		let idproduct = $(element).data('idproduct');
-		let idgroup = $('.tdlast[data-idproduct='+idproduct+'] .last_wk').html();
-		let idsize =  $('.tdsize[data-idproduct='+idproduct+']').html();
-		let idsumprod =  $('.tdsumprod[data-idproduct='+idproduct+']').html();
-		let oldmsg = $('.tdmsg[data-idproduct='+idproduct+']').data('text');
+	const addCommas = (nStr) => {
+		nStr += '';
+		x = nStr.split('.');
+		x1 = x[0];
+		x2 = x.length > 1 ? '.' + x[1] : '';
+		var rgx = /(\d+)(\d{3})/;
+		while (rgx.test(x1)) {
+			x1 = x1.replace(rgx, '$1' + ',' + '$2');
+		}
+		return x1 + x2;
+	}
 
+	const pasteLastwk = () => {
+		const loading = '<img src="assets/loading.gif" height="30" />Loading...';
+		let notuse_relation = [];
+		let notuse_again = [];
+
+		showMsg('Start Condition');
+
+		let counttdqty = $('.tdqty').length;
+		let startcount = 1;
 		
-		if (oldmsg!='Relationship') {
-			$('.tdpropose[data-idproduct='+idproduct+']').html(loading);
-			$('.tdproposeqty[data-idproduct='+idproduct+']').html(loading);
-			$('.tdqty[data-idproduct='+idproduct+']').html(loading);
-			$('.tdmsg[data-idproduct='+idproduct+']').html(loading);
-		} 
-		if (oldmsg=='Relationship') {
-			// console.log(idsize);
-			// console.log(notuse_relation);
-			// $('.tdmsg[data-idproduct='+idproduct+']').html(loading);
-			$.ajax({
-				type: "POST",
-				url: "index.php?route=association/ajaxRelation",
-				data: {size: idsize, sum_prod: idsumprod, id_product: idproduct, last_wk: idgroup, qty: 0, not: notuse_relation},
-				dataType: "json",
-				async: false,
-				cache:true,
-				success: function (data2) {
-					if (typeof data2.error_message != 'undefined') {
-						console.log('Error : ' + data2.error_message);
-					}
+		$('.tdqty').each(function (index, element) {
 
-					let thisprq_str = data2.propose_remaining_qty;
-					let thisprq = thisprq_str.replace(',','');
+			let idproduct = $(element).data('idproduct');
+			let idgroup = $('.tdlast[data-idproduct='+idproduct+'] .last_wk').html();
+			let idsize =  $('.tdsize[data-idproduct='+idproduct+']').html();
+			let idsumprod =  $('.tdsumprod[data-idproduct='+idproduct+']').html();
+			let oldmsg = $('.tdmsg[data-idproduct='+idproduct+']').data('text');
 
-					if (parseInt(thisprq)>0 && jQuery.inArray(data2.propose, notuse_relation)==-1)  {
-						notuse_relation.push(data2.propose);
-						console.log(notuse_relation);
-						if (data2.propose!=null) {
-							$('.tdpropose[data-idproduct='+idproduct+']').html('<span class="text-primary">'+data2.propose+'</span>');
-							$('.txt_propose[data-key='+idproduct+']').val(data2.propose);
-						}
-						if (data2.propose_remaining_qty!=null) {
-							$('.tdproposeqty[data-idproduct='+idproduct+']').html('<span class="text-primary">'+data2.propose_remaining_qty+'</span>');
-						}
-						if (data2.message!=null) {
-							$('.tdmsg[data-idproduct='+idproduct+']').html(data2.message);
-							if (data2.message=='Free Group') {
-								$('.tdpropose[data-idproduct='+idproduct+']').addClass('text-danger');
-								$('.tdproposeqty[data-idproduct='+idproduct+']').addClass('text-danger');
-								$('.tdmsg[data-idproduct='+idproduct+']').addClass('text-danger');
-							}
-						}
-					} else {
-						$('.tdqty[data-idproduct='+idproduct+']').html('');
-						$('.tdpropose[data-idproduct='+idproduct+']').html('');
-						$('.tdproposeqty[data-idproduct='+idproduct+']').html('');
-						$('.tdmsg[data-idproduct='+idproduct+']').html('<span class="text-primary">Relationship</span>');
-					}
+			
 
+			let obj = {td_size:idsize,td_sumprod:idsumprod,td_lastwk:idgroup,td_msg:oldmsg};
 
-					// $.ajax({
-					// 	type: "POST",
-					// 	url: "index.php?route=association/ajaxSavePropose",
-					// 	data: {id_product: idproduct, remaining_qty: data, propose: data2.propose, propose_remaining_qty: thisprq, message: data2.message},
-					// 	dataType: "json",
-					// 	async: false,
-					// 	success: function (response) {
-					// 		console.log(response);
-					// 	}
-					// });
-				}
-			});
-
-		} else {
-			if (idgroup>0) {
+			if (oldmsg!='Relationship') {
+				$('.tdpropose[data-idproduct='+idproduct+']').html(loading);
+				$('.tdproposeqty[data-idproduct='+idproduct+']').html(loading);
+				$('.tdqty[data-idproduct='+idproduct+']').html(loading);
+				$('.tdmsg[data-idproduct='+idproduct+']').html(loading);
+			} 
+			if (oldmsg=='Relationship') {
+				obj.is_relationship = 'Yes';
 				$.ajax({
 					type: "POST",
-					url: "index.php?route=association/ajaxCountBarcodeNotuse",
-					data: {group: idgroup, id_product: idproduct},
+					url: "index.php?route=association/ajaxRelation",
+					data: {size: idsize, sum_prod: idsumprod, id_product: idproduct, last_wk: idgroup, qty: 0, not: notuse_relation},
 					dataType: "json",
-					async: true,
+					async: false,
 					cache:true,
-					success: function (data) {
-						console.log('Size '+idsize+' Group '+idgroup+' Qty '+data);
-
-						if (data>0) {
-							$(element).html(addCommas(data));
-						} else {
-							$(element).html(0);
+					success: function (data2) {
+						if (typeof data2.error_message != 'undefined') {
+							console.error('Error Response Relationship : ' + data2.error_message);
+							// obj.relationship = 'Error'+data2.error_message;
 						}
 
-						$.ajax({
-							type: "POST",
-							url: "index.php?route=association/ajaxCondition",
-							data: {size: idsize, sum_prod: idsumprod, last_wk: idgroup, qty: data, id_product: idproduct},
-							dataType: "json",
-							async: false,
-							cache:true,
-							success: function (data2) {
-								if (data2.propose!=null) {
-									$('.tdpropose[data-idproduct='+idproduct+']').html(data2.propose);
-									$('.txt_propose[data-key='+idproduct+']').val(data2.propose);
+						let thisprq_str = data2.propose_remaining_qty;
+						let thisprq = thisprq_str.replace(',','');
+
+						// obj.relationship_propose = {propose:data2.propose, propose_remaining_qty: thisprq};
+						// obj.relationship = data2.propose;
+						obj.relationship_propose = data2.propose;
+						obj.relationship_remaining = data2.propose_remaining_qty;
+						obj.relationship_message = data2.message;
+						
+						if (parseInt(thisprq)>0 && jQuery.inArray(data2.propose, notuse_relation)==-1)  {
+							notuse_relation.push(data2.propose);
+							obj.relationship_canused = 'Yes';
+							
+							if (data2.propose!=null) {
+								
+								$('.tdpropose[data-idproduct='+idproduct+']').html('<span class="text-primary">'+data2.propose+'</span>');
+								$('.txt_propose[data-key='+idproduct+']').val(data2.propose);
+							}
+							if (data2.propose_remaining_qty!=null) {
+								
+								$('.tdproposeqty[data-idproduct='+idproduct+']').html('<span class="text-primary">'+data2.propose_remaining_qty+'</span>');
+							}
+							if (data2.message!=null) {
+								
+
+								$('.tdmsg[data-idproduct='+idproduct+']').html(data2.message);
+								if (data2.message=='Free Group') {
+									$('.tdpropose[data-idproduct='+idproduct+']').addClass('text-danger');
+									$('.tdproposeqty[data-idproduct='+idproduct+']').addClass('text-danger');
+									$('.tdmsg[data-idproduct='+idproduct+']').addClass('text-danger');
 								}
-								if (data2.propose_remaining_qty!=null) {
-									$('.tdproposeqty[data-idproduct='+idproduct+']').html(data2.propose_remaining_qty);
-								}
-								if (data2.message!=null) {
-									$('.tdmsg[data-idproduct='+idproduct+']').html(data2.message);
-									if (data2.message=='Free Group') {
+							}
+						} else {
+							obj.relationship_canused = 'No';
+							$('.tdqty[data-idproduct='+idproduct+']').html('');
+							$('.tdpropose[data-idproduct='+idproduct+']').html('');
+							$('.tdproposeqty[data-idproduct='+idproduct+']').html('');
+							$('.tdmsg[data-idproduct='+idproduct+']').html('<span class="text-primary">Relationship</span>');
+						}
+
+						// console.log(startcount+' '+counttdqty);
+						if (debug_relation==true) {
+							console.table(obj);
+						}
+						if (startcount==counttdqty) {
+							pasteFreegroup();
+						} else {
+							startcount++;
+						}
+					}
+				});
+
+			} else {
+				obj.is_relationship = 'No';
+				if (idgroup>0) {
+					obj.has_lastwk = 'Yes';
+					$.ajax({
+						type: "POST",
+						url: "index.php?route=association/ajaxCountBarcodeNotuse",
+						data: {group: idgroup, id_product: idproduct},
+						dataType: "json",
+						async: false,
+						cache: false,
+						success: function (data) {
+
+							obj.response_barcodenotuse = addCommas(data);
+							
+							if (data>0) {
+								$(element).html(addCommas(data));
+							} else {
+								$(element).html(0);
+							}
+
+							$.ajax({
+								type: "POST",
+								url: "index.php?route=association/ajaxCondition",
+								data: {size: idsize, sum_prod: idsumprod, last_wk: idgroup, qty: data, id_product: idproduct},
+								dataType: "json",
+								async: false,
+								cache: false,
+								success: function (data2) {
+									
+									if (jQuery.inArray(idgroup, notuse_again)==-1) {
+										notuse_again.push(idgroup);
+										obj.response_condition_propose = data2.propose;
+										obj.response_condition_propose_qty = data2.propose_remaining_qty;
+										obj.response_condition_message = data2.message;
+										if (data2.propose!=null) {
+											$('.tdpropose[data-idproduct='+idproduct+']').html(data2.propose);
+											$('.txt_propose[data-key='+idproduct+']').val(data2.propose);
+										}
+										if (data2.propose_remaining_qty!=null) {
+											$('.tdproposeqty[data-idproduct='+idproduct+']').html(data2.propose_remaining_qty);
+										}
+										if (data2.message!=null) {
+											$('.tdmsg[data-idproduct='+idproduct+']').html(data2.message);
+											if (data2.message=='Free Group') {
+												$('.tdpropose[data-idproduct='+idproduct+']').addClass('text-danger');
+												$('.tdproposeqty[data-idproduct='+idproduct+']').addClass('text-danger');
+												$('.tdmsg[data-idproduct='+idproduct+']').addClass('text-danger');
+											} else {
+												$('.tdpropose[data-idproduct='+idproduct+']').removeClass('text-danger');
+												$('.tdproposeqty[data-idproduct='+idproduct+']').removeClass('text-danger');
+												$('.tdmsg[data-idproduct='+idproduct+']').removeClass('text-danger');
+											}
+										}
+
+									} else {
+										
+										$('.tdpropose[data-idproduct='+idproduct+']').html('');
+										$('.txt_propose[data-key='+idproduct+']').val('');
+										$('.tdmsg[data-idproduct='+idproduct+']').html('Free Group');
+
 										$('.tdpropose[data-idproduct='+idproduct+']').addClass('text-danger');
 										$('.tdproposeqty[data-idproduct='+idproduct+']').addClass('text-danger');
 										$('.tdmsg[data-idproduct='+idproduct+']').addClass('text-danger');
-									} else {
-										$('.tdpropose[data-idproduct='+idproduct+']').removeClass('text-danger');
-										$('.tdproposeqty[data-idproduct='+idproduct+']').removeClass('text-danger');
-										$('.tdmsg[data-idproduct='+idproduct+']').removeClass('text-danger');
 									}
+									
+									
+									// console.log(startcount+' '+counttdqty);
+									if (debug_lastweek==true&&data2.propose.length>0) {
+										// console.table(obj);
+									}
+									if (startcount==counttdqty) {
+										pasteFreegroup();
+									} else {
+										startcount++;
+									}
+									
+
 								}
+							});
 
-								let thisprq_str = data2.propose_remaining_qty;
-								let thisprq = thisprq_str.replace(',','');
+						},
+						error: function (xhr, ajaxOptions, thrownError) {
+							console.error('Error ajax count barcode not use [group:'+idgroup+'][idproduct'+idproduct+'] : '+thrownError);
+							$(element).html('');
+						}
 
-								// $.ajax({
-								// 	type: "POST",
-								// 	url: "index.php?route=association/ajaxSavePropose",
-								// 	data: {id_product: idproduct, remaining_qty: data, propose: data2.propose, propose_remaining_qty: thisprq, message: data2.message},
-								// 	dataType: "json",
-								// 	async: false,
-								// 	success: function (response) {
-								// 		console.log(response);
-								// 	}
-								// });
-							}
-						});
-
-					},
-					error: function (xhr, ajaxOptions, thrownError) {
-						console.log('Group '+idgroup+' Error');
-						console.log(xhr.status);
-						console.log(thrownError);
-						$(element).html('');
-					}
-
-				});
-			} else {
-				$('.tdqty[data-idproduct='+idproduct+']').html('');
-				$('.tdpropose[data-idproduct='+idproduct+']').html('');
-				$('.tdproposeqty[data-idproduct='+idproduct+']').html('');
-				if (oldmsg!='Relationship') {
-					$('.tdmsg[data-idproduct='+idproduct+']').html('');	
+					});
 				} else {
-					$('.tdmsg[data-idproduct='+idproduct+']').html('<span class="text-primary">Relationship</span>');	
+					obj.has_lastwk = 'No';
+					$('.tdqty[data-idproduct='+idproduct+']').html('');
+					$('.tdpropose[data-idproduct='+idproduct+']').html('');
+					$('.tdproposeqty[data-idproduct='+idproduct+']').html('');
+					if (oldmsg!='Relationship') {
+						$('.tdmsg[data-idproduct='+idproduct+']').html('');	
+					} else {
+						$('.tdmsg[data-idproduct='+idproduct+']').html('<span class="text-primary">Relationship</span>');	
+					}
+					// console.log(startcount+' '+counttdqty);
+
+					if (debug_lastweek==true) {
+							// console.table(obj);
+						}
+					if (startcount==counttdqty) {
+						pasteFreegroup();
+					} else {
+						startcount++;
+					}
 				}
 			}
-		}
-		
-	});
+			
+			
+		});
+	}
 
-	pasteFreegroup();
+	const pasteFreegroup = () => {
 
-	function pasteFreegroup() {
-		$.get('index.php?route=barcode/jsonFreeGroup', function(data){
-			var json = JSON.parse(data);
-			var temp = json;
-
-			// Freegroup
+		let findgroup_infreegroup = (data) => {
 			let jsonfreeuse = [];
-			$.each(temp, function(i,v){
+			$.each(data, function(i,v){
 				jsonfreeuse.push(v.group);
 			});
+			return jsonfreeuse;
+		}
 
-			// Group sync with old association on config day
+		let get_group_oldassociation = () => {
 			let oldsync = [];
 			$.ajax({
 				type: "GET",
@@ -426,36 +495,72 @@ $(document).ready(function () {
 					});
 				}
 			});
+			return oldsync;
+		}
 
-			// Diff 2 array
-			// Real freegroup can use
+		let get_index_freegroup_canuse = (arr1, arr2) => {
 			let indexFree = [];
-			// let difference = []; // not use
-			$.grep(jsonfreeuse, function(el, index) {
-				console.log(index);
-				if (jQuery.inArray(el, oldsync) == -1) {
+			$.grep(arr1, function(el, index) {
+				if (jQuery.inArray(el, arr2) == -1) {
 					indexFree.push(index); // Save index freegroup
-					// difference.push(el); // save group (not use)
 				}
 			});
-			// console.log(difference);
+			return indexFree
+		}
 
-			// save not use again
+		let get_group_in_td = () => {
 			let notuse = [];
 			$('.tdpropose').each(function(index,value){
 				let num = parseInt($(this).html());
 				if (!isNaN(num)) {
 					notuse.push(parseInt($(this).html()));
 				}
-				
 			});
+			return notuse;
+		}
+		
+		console.log('Start Free Group');
+		$.ajax({
+			type: "GET",
+			url: "index.php?route=barcode/jsonFreeGroup",
+			async:false,
+			cache:false,
+			success: function (data) {
+		// $.get('index.php?route=barcode/jsonFreeGroup', function(data){
+			var json = JSON.parse(data);
+			var temp = json;
+			let obj = {};
+			// In response json is [{group:xxx, qty:000}, ... ]
+			// Freegroup
+			// Get only `group` in json 
+			let jsonfreeuse = findgroup_infreegroup(temp);
+			obj.found_freegroup = jsonfreeuse.length;
+
+			// Get `group` in DB on condition `old association <= config day`
+			let oldsync = get_group_oldassociation();
+			obj.found_oldsync = jsonfreeuse.length;
+
+			// Find different group from 2 array `jsonfreeuse` and `oldsync`
+			// Response freegroup can used
+			let indexFree = get_index_freegroup_canuse(jsonfreeuse, oldsync);
+			obj.found_indexfreegroup = indexFree.length;
+
+			// Loop group last week on <td> save to not use free group in td
+			let notuse = get_group_in_td();
+			obj.found_groupintd = notuse.length;
+
+			if (debug_freegroup==true) {
+				// console.table(obj);
+			}
+			console.log('Loop td for set free group');
 
 			var i = 0;
 			$('.tdpropose').each(function(index,value){
+				let obj = {};
 				var thishtml = parseInt($(this).html());
 				
-				
 				var idproduct = $(this).data('idproduct');
+				var thissize = $('.tdsize[data-idproduct='+idproduct+']').html();
 				var thisqtylk_str = $('.tdqty[data-idproduct='+idproduct+']').html();
 				var thisqtylk = parseInt(thisqtylk_str.replace(',', ''));
 				var thismsg = $('.tdmsg[data-idproduct='+idproduct+']').data('text');
@@ -467,43 +572,50 @@ $(document).ready(function () {
 				var last_wk = parseInt($('.tdlast[data-idproduct='+idproduct+'] .last_wk').html());
 				var thissave = $('.txt_group[data-key='+idproduct+']').val();
 
+				obj = {td_size:thissize,td_sumprod:thissumpod_str,td_lastwk:last_wk,td_qty:thisqtylk_str,groupsave:thissave,td_msg:thismsg};
 
+				// Change color message to red
 				if (last_wk!=$(this).html()&&thismsg!='Relationship') {
 					$(this).addClass('text-danger');
-					// $(this).addClass('text-danger');
 					$('.tdproposeqty[data-idproduct='+idproduct+']').addClass('text-danger');
 					$('.tdmsg[data-idproduct='+idproduct+']').addClass('text-danger');
 				}
-				console.log($('.tdsize[data-idproduct="'+idproduct+'"]').html());
-				console.log("Not found propose " +isNaN(thishtml));
-				console.log(typeof temp[indexFree[i]]);
-				console.log(typeof temp[indexFree[i]].group);
-				console.log(thissumpod);
-				console.log(thismsg);
-				if (isNaN(thishtml)&&thissave.length==0 && typeof temp[indexFree[i]] != 'undefined' && typeof temp[indexFree[i]].group != 'undefined' && thissumpod > 0 &&thismsg!='Relationship' ) {
-					// var oldqty = $(this).parent('td').prev('td').prev('td').prev('td').html();
+				
+				obj.condition_confirm_propose_null = isNaN(thishtml);
+
+				if (
+					isNaN(thishtml)
+					&& thissave.length==0 
+					&& typeof temp[indexFree[i]] != 'undefined' 
+					&& typeof temp[indexFree[i]].group != 'undefined' 
+					&& thissumpod > 0 
+					&& thismsg!='Relationship' 
+				) {
+
 					let thisgroup = pad(temp[indexFree[i]].group, 3); 
-					// next
-					if (jQuery.inArray(parseInt(thisgroup), notuse) !== -1) {
-						i++;
-						thisgroup = pad(temp[indexFree[i]].group, 3); 
-						if (jQuery.inArray(parseInt(thisgroup), notuse) !== -1) {
-							i++;
-							thisgroup = pad(temp[indexFree[i]].group, 3); 
-						}
-						
-					}
 					let thisqty_str = temp[indexFree[i]].qty;
 					let thisqty = parseInt(thisqty_str.replace(',',''));
 
-					console.log(thisgroup);
-					console.log(notuse);
-					console.log(jQuery.inArray(parseInt(thisgroup),notuse));
+					let loopcondition = (jQuery.inArray(parseInt(thisgroup), notuse) !== -1 || thisqty <= thissumpod);
+
+					while (loopcondition) {
+						i++;
+						thisgroup = pad(temp[indexFree[i]].group, 3); 
+						thisqty_str = temp[indexFree[i]].qty;
+						thisqty = parseInt(thisqty_str.replace(',',''));
+						loopcondition = (jQuery.inArray(parseInt(thisgroup), notuse) !== -1 || thisqty <= thissumpod);
+					}
+					obj.freegroup_group = thisgroup;
+					obj.freegroup_qty = addCommas(thisqty);
+			
 					if (jQuery.inArray(parseInt(thisgroup), notuse) == -1 && thisqty >= thissumpod) {
+						obj.freegroup_set = true;
 						$(this).html(thisgroup);
 						$('.txt_propose[data-key='+idproduct+']').val(thisgroup);
 						$('.tdproposeqty[data-idproduct='+idproduct+']').html(addCommas(thisqty));
 						$('.tdmsg[data-idproduct='+idproduct+']').html('Free Group');
+					} else {
+						obj.freegroup_set = false;
 					}
 					
 					if (last_wk!=thisgroup) { // free group is not save 
@@ -520,56 +632,40 @@ $(document).ready(function () {
 					}
 					i++;
 				}
+				
+				if (obj.condition_confirm_propose_null==true&&debug_freegroup==true) {
+					console.table(obj);
+				}
+				
 			});
-		},'json');
+
+			// console.table(obj);
+			
+			} // end loop ajax
+		});
 	}
 
+	let debug_relation = true;
+	let debug_lastweek = true;
+	let debug_freegroup = true;
+	pasteLastwk();
+	
 
-	function pad (str, max) { // zero left pad
-		str = str.toString();
-		return str.length < max ? pad("0" + str, max) : str;
-	}
 
-	function addCommas(nStr) {
-		nStr += '';
-		x = nStr.split('.');
-		x1 = x[0];
-		x2 = x.length > 1 ? '.' + x[1] : '';
-		var rgx = /(\d+)(\d{3})/;
-		while (rgx.test(x1)) {
-			x1 = x1.replace(rgx, '$1' + ',' + '$2');
-		}
-		return x1 + x2;
-	}
 
+
+
+	// Event Handle
 	$('[type="file"]').on('change', function(e){
 		var fileName = e.target.files[0].name;
 		$(this).next('label.custom-file-label').html('<span class="text-dark">'+fileName+'</span>');
-		// console.log(fileName);
 	});
 
 	$('.select2').select2({
 		placeholder: 'Select date upload file',
 		allowClear: true
 	});
-
-	// $('#maxxkeEditable tbody tr').each(function(index, value) {
-	// 	let thistr = $(this);
-	// 	let lastwk = thistr.children('td:eq(3)').children('.last_wk').html();
-	// 	$.ajax({
-	// 		type: "POST",
-	// 		url: "index.php?route=association/ajaxCountBarcode",
-	// 		data: {group: lastwk},
-	// 		async: true,
-	// 		success: function (response) {
-	// 			thistr.children('td:eq(4)').html(addCommas(response));
-	// 		}
-	// 	});
-		
-	// });
-
 	
-
 	$('#check_all').change(function(){
 		if ($(this).is(':checked')) {
 			$('.cb').prop('checked',true);
