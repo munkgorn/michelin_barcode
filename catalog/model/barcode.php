@@ -4,11 +4,11 @@
 		public function getBarcodeWithGroup($group, $status=null, $flag=null) {
 			$this->select('id_group, barcode_prefix, barcode_code, barcode_status, barcode_flag, date_added');
 			$this->where('barcode_prefix', (int)$group);
-			if ($status!==null) {
+			if ($status==0||$status==1) {
 				$this->where('barcode_status', (int)$status);
 			}
-			if ($flag!==null) {
-				$this->where('barcode_flag', (int)$flag);
+			if ($flag==0||$flag==1) {
+				$this->where('barcode_flag', $flag);
 			}
 			$query = $this->get('barcode');
 

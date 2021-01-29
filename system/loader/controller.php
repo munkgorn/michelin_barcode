@@ -523,8 +523,9 @@ jQuery(document).ready(function($) {
         return $model;
     }
     public function json($data){
+        ob_clean();
         header("Content-type:application/json");
-        echo json_encode($data);
+        echo json_encode($data, JSON_UNESCAPED_UNICODE);
         exit();
     }
     public function redirect($route,$path=''){

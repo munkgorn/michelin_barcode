@@ -128,8 +128,9 @@
         }
 
         public function clearRange($group, $status) {
-            $sql = "DELETE FROM mb_master_barcode_range WHERE group_code = '".$group."' AND barcode_status = '".$status."';";
-            return $this->query($sql);
+            $sql = "DELETE FROM mb_master_barcode_range WHERE `group_code` = '".$group."' AND barcode_status = '".$status."';";
+            $query = $this->query($sql);
+            return $query; 
         }
         
     }

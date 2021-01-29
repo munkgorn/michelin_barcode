@@ -54,8 +54,8 @@
             $this->join('user u','u.id_user = g.id_user','LEFT');
             $this->select('g.*, u.username');
             $query = $this->get('group g');
-            echo $this->last_query();
-            echo '<br>';
+            // echo $this->last_query();
+            // echo '<br>';
             return $query->rows;
         }
         public function getGroup($id) {

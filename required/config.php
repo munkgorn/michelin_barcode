@@ -1,5 +1,6 @@
 <?php
 ini_set("memory_limit", "-1");
+ini_set('max_input_vars', 10000);
 set_time_limit(0);
 date_default_timezone_set("Asia/Bangkok");
 
@@ -7,18 +8,18 @@ date_default_timezone_set("Asia/Bangkok");
 
 	ini_set('upload_max_filesize', '10M');
 	  
-	ini_set('display_errors', 1);
-	ini_set('display_startup_errors', 1);
-	error_reporting(E_ALL);
+	// ini_set('display_errors', 1);
+	// ini_set('display_startup_errors', 1);
+	// error_reporting(E_ALL);
 
 
-	// ini_set('display_errors', 0);
-	// ini_set('display_startup_errors', 0);
-	// error_reporting(0);
+	ini_set('display_errors', 0);
+	ini_set('display_startup_errors', 0);
+	error_reporting(0);
 	
 
 	$base = str_replace('required', '', __DIR__);
-  	define('MURL','http://localhost/michelin_barcode/');
+  define('MURL','http://localhost/michelin_barcode/');
 	// define('MURL','https://www.fsoftpro.com/dohung/');
 	define('SOURCE_UPDATE', 'https://www.fsoftpro.com/production/michelin_barcode/update_source/Archive.zip');
 	define('DOCUMENT_ROOT',$_SERVER['DOCUMENT_ROOT'].'/michelin_barcode/');
@@ -48,7 +49,9 @@ date_default_timezone_set("Asia/Bangkok");
 	// define('DB_PASS','wSNZztqzI');
 	define('DB_USER','root');
 	define('DB_PASS','');
-	define('DB_DB','fsoftpro_barcode');
+	// define('DB_DB','fsoftpro_barcode');
+	// define('DB_DB','fsoftpro_barcode_lmc');
+	define('DB_DB','fsoftpro_barcode_ppd');
 	define('DATE_FORMAT','Y-m-d');
 	// Production
 	// define('PREFIX', 'dh_');

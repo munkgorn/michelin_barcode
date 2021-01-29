@@ -59,7 +59,7 @@
 			$status = $_POST['status'];
 			$barcode_range = $this->model('range');
 			$result = $barcode_range->clearRange($group, $status);
-			$this->json($result);
+			$this->json(array('status'=>$result));
 		}
 		public function ajaxAddRange() {
 			$data = array();

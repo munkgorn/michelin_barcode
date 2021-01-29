@@ -176,6 +176,9 @@ $(document).ready(function () {
                     async: false,
                     cache: false,
                     success: function (response) {
+                        console.log("Response clear range main");
+                        console.log(v);
+                        console.log(status);
                         if (response) {
                             console.log('Success Clear barcode_range '+v);
                         } else {
@@ -196,6 +199,7 @@ $(document).ready(function () {
                 async: false,
                 cache: true,
                 success: function (response) {
+                    console.log('find max');
                     result = response;
                 }
             });
@@ -208,7 +212,7 @@ $(document).ready(function () {
             $.each(output, function (i, v) { 
                  if (parseInt(v.qty) >= parseInt(maximum)) {
                     groupForAdd.push(v);
-                 } else {
+                 } else if (parseInt(v.qty) > 0 && parseInt(v.qty) < parseInt(maximum)) {
                     for (let index = parseInt(v.start); index <= parseInt(v.end); index++) {
                         if ($.inArray(index, groupForFlagRemove) === -1) {
                             groupForFlagRemove.push(index);
@@ -216,20 +220,6 @@ $(document).ready(function () {
                     }
                  }
             });
-
-            if (groupForAdd.length>0) {
-                $.ajax({
-                    type: "POST",
-                    url: "index.php?route=barcode/ajaxAddRange",
-                    data: {data: groupForAdd},
-                    dataType: "json",
-                    async: false,
-                    cache: false,
-                    success: function (response) {
-                        console.log(response);
-                    }
-                });
-            }
 
             if (groupForFlagRemove.length>0) {
                 $.ajax({
@@ -240,10 +230,30 @@ $(document).ready(function () {
                     async: false,
                     cache: false,
                     success: function (response) {
+                        console.log('remove some barcode');
+                        console.log(groupForFlagRemove);
                         console.log(response);
                     }
                 });
             }
+
+            if (groupForAdd.length>0) {
+                $.ajax({
+                    type: "POST",
+                    url: "index.php?route=barcode/ajaxAddRange",
+                    data: {data: groupForAdd},
+                    dataType: "json",
+                    async: false,
+                    cache: false,
+                    success: function (response) {
+                        console.log('add range barcode');
+                        console.log(groupForAdd);
+                        console.log(response);
+                    }
+                });
+            }
+
+            
 
 
             loading(100);
@@ -266,20 +276,18 @@ $(document).ready(function () {
             data: {group: group, status: status},
             dataType: "json",
             async: false,
-            cache: true,
+            cache: false,
             success: function (response) {
                 var totalTime = new Date().getTime()-ajaxTime;
-                // console.log(response);
+                console.log('===== Clear Range =====');
+                console.log(response.status);
                 loading(80);
-                if (response==true) {
+                if (response.status==true) {
                     showmsg('Clear group range in DB ['+totalTime+' sec.]', true);
                 } else {
                     showmsg('Fail response Clear group range in DB ['+totalTime+' sec.]', true, false);
                 }
                 
-            },
-            error: (jqXHR, textStatus, errorThrown) => {
-                showmsg('Fail delete something has wrong.', false, false);
             }
         });
     }
@@ -342,6 +350,10 @@ $(document).ready(function () {
     showmsg('Found data '+list.length+' rows', false);
     showmsg('Calcurate with group '+nowgroup+' status '+status, false);
 
+
+    console.log("list");
+    console.log(list);
+
    
     let result = process_split(list);
     setTimeout(() => {
@@ -349,6 +361,8 @@ $(document).ready(function () {
         setTimeout(() => {
             showmsg('Process someone change in DB', false);
             if (list.length > 0) {
+
+                clearData(nowgroup, status);
                 let query = process_db(output, status);
             } else {
                 // showmsg('Not change someone in DB', true);
