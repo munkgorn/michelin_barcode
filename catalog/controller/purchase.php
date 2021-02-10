@@ -8,12 +8,12 @@
 				$this->redirect('home');
 			} 
 		}
-	    public function index() {
+		public function index() {
 	    	$data = array();
-			$barcode = $this->model('barcode');
-			$config = $this->model('config');
+				$barcode = $this->model('barcode');
+				$config = $this->model('config');
 	    	$data['start_group'] = get('start_group');
-			$data['end_group'] = get('end_group');
+				$data['end_group'] = get('end_group');
 			
 	    	if(method_post()){
 	    		$id_user = $this->getSession('id_user');
@@ -72,7 +72,7 @@
 			$data['error'] = $this->hasSession('error') ? $this->getSession('error') : ''; $this->rmSession('error');
 		
 
- 	    	$this->view('purchase/list',$data);
+			$this->view('purchase/list',$data);
 		}
 		public function ajax() {
 			$post = post();

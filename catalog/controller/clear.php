@@ -17,8 +17,21 @@
 
             $config = $this->model('config');
             $config_barcode = $config->getBarcodes();
-            $data['group_start'] = $config_barcode[0]['group'];
-            $data['group_end'] = $config_barcode[count($config_barcode)-1]['group'];
+
+            $start = null;
+            $max = null;
+            foreach ($config_barcode as $value) {
+                if ($value['group'] < $start || $start == null) {
+                    $start = $value['group'];
+                }
+                if ($value['group'] > $end) {
+                    $end = $value['group'];
+                }
+            }
+
+
+            $data['group_start'] = $start;
+            $data['group_end'] = $end;
 
             $data['success'] = $this->hasSession('success') ? $this->getSession('success') : ''; $this->rmSession('success');
             $data['error'] = $this->hasSession('error') ? $this->getSession('error') : ''; $this->rmSession('error');

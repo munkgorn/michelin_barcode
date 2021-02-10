@@ -69,6 +69,7 @@
 					<!-- <button type="button" class="btn btn-outline-info " data-toggle="modal" data-target="#ModalSize" <?php echo $hasValidated ? 'disabled="disabled"' : '';?>><i class="fas fa-plus-circle"></i> Add Menual Size</button> -->
 				</div>
 				<div class="col-6 text-right">
+					<a href="index.php?route=association/freegroup" class="btn btn-ouline-secondary" target="new">Free Group</a>
 					<button type="submit"  class="btn btn-outline-primary "><i class="fas fa-check-double"></i> Validate Check</button>
 				</div>
 			</div>

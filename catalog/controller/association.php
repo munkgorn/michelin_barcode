@@ -597,6 +597,13 @@ class AssociationController extends Controller
         $this->redirect('association&date_wk=' . post('date_wk'));
     }
 
+    public function FreeGroup() {
+        $data = array();
+        $json = $this->jsonFreeGroup(false);
+        $str = json_decode($json);
+        $data['list'] = json_decode($str[0]);
+        $this->view('association/freegroup', $data);
+    }
     // JSON FILE
     public function jsonFreeGroup($header = true)
     {
