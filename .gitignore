@@ -21,3 +21,6 @@ Thumbs.db
 
 uploads/*.json
 log/*.txt
+
+assets/.DS_Store
+Archive.zip

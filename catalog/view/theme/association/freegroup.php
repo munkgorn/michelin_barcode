@@ -62,6 +62,10 @@ $(document).ready(function () {
     }
     return x1 + x2;
   }
+	function pad (str, max) {
+		str = str.toString();
+		return str.length < max ? pad("0" + str, max) : str;
+	}
   $.ajax({
     type: "POST",
     url: "index.php?route=association/jsonFreeGroup",
@@ -74,7 +78,7 @@ $(document).ready(function () {
       let html = '';
       $.each(json, function (indexInArray, valueOfElement) { 
          html += "<tr>";
-         html += "<td class='text-center'>"+valueOfElement.group+"</td>";
+         html += "<td class='text-center'>"+pad(valueOfElement.group,3)+"</td>";
          html += "<td class='text-center'>"+addCommas(valueOfElement.qty)+"</td>";
          html += "</tr>";
       });
