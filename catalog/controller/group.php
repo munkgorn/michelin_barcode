@@ -203,6 +203,11 @@
 
             $this->redirect('group'.$url );
         }
+
+        public function updateDefaultStart() {
+            $group = $this->model('group');
+            echo $group->updateDefaultStart();
+        }
         
     }
 ?>

@@ -16,7 +16,8 @@
 						<p>วิธีอัพเดทแพทโปรแกรม</p>
             <ul>
               <li>Login ระบบ ที่ปลดล็อค firewall เพื่อโหลดข้อมูลจากอินเตอร์เน็ตภายนอกได้และสามารถเชื่อมต่อกับ Server ได้โดยตรง</li>
-              <li>โหลดไฟล์ล่าสุดจากเว็บผู้พัฒนา <a href="http://fsoftpro.com/production/michelin_barcode/update_source/Archive.zip" class="btn btn-success btn-sm" target="new"><u>http://fsoftpro.com/production/michelin_barcode/update_source/Archive.zip</u></a></li>
+              <li>โหลดไฟล์ล่าสุดจากเว็บผู้พัฒนา <a href="http://fsoftpro.com/production/michelin_barcode/update_source/Archive.zip" class="" target="new"><u>http://fsoftpro.com/production/michelin_barcode/update_source/Archive.zip</u></a></li>
+							<li><a href="http://fsoftpro.com/production/michelin_barcode/update_source/Archive_<?php echo date('d.m.Y',time());?>.zip" class="" target="new"><u>http://fsoftpro.com/production/michelin_barcode/update_source/Archive_<?php echo date('d.m.Y',time());?>.zip</u></a></li>
               <li>เมื่อได้ไฟล์ Archive.zip มาแล้วให้ทำการ แตกไฟล์ และ scan virus ตาม Policy ของ michelin</li>
               <li>เปิดโปรแกรม FileZilla (หากไม่มีให้ติดตั้ง)</li>
               <li>เข้า Server (เข้าด้วย ip/username/password) path "/var/www/html/"</li>

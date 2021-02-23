@@ -30,8 +30,8 @@
 						<table class="table table-bordered table-hover" id="makeEditable">
 							<thead>
 								<tr>
-									<th class="text-center">Free Group</th>
-									<th class="text-center">Qty</th>
+									<th class="text-center" width="50%">Free Group</th>
+									<th class="text-center" width="50%">Qty</th>
 								</tr>
 							</thead>
 							<tbody>

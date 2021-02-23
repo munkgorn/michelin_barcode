@@ -79,7 +79,7 @@
 						</a>
 						<ul class="nav-second-level" aria-expanded="false">
 							<li>
-								<a href="<?php echo route('purchase'); ?>" class="<?php echo $_GET['route'] == 'purchase' ? 'active' : ''; ?>">
+								<a href="<?php echo route('purchase'); ?>" onclick="return confirm('หน้านี้มีการโหลดข้อมูลนาน ยืนยันการเข้าสู่หน้านี้?')" class="<?php echo $_GET['route'] == 'purchase' ? 'active' : ''; ?>">
 									<i class="ti-control-record"></i>New Barcode Ordering<br>สั่งซื้อบาร์โค้ดสำหรับออเดอร์ถัดไป
 								</a>
 							</li>

@@ -114,7 +114,7 @@
 							<td class="text-center"><?php echo sprintf('%03d',$val['group_code']); ?></td>
 							<td class="text-center">
 							<?php 
-							$start = $val['start'] - $val['remaining_qty'];
+							$start = (int)$val['start'] - (int)$val['remaining_qty'];
 							if ($start<$val['default_start']) {
 								$num1 = $val['start'] - $val['default_start'];
 								$num2 = $val['default_end'] - ($val['remaining_qty'] - $num1);

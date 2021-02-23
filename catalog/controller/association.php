@@ -16,6 +16,11 @@ class AssociationController extends Controller
         $data = array();
         $association = $this->model('association');
 
+        $config = $this->model('config');
+        $config_barcode = $config->getBarcodes();
+        // $data['link_freegroup'] = route('loading/rangeall','&round=1&status=0&flag=0&group='.$config_barcode[0]['group'].'&max='.$config_barcode[count($config_barcode)-1]['group'].'&redirect=association/freegroup');
+        $data['link_freegroup'] = route('association/freegroup');
+
         $data['date_wk'] = get('date_wk');
         $data['listDateWK'] = $association->getDateWK();
 
@@ -35,6 +40,7 @@ class AssociationController extends Controller
         $this->rmSession('success');
         $data['error'] = $this->hasSession('error') ? $this->getSession('error') : '';
         $this->rmSession('error');
+        
 
         $data['export_excel'] = route('export/association&date=' . $data['date_wk']);
         $data['action_import'] = route('association/import');
@@ -480,12 +486,13 @@ class AssociationController extends Controller
                 }
             }
 
-            $this->model('config')->setConfig('load_freegroup', 1);
-            $this->model('config')->setConfig('load_year', 1);
-            $this->model('config')->setConfig('load_barcode', 1);
             // $this->model('config')->setConfig('load_freegroup', 1);
-            $this->setSession('redirect','association&date_wk=' . $date_wk);
-            $this->redirect('loading');
+            // $this->model('config')->setConfig('load_year', 1);
+            // $this->model('config')->setConfig('load_barcode', 1);
+            // $this->model('config')->setConfig('load_freegroup', 1);
+            // $this->setSession('redirect','association&date_wk=' . $date_wk);
+            // $this->redirect('loading');
+            $this->redirect('association&date_wk=' . $date_wk);
             
             // $this->redirect('association&date_wk=' . $date_wk);
         } else {
@@ -599,16 +606,17 @@ class AssociationController extends Controller
 
     public function FreeGroup() {
         $data = array();
-        $json = $this->jsonFreeGroup(false);
+        // $this->generateJsonFreeGroup();
+        $json = $this->jsonFreeGroup(false,true);
         $str = json_decode($json);
         $data['list'] = json_decode($str[0]);
         $this->view('association/freegroup', $data);
     }
     // JSON FILE
-    public function jsonFreeGroup($header = true)
+    public function jsonFreeGroup($header = true, $loadagain=false)
     {
         $json = array();
-        if (!file_exists(DOCUMENT_ROOT . 'uploads/freegroup.json')) {
+        if (!file_exists(DOCUMENT_ROOT . 'uploads/freegroup.json')||$loadagain==true) {
             $this->generateJsonFreeGroup();
         }
         $file_handle = fopen(DOCUMENT_ROOT . 'uploads/freegroup.json', "r");

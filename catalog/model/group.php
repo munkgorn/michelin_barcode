@@ -120,5 +120,10 @@
             }
         }
 
+        public function updateDefaultStart() {
+            $sql = 'UPDATE mb_master_group SET default_start = concat(group_code,"00000"), default_end = concat(group_code,"99999"), default_range = 10000;';
+            return $this->query($sql);
+        }
+
 	}
 ?>

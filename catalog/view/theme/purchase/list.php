@@ -8,6 +8,7 @@
 		<div class="card-body bootstrap-select-1">
 			<form action="<?php echo $action; ?>" method="GET">
 				<input type="hidden" name="route" value="purchase">
+				<input type="hidden" name="loading" value="1">
 				<div class="row">
 					<div class="col-2">
 						<label class="mb-3">Find start group</label>

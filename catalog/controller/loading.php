@@ -260,7 +260,7 @@ class LoadingController extends Controller
         $config = $this->model('config');
         $config->setConfig('load_freegroup', 1);
         $config->setConfig('load_year', 1);
-        $config->setConfig('load_barcode', 1);
+        // $config->setConfig('load_barcode', 1);
         $this->setSession('redirect', 'loading');
 
         $this->view('loading/rangeall', $data);

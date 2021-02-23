@@ -82,9 +82,9 @@
 			
 			$config = $this->model('config');
 			$config->setConfig('load_freegroup', 1);
-			$config->setConfig('load_year', 1);
-			$config->setConfig('load_barcode', 1);
-			$config->setConfig('load_date', 1);
+			// $config->setConfig('load_year', 1);
+			// $config->setConfig('load_barcode', 1);
+			// $config->setConfig('load_date', 1);
 
 			$json = array();
 			$json['status'] = $result;
@@ -319,7 +319,8 @@
 				if (count($data['group'])>0) {
 					$this->setSession('group_range', $data['group']);
 					
-					redirect('loading/rangeall&round=1&status=1&flag=0&group='.$data['group'][0].'&max='.$data['group'][count($data['group'])-1].'&redirect=loading');
+					// redirect('loading/rangeall&round=1&status=1&flag=0&group='.$data['group'][0].'&max='.$data['group'][count($data['group'])-1].'&redirect=loading');
+					redirect('loading/rangeall&round=1&status=1&flag=0&group='.$data['group'][0].'&max='.$data['group'][count($data['group'])-1].'&redirect=barcode');
 				}
 			} else {
 
@@ -376,7 +377,7 @@
 			$config = $this->model('config');
 			$config->setConfig('load_freegroup', 1);
 			$config->setConfig('load_year', 1);
-			$config->setConfig('load_barcode', 1);
+			// $config->setConfig('load_barcode', 1);
 			// $config->setConfig('load_date', 1);
 
 			// return $returnfilename;

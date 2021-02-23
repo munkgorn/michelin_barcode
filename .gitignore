@@ -1,17 +1,8 @@
-
-
-
-# Logs and databases #
-######################
+require/config.php
+.DS_Store
 *.log
 *.sql
 *.sqlite
-
-# OS generated files #
-######################
-.DS_Store
-*/.DS_Store
-**/*.DS_Store
 .DS_Store?
 ._*
 .Spotlight-V100

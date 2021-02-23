@@ -13,7 +13,6 @@ class ReportController extends Controller
  
     public function index()
     {
-
         $data = array();
 
         $data['title'] = "Report remaining stock barcode";

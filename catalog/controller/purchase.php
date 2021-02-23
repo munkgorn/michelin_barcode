@@ -14,6 +14,16 @@
 				$config = $this->model('config');
 	    	$data['start_group'] = get('start_group');
 				$data['end_group'] = get('end_group');
+
+				$loading = get('loading');
+
+				if (!isset($_GET['loading'])) {
+					$this->model('config')->setConfig('load_year', 1);
+					$this->model('config')->setConfig('load_barcode', 1);
+					$this->setSession('redirect','purchase&loading=1');
+					$this->redirect('loading');
+					exit();
+				}
 			
 	    	if(method_post()){
 	    		$id_user = $this->getSession('id_user');
@@ -24,12 +34,21 @@
 	    		);
 	    		$barcode->updateGroupCreateBarcode($data_post);
 	    		$data['start_group'] 	= post('start_group');
-				$data['end_group'] 		= post('end_group');
+					$data['end_group'] 		= post('end_group');
 				$this->setSession('success', 'Purchase order successful');
-	    		$this->redirect('purchase&start_group='.$data['start_group'].'&end_group='.$data['end_group'].'&validated=true');
+					
+
+	    		// $this->redirect('purchase&start_group='.$data['start_group'].'&end_group='.$data['end_group'].'&validated=true');
+
+					$this->model('config')->setConfig('load_year', 1);
+					$this->model('config')->setConfig('load_barcode', 1);
+					$this->setSession('redirect','purchase&loading=1&start_group='.$data['start_group'].'&end_group='.$data['end_group'].'&validated=true');
+					$this->redirect('loading');
 			}
 
 			$data['validated'] = isset($_GET['validated']) ? true : false;
+
+
 			
 	    	$data['result'] = get('result');
 	    	$data['title'] = "List Purchase";
@@ -44,8 +63,8 @@
 			$data['result_group'] = array();
 			$data['result_group'] = $config->getBarcodes();
 			$data['end_group'] = isset($_GET['end_group']) ? get('end_group') : end($data['result_group'])['group'];
-	    	$data['action'] = route('purchase');
-			$data['action_import_excel'] = route('listGroup');
+	    	$data['action'] = route('purchase','&loading=1');
+			// $data['action_import_excel'] = route('listGroup');
 			$data['export_excel'] = route('export/pattern&start_group='.$data['start_group'].'&end_group='.$data['end_group']);
 			$data['action_ajax'] = route('purchase/ajax&start_group='.$data['start_group'].'&end_group='.$data['end_group']);
 			$data['date'] = (get('date')?get('date'):'');

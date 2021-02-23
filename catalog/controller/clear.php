@@ -44,7 +44,7 @@
                 'load_freegroup',
                 'load_year',
                 'load_barcode',
-                'load_date',
+                // 'load_date',
             );
             $modelconfig = $this->model('config');
             $listconfig = $_POST['listconfig'];
@@ -130,6 +130,12 @@
             // $this->json($text);
             $this->setSession('success', '<b>Success remove file</b><br>'.implode('', $text));
             redirect('clear');
+        }
+
+
+        public function updateTableBarcodeWithGroupCode() {
+            $config = $this->model('config');
+            $config->updateTableBarcodeWithGroupCode();
         }
     }
 ?>

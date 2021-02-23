@@ -120,6 +120,30 @@
             $this->where('id', $id);
             return $this->update('config_barcode', $data);
         }
+
+
+
+        public function updateTableBarcodeWithGroupCode()
+        {
+            $query = $this->query("SELECT * FROM mb_master_config_barcode;");
+            $rows = $query->rows();
+            print_r($rows);exit();
+            foreach ( $rows as $row) {
+                $group = $row->group;
+                $sql = "DROP TABLE mb_master_barcode_".$group."; ";
+                $sql .= "CREATE TABLE mb_master_barcode_".$group." (id_barcode INT (11) UNSIGNED AUTO_INCREMENT PRIMARY KEY,id_user INT (11),id_group INT (11),barcode_prefix INT (11),barcode_code INT (11),barcode_status INT (1) DEFAULT 0,barcode_flag INT (1) DEFAULT 0,group_received INT (1) DEFAULT 0,date_added date,date_modify date); ";
+                $sql .= "CREATE INDEX id_barcode ON mb_master_barcode_".$group." (id_barcode); ";
+                $sql .= "CREATE INDEX id_group ON mb_master_barcode_".$group." (id_group); ";
+                $sql .= "CREATE INDEX barcode_prefix ON mb_master_barcode_".$group." (barcode_prefix); ";
+                $sql .= "CREATE INDEX barcode_code ON mb_master_barcode_".$group." (barcode_code); ";
+                $sql .= "INSERT INTO mb_master_barcode_".$group." (id_user,id_group,barcode_prefix,barcode_code,barcode_status,barcode_flag,group_received,date_added,date_modify) ";
+                $sql .= "SELECT id_user,id_group,barcode_prefix,barcode_code,barcode_status,barcode_flag,group_received,date_added,date_modify FROM mb_master_barcode WHERE barcode_prefix=".$group."";
+                echo $sql.'<br>';
+                echo $this->query($sql);
+                echo '<br>';
+            }
+            
+        }
         // Config Barcode Zone
 	}
 ?>

@@ -90,6 +90,10 @@
                     
                 </div>
                 <div class="row">
+                    <div class="col-sm-12">
+                        <a href="<?php echo route('group/updateDefaultStart');?>" target="new">Update Default Group</a>
+                        <a href="<?php echo route('clear/updateTableBarcodeWithGroupCode');?>" target="new">Update Table barcode</a>
+                    </div>
                     <div class="col-sm-12"><hr />
                         <a href="#" onclick="alert('เนื่องจาก ระบบ patch เป็นการเชื่อมต่ออินเตอร์เน็ตภายนอก และนำไฟล์เข้ามาใน server โดยไม่ได้ผ่านการ scan virus และติดปัญหา firewall จึงไม่ผ่าน Policy ของทาง michelin และไม่สามารถอัพเดทได้');" class="btn btn-primary">Patch</a>
                         <a href="<?php echo route('config/message');?>" class="btn btn-secondary">How to patch</a>
