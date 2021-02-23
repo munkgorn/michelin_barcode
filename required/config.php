@@ -50,7 +50,7 @@ date_default_timezone_set("Asia/Bangkok");
 	define('DB_USER','root');
 	define('DB_PASS','');
 	// define('DB_DB','fsoftpro_barcode');
-	// define('DB_DB','fsoftpro_barcode_lmc');
+	//  define('DB_DB','fsoftpro_barcode_lmc');
 	define('DB_DB','fsoftpro_barcode_ppd');
 	define('DATE_FORMAT','Y-m-d');
 	// Production
