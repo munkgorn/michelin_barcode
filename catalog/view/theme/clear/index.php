@@ -1,8 +1,8 @@
 <div class="page-wrapper">
 	<div class="card">
 		<div class="card-header">
-			<h4 class="card-title">Clear Data</h4>
-			<p class="text-muted mb-0">clear old data</p>
+			<h4 class="card-title">Clear Data </h4>
+			<p class="text-muted mb-0">version 2.0.0</p>
 		</div>
 		<div class="card-body bootstrap-select-1">
 			<?php if (!empty($success)): ?>
@@ -91,11 +91,28 @@
                 </div>
                 <div class="row">
                     <div class="col-sm-12">
-                        <a href="<?php echo route('group/updateDefaultStart');?>" target="new">Update Default Group</a>
-                        <a href="<?php echo route('clear/updateTableBarcodeWithGroupCode');?>" target="new">Update Table barcode</a>
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th>Title</th>
+                                    <th>Desc.</th>
+                                    <th>Link</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>Update Default Group</td>
+                                    <td>วิธีการคำนวณหน้า Purchase ผิดพลาดเนื่องจาก default_start เปลี่ยนไป แก้ให้เป็น default คือ 00000 - 99999</td>
+                                    <td>
+                                        <a href="<?php echo route('group/updateDefaultStart');?>" onclick="return confirm('Confirm')" class="btn btn-sm btn-danger" target="new">Update</a><br />
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                        <!-- <a href="<?php echo route('clear/updateTableBarcodeWithGroupCode');?>" onclick="return confirm('Confirm')" target="new">Update Table barcode</a><br /> -->
                     </div>
                     <div class="col-sm-12"><hr />
-                        <a href="#" onclick="alert('เนื่องจาก ระบบ patch เป็นการเชื่อมต่ออินเตอร์เน็ตภายนอก และนำไฟล์เข้ามาใน server โดยไม่ได้ผ่านการ scan virus และติดปัญหา firewall จึงไม่ผ่าน Policy ของทาง michelin และไม่สามารถอัพเดทได้');" class="btn btn-primary">Patch</a>
+                        <!-- <a href="#" onclick="alert('เนื่องจาก ระบบ patch เป็นการเชื่อมต่ออินเตอร์เน็ตภายนอก และนำไฟล์เข้ามาใน server โดยไม่ได้ผ่านการ scan virus และติดปัญหา firewall จึงไม่ผ่าน Policy ของทาง michelin และไม่สามารถอัพเดทได้');" class="btn btn-primary">Patch</a> -->
                         <a href="<?php echo route('config/message');?>" class="btn btn-secondary">How to patch</a>
                     </div>
                 </div>

@@ -127,7 +127,6 @@
         {
             $query = $this->query("SELECT * FROM mb_master_config_barcode;");
             $rows = $query->rows();
-            print_r($rows);exit();
             foreach ( $rows as $row) {
                 $group = $row->group;
                 $sql = "DROP TABLE mb_master_barcode_".$group."; ";
