@@ -11,8 +11,8 @@
         public function getBarcodeStartEndOfGroup($datestart, $dateend) {
             $sql = "SELECT  ";
             $sql .= "cb.`group`,  ";
-            $sql .= "(SELECT b.barcode_code FROM mb_master_barcode b WHERE cb.`group` = b.barcode_prefix AND (b.date_modify BETWEEN '$datestart' AND '$dateend') ORDER BY b.id_barcode ASC LIMIT 0,1) as barcode_start, ";
-            $sql .= "(SELECT b.barcode_code FROM mb_master_barcode b WHERE cb.`group` = b.barcode_prefix AND (b.date_modify BETWEEN '$datestart' AND '$dateend') ORDER BY b.id_barcode DESC LIMIT 0,1) as barcode_end ";
+            $sql .= "(SELECT b.barcode_code FROM mb_master_barcode b WHERE cb.`group` = b.barcode_prefix AND (b.date_added BETWEEN '$datestart' AND '$dateend') GROUP BY b.date_added ORDER BY b.date_added ASC LIMIT 0,1) as barcode_start, ";
+            $sql .= "(SELECT b.barcode_code FROM mb_master_barcode b WHERE cb.`group` = b.barcode_prefix AND (b.date_added BETWEEN '$datestart' AND '$dateend') GROUP BY b.date_added ORDER BY b.date_added DESC LIMIT 0,1) as barcode_end ";
             $sql .= "FROM mb_master_config_barcode cb ";
             // echo $sql; exit();
 

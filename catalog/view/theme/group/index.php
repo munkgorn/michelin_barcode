@@ -132,7 +132,7 @@
 								<a href="<?php echo $link_changestatus."&id=$val[id_group]";?>" class="btn btn-outline-info btn-sm">Waiting <i class="fas fa-chevron-right"></i> Receive</a>
 								<?php endif; ?>
 							</td>
-							<td><?php echo $val['date_modify']; ?></td>
+							<td><?php echo $val['date_added']; ?></td>
 							<td><?php echo $val['username']; ?></td>
 							<td class="text-center">
                                 <a href="<?php echo $val['barcode_use']==0?$link_del.'&id='.$val['id_group']:'#';?>" class="btn btn-danger btn-sm <?php echo $val['barcode_use']==1?'disabled':'';?>" onclick="return confirm('Are you sure delete this purchase group?')"><i class="fas fa-trash-alt"></i></a>

@@ -243,9 +243,9 @@ class ExportController extends Controller {
         $datas = $group->getGroups($filter);
         foreach ($datas as $val) {
             $excel[] = array(
-                $val['group_code'],
-                $val['start']-$val['remaining_qty'],
-                $val['start']-1,
+                '="'.sprintf('%03d', $val['group_code']).'"',
+                '="'.sprintf('%08d', $val['start']-$val['remaining_qty']).'"',
+                '="'.sprintf('%08d', $val['start']-1).'"',
                 $val['remaining_qty'],
                 ($val['barcode_use']==1?'Received':'Waiting'),
                 $val['date_added'],

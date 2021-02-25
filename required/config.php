@@ -4,7 +4,7 @@ ini_set('max_input_vars', 10000);
 set_time_limit(0);
 date_default_timezone_set("Asia/Bangkok");
 
-	  define('DEBUG_MODE',true);
+	define('DEBUG_MODE',true);
 
 	ini_set('upload_max_filesize', '10M');
 	  
@@ -45,13 +45,16 @@ date_default_timezone_set("Asia/Bangkok");
 	// Config DB localhost
 	define('PREFIX', 'mb_master_');
 	define('DB_HOST','localhost');
-	// define('DB_USER','fsoftpro_barcode');
-	// define('DB_PASS','wSNZztqzI');
-	define('DB_USER','root');
-	define('DB_PASS','');
+
+	
+	define('DB_USER','fsoftpro_barcode');
+	define('DB_PASS','wSNZztqzI');
+
+	// define('DB_USER','root');
+	// define('DB_PASS','');
 	// define('DB_DB','fsoftpro_barcode');
 	//  define('DB_DB','fsoftpro_barcode_lmc');
-	define('DB_DB','fsoftpro_barcode_ppd');
+	// define('DB_DB','fsoftpro_barcode_ppd');
 	define('DATE_FORMAT','Y-m-d');
 	// Production
 	// define('PREFIX', 'dh_');

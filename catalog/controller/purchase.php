@@ -35,15 +35,17 @@
 	    		$barcode->updateGroupCreateBarcode($data_post);
 	    		$data['start_group'] 	= post('start_group');
 					$data['end_group'] 		= post('end_group');
-				$this->setSession('success', 'Purchase order successful');
+					$this->setSession('success', 'Purchase order successful');
 					
 
 	    		// $this->redirect('purchase&start_group='.$data['start_group'].'&end_group='.$data['end_group'].'&validated=true');
 
-					$this->model('config')->setConfig('load_year', 1);
-					$this->model('config')->setConfig('load_barcode', 1);
-					$this->setSession('redirect','purchase&loading=1&start_group='.$data['start_group'].'&end_group='.$data['end_group'].'&validated=true');
-					$this->redirect('loading');
+					// $this->model('config')->setConfig('load_year', 1);
+					// $this->model('config')->setConfig('load_barcode', 1);
+					// $this->setSession('redirect','purchase&loading=1&start_group='.$data['start_group'].'&end_group='.$data['end_group'].'&validated=true');
+					// $this->redirect('loading');
+
+					$this->redirect('purchase&loading=1&start_group='.$data['start_group'].'&end_group='.$data['end_group'].'&validated=true');
 			}
 
 			$data['validated'] = isset($_GET['validated']) ? true : false;

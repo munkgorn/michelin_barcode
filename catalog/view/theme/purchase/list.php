@@ -54,7 +54,7 @@
 					<a href="<?php echo $export_excel; ?>" target="new" class="btn btn-outline-success <?php echo !$validated?'disabled':''?>" <?php echo !$validated?'disabled="disabled"':''?>><i class="fas fa-file-excel"></i> Export Excel</a>
 				</div>
 				<div class="col-6 text-right">
-					<button type="submit" class="btn btn-outline-primary"><i class="fas fa-check-double"></i> Validated</button>
+					<button type="submit" class="btn btn-outline-primary" id="btnsubmitvalidate"><i class="fas fa-check-double"></i> Validated</button>
 				</div>
 			</div>
 		</div>
@@ -179,6 +179,10 @@ $(document).ready(function(){
 $(document).ready(function () {
 	
 	init();
+
+	$('#btnsubmitvalidate').click(function(e) {
+		$(this).html('loading').addClass('disabled').attr('disabled','disabled');
+	});
 	
 	$(document).on('keyup','.qty_group',function(e){
 		var ele = $(this);
