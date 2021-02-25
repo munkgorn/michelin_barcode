@@ -8,9 +8,9 @@ date_default_timezone_set("Asia/Bangkok");
 	// System.Module.Fixbug +1
 	define('VERSION', '1.1.1'); 
 	 
-	// define('ENVIRONMENT', 'production_lmc');
+	define('ENVIRONMENT', 'production_lmc');
 	// define('ENVIRONMENT', 'production_ppd');
-	define('ENVIRONMENT', 'developer');
+	// define('ENVIRONMENT', 'developer');
 
 	define('DEBUG_MODE', false);
 
