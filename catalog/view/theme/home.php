@@ -19,7 +19,7 @@
 						<div class="card-body">
 							<ul class="nav-border nav nav-pills" role="tablist">
 								<li class="nav-item">
-									<a class="nav-link active font-weight-semibold" data-toggle="tab" href="#LogIn_Tab" role="tab">Log In</a>
+									<a class="nav-link active font-weight-semibold" data-toggle="tab" href="#LogIn_Tab" role="tab">Sign In</a>
 								</li>
 							</ul>
 							<!-- Tab panes -->
