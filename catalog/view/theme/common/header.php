@@ -187,6 +187,7 @@
 							<i data-feather="power" class="align-self-center menu-icon"></i>
 							<span>Logout</span>
 						</a>
+						<small class="mt-2">v<?php echo VERSION;?></small>
 					</li>
 
 				</ul>
