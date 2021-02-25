@@ -5,7 +5,7 @@ ini_set('upload_max_filesize', '10M');
 set_time_limit(0);
 date_default_timezone_set("Asia/Bangkok");
 
-	
+	 
 	// define('ENVIRONMENT', 'production_lmc');
 	// define('ENVIRONMENT', 'production_ppd');
 	define('ENVIRONMENT', 'developer');
