@@ -7,8 +7,26 @@
 		<meta content="" name="description">
 		<meta content="" name="author">
 		<meta http-equiv="X-UA-Compatible" content="IE=edge">
+		
+		<link rel="apple-touch-icon" sizes="57x57" href="assets/michelin_icon/apple-icon-57x57.png">
+		<link rel="apple-touch-icon" sizes="60x60" href="assets/michelin_icon/apple-icon-60x60.png">
+		<link rel="apple-touch-icon" sizes="72x72" href="assets/michelin_icon/apple-icon-72x72.png">
+		<link rel="apple-touch-icon" sizes="76x76" href="assets/michelin_icon/apple-icon-76x76.png">
+		<link rel="apple-touch-icon" sizes="114x114" href="assets/michelin_icon/apple-icon-114x114.png">
+		<link rel="apple-touch-icon" sizes="120x120" href="assets/michelin_icon/apple-icon-120x120.png">
+		<link rel="apple-touch-icon" sizes="144x144" href="assets/michelin_icon/apple-icon-144x144.png">
+		<link rel="apple-touch-icon" sizes="152x152" href="assets/michelin_icon/apple-icon-152x152.png">
+		<link rel="apple-touch-icon" sizes="180x180" href="assets/michelin_icon/apple-icon-180x180.png">
+		<link rel="icon" type="image/png" sizes="192x192"  href="assets/michelin_icon/android-icon-192x192.png">
+		<link rel="icon" type="image/png" sizes="32x32" href="assets/michelin_icon/favicon-32x32.png">
+		<link rel="icon" type="image/png" sizes="96x96" href="assets/michelin_icon/favicon-96x96.png">
+		<link rel="icon" type="image/png" sizes="16x16" href="assets/michelin_icon/favicon-16x16.png">
+		<link rel="manifest" href="assets/michelin_icon/manifest.json">
+		<meta name="msapplication-TileColor" content="#ffffff">
+		<meta name="msapplication-TileImage" content="assets/michelin_icon/ms-icon-144x144.png">
+		<meta name="theme-color" content="#ffffff">
+		<link rel="shortcut icon" href="assets/michelin_icon/favicon.ico"/>
 
-        <link rel="shortcut icon" href="assets/images/favicon.ico">
 		<link rel="stylesheet" href="assets/css/bootstrap.min.css" />
 		<link rel="stylesheet" href="assets/css/jquery-ui.min.css" />
 		<link rel="stylesheet" href="assets/css/icons.min.css" />

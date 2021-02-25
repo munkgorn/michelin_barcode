@@ -1,28 +1,80 @@
 <?php
 ini_set("memory_limit", "-1");
 ini_set('max_input_vars', 10000);
+ini_set('upload_max_filesize', '10M');
 set_time_limit(0);
 date_default_timezone_set("Asia/Bangkok");
 
-	define('DEBUG_MODE',true);
-
-	ini_set('upload_max_filesize', '10M');
-	  
-	// ini_set('display_errors', 1);
-	// ini_set('display_startup_errors', 1);
-	// error_reporting(E_ALL);
-
-
-	ini_set('display_errors', 0);
-	ini_set('display_startup_errors', 0);
-	error_reporting(0);
 	
+	// define('ENVIRONMENT', 'production_lmc');
+	// define('ENVIRONMENT', 'production_ppd');
+	define('ENVIRONMENT', 'developer');
+
+	define('DEBUG_MODE', false);
+
+	
+	if (DEBUG_MODE) {
+		ini_set('display_errors', 1);
+		ini_set('display_startup_errors', 1);
+		error_reporting(E_ALL);
+	} else {
+		ini_set('display_errors', 0);
+		ini_set('display_startup_errors', 0);
+		error_reporting(0);
+	}
+
+
+	// Config DB localhost
+	define('PREFIX', 'mb_master_');
+	define('DB_HOST','localhost');
+	define('DB_DB','fsoftpro_barcode');
+	define('DB_DB','fsoftpro_barcode_lmc');
+	define('DB_DB','fsoftpro_barcode_ppd');
 
 	$base = str_replace('required', '', __DIR__);
-  define('MURL','http://localhost/michelin_barcode/');
-	// define('MURL','https://www.fsoftpro.com/dohung/');
+	if (ENVIRONMENT=='developer') {
+		define('SUBFOLDER','michelin_barcode/');
+		define('MURL','http://localhost/'.SUBFOLDER);
+		define('DOCUMENT_ROOT',$_SERVER['DOCUMENT_ROOT'].'/'.SUBFOLDER);
+
+		define('DB_USER','root');
+		define('DB_PASS','');
+
+	} else if (ENVIRONMENT=='production_lmc') {
+		define('SUBFOLDER','michelin_barcode/');
+		define('MURL','http://10.79.25.200/'.SUBFOLDER);
+		define('DOCUMENT_ROOT',$_SERVER['DOCUMENT_ROOT'].'/'.SUBFOLDER);
+		
+		define('DB_USER','root');
+		define('DB_PASS','');
+
+	} else if (ENVIRONMENT=='production_ppd') {
+		define('SUBFOLDER','michelin_barcode/');
+		define('MURL','http://10.79.25.101/'.SUBFOLDER);
+		define('DOCUMENT_ROOT',$_SERVER['DOCUMENT_ROOT'].'/'.SUBFOLDER);
+
+		define('DB_USER','root');
+		define('DB_PASS','');
+	}
+
+
+	
+
+	
+	// define('DB_USER','fsoftpro_barcode');
+	// define('DB_PASS','wSNZztqzI');
+
+	define('DATE_FORMAT','Y-m-d');
+	// Production
+	// define('PREFIX', 'dh_');
+	// define('DB_HOST','localhost');
+	// define('DB_USER','fsoftpro_dhpro');
+	// define('DB_PASS','29bGG94RSg');
+	// define('DB_DB','fsoftpro_dhpro');
+	
+	
 	define('SOURCE_UPDATE', 'https://www.fsoftpro.com/production/michelin_barcode/update_source/Archive.zip');
-	define('DOCUMENT_ROOT',$_SERVER['DOCUMENT_ROOT'].'/michelin_barcode/');
+	
 	define('ROW_IN_DOC','10');
 	define('BYTE_PER_KB','1000');
 	 
@@ -42,26 +94,6 @@ date_default_timezone_set("Asia/Bangkok");
 	define('DB','mysqli');
 	define('KEY', 'appcom@fsp88');
 	
-	// Config DB localhost
-	define('PREFIX', 'mb_master_');
-	define('DB_HOST','localhost');
-
-	
-	define('DB_USER','fsoftpro_barcode');
-	define('DB_PASS','wSNZztqzI');
-
-	// define('DB_USER','root');
-	// define('DB_PASS','');
-	// define('DB_DB','fsoftpro_barcode');
-	//  define('DB_DB','fsoftpro_barcode_lmc');
-	// define('DB_DB','fsoftpro_barcode_ppd');
-	define('DATE_FORMAT','Y-m-d');
-	// Production
-	// define('PREFIX', 'dh_');
-	// define('DB_HOST','localhost');
-	// define('DB_USER','fsoftpro_dhpro');
-	// define('DB_PASS','29bGG94RSg');
-	// define('DB_DB','fsoftpro_dhpro');
 
 	// System config 
 	define('DEFAULT_LANGUAGE','1');
