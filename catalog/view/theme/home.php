@@ -62,7 +62,7 @@
 			</div>
 			<!--end card-body-->
 			<div class="card-body bg-light-alt text-center">
-				<span class="text-muted d-none d-sm-inline-block">Power by Friendlysoftpro © 2020 - v<?php echo VERSION;?></span>
+				<span class="text-muted d-none d-sm-inline-block">Power by Friendlysoftpro © 2020<br>v<?php echo VERSION;?></span>
 			</div>
 		</div>
 		<!--end card-->
