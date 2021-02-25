@@ -30,8 +30,8 @@ date_default_timezone_set("Asia/Bangkok");
 	define('PREFIX', 'mb_master_');
 	define('DB_HOST','localhost');
 	define('DB_DB','fsoftpro_barcode');
-	define('DB_DB','fsoftpro_barcode_lmc');
-	define('DB_DB','fsoftpro_barcode_ppd');
+	// define('DB_DB','fsoftpro_barcode_lmc');
+	// define('DB_DB','fsoftpro_barcode_ppd');
 
 	$base = str_replace('required', '', __DIR__);
 	if (ENVIRONMENT=='developer') {

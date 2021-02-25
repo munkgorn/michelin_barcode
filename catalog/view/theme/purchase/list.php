@@ -46,12 +46,12 @@
 	</div>
 	<?php if(!empty($start_group)){ ?>
 	<div class="card">
-	<form action="<?php echo $action; ?>" method="POST">
+	<form action="<?php echo $action; ?>" method="POST" id="formvalidate">
 		<div class="card-header">
 			<div class="row">
 				<div class="col-12"><h4>Today : <?php echo date('Y-m-d'); ?></h4></div>
 				<div class="col-6">
-					<a href="<?php echo $export_excel; ?>" target="new" class="btn btn-outline-success <?php echo !$validated?'disabled':''?>" <?php echo !$validated?'disabled="disabled"':''?>><i class="fas fa-file-excel"></i> Export Excel</a>
+					<a href="<?php echo $export_excel; ?>" target="new" class="btn btn-outline-success <?php echo !$validated?'disabled':''?>" <?php echo !$validated?'disabled="disabled"':''?>><i class="fas fa-file-excel"></i> Export Excel <?php echo !$validated?'(Please validated)':''?></a>
 				</div>
 				<div class="col-6 text-right">
 					<button type="submit" class="btn btn-outline-primary" id="btnsubmitvalidate"><i class="fas fa-check-double"></i> Validated</button>
@@ -76,8 +76,8 @@
 									<tr>
 										<th class="text-center" rowspan="2">Group</th>
 										<th class="text-center" colspan="3">Next Order</th>
-										<th class="text-center"><span id="default_start_year"></span></th>
-										<th class="text-center"><span id="default_end_year"></span></th>
+										<th class="text-center"><span id="default_start_year"><i class="fas fa-spinner fa-spin"></i></span></th>
+										<th class="text-center"><span id="default_end_year"><i class="fas fa-spinner fa-spin"></i></span></th>
 										<th class="text-center" colspan="3">Prefix</th>
 										<th rowspan="2">Status</th>
 									</tr>
@@ -102,7 +102,8 @@
 											<input 
 												type="text" 
 												class="form-control qty_group <?php echo $val['status_id']==0&&$val['remaining_qty']>0?'is-invalid':'';?>" 
-												placeholder="QTY." 
+												placeholder="Loading..." 
+												disabled
 												data-id="<?php echo $val['group_code'];?>"
 												start="<?php echo $val['barcode_start'];?>"
 												end="<?php echo $val['barcode_end'];?>" 
@@ -113,14 +114,17 @@
 												value="<?php echo $val['status_id']==0&&$val['remaining_qty']>0 ? $val['remaining_qty'] : '';?>"
 												<?php echo $val['status_id']==0&&$val['remaining_qty']>0 ? 'disabled="disabled"' : '';?>
 												autocomplete="off"
+
 											>
 										</td>
 										<td class="text-center">
-										<span class="load_default_start" data-group="<?php echo sprintf('%03d', $val['group_code']);?>"></span>
+										<button type="button" class="btn load-start-and-end load-start" data-group="<?php echo sprintf('%03d', $val['group_code']);?>"><i class="fas fa-spinner fa-spin"></i></button>
+										<!-- <span class="load_default_start" data-group="<?php echo sprintf('%03d', $val['group_code']);?>">View</span> -->
 										<!-- <?php echo !empty($val['barcode_start_year']) ? sprintf('%08d', $val['barcode_start_year']) : '';?> -->
 										</td>
 										<td class="text-center">
-										<span class="load_default_end" data-group="<?php echo sprintf('%03d', $val['group_code']);?>"></span>
+										<button type="button" class="btn load-start-and-end load-end" data-group="<?php echo sprintf('%03d', $val['group_code']);?>"><i class="fas fa-spinner fa-spin"></i></button>
+										<!-- <span class="load_default_end" data-group="<?php echo sprintf('%03d', $val['group_code']);?>">View</span> -->
 										<!-- <?php echo !empty($val['barcode_end_year']) ? sprintf('%08d', $val['barcode_end_year']) : '';?> -->
 										</td>
 										<td class="text-center">
@@ -181,7 +185,13 @@ $(document).ready(function () {
 	init();
 
 	$('#btnsubmitvalidate').click(function(e) {
-		$(this).html('loading').addClass('disabled').attr('disabled','disabled');
+		$(this).html('<i class="fas fa-spinner fa-spin"></i> loading').addClass('disabled').attr('disabled','disabled');
+		$('#formvalidate').submit();
+	});
+
+	$('.load-start-and-end').click(function(e) {
+		let thisgroup = $(this).data('group');
+		loadSomeBarcode(thisgroup);
 	});
 	
 	$(document).on('keyup','.qty_group',function(e){
@@ -273,13 +283,14 @@ let init = () => {
 	$('.select2start, .select2end').select2({
 		placeholder: "Select group barcode"
 	});
+	$('.load-start,.load-end').html('<i class="fas fa-eye"></i>');
+	$('.qty_group').removeAttr('disabled').attr('placeholder','QTY');
 	loadYear();
-	loadBarcode();
+	// loadBarcode();
 }
 let loadYear = () => {
-	console.log('loading year...');
-	$('#default_start_year').html(loading);
-	$('#default_end_year').html(loading);
+	$('#default_start_year').html('<i class="fas fa-spinner fa-spin"></i>');
+	$('#default_end_year').html('<i class="fas fa-spinner fa-spin"></i>');
 	$.ajax({
 		type: "GET",
 		url: "index.php?route=purchase/ajaxDefaultDate",
@@ -287,7 +298,9 @@ let loadYear = () => {
 		async:true,
 		success: function (response) {
 			console.log("Load year success");
-			const obj = jQuery.parseJSON(response);
+			// console.log(response);
+			let obj = response;
+			// const obj = jQuery.parseJSON(response);
 			$('#default_start_year').html(obj.start);
 			$('#default_end_year').html(obj.end);
 		}
@@ -314,6 +327,37 @@ let loadBarcode = () => {
 				$('.load_default_start[data-group='+pad(index,3)+']').html(value.start);
 				$('.load_default_end[data-group='+pad(index,3)+']').html(value.end);
 			});
+		}
+	});
+}
+let loadSomeBarcode = (groupcode) => {
+	$('.load-start-and-end.load-start[data-group="'+groupcode+'"]').html('<i class="fas fa-spinner fa-spin"></i>');
+	$('.load-start-and-end.load-end[data-group="'+groupcode+'"]').html('<i class="fas fa-spinner fa-spin"></i>');
+	$.ajax({
+		type: "POST",
+		url: "index.php?route=purchase/ajaxSomeGroupDefault",
+		data: {group_code:groupcode},
+		// dataType: "json",
+		success: function (res) {
+			console.log("Load group barcode "+groupcode+" success");
+			// const obj = JSON.parseJSON(res);
+			let obj = res;
+			if (obj.barcode_start!=null) {
+				$('.load-start-and-end.load-start[data-group="'+groupcode+'"]').html(pad(obj.barcode_start,8));
+			} else {
+				$('.load-start-and-end.load-start[data-group="'+groupcode+'"]').html('-');
+			}
+			if (obj.barcode_end!=null) {
+				$('.load-start-and-end.load-end[data-group="'+groupcode+'"]').html(pad(obj.barcode_end,8));
+			} else {
+				$('.load-start-and-end.load-end[data-group="'+groupcode+'"]').html('-');
+			}
+			// $('.load_default_start').html('');
+			// $('.load_default_end').html('');
+			// $.each(obj, function(index, value){
+			// 	$('.load_default_start[data-group='+pad(index,3)+']').html(value.start);
+			// 	$('.load_default_end[data-group='+pad(index,3)+']').html(value.end);
+			// });
 		}
 	});
 }

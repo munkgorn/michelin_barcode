@@ -51,12 +51,12 @@ class LoadingController extends Controller
                 'url' => 'index.php?route=purchase/generateJsonDefaultYear',
             );
         }
-        if ($config->getConfig('load_barcode')==1) {
-            $data['loading']['barcode'] = array(
-                'name' => 'Default group barcode all group start and end in 3 year',
-                'url' => 'index.php?route=purchase/generateJsonDefaultBarcode',
-            );
-        }   
+        // if ($config->getConfig('load_barcode')==1) {
+        //     $data['loading']['barcode'] = array(
+        //         'name' => 'Default group barcode all group start and end in 3 year',
+        //         'url' => 'index.php?route=purchase/generateJsonDefaultBarcode',
+        //     );
+        // }   
         // if ($config->getConfig('load_date')==1) {
         //     $data['loading']['date'] = array(
         //         'name' => 'Default Group Date',

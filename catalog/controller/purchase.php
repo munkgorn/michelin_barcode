@@ -18,11 +18,11 @@
 				$loading = get('loading');
 
 				if (!isset($_GET['loading'])) {
-					$this->model('config')->setConfig('load_year', 1);
-					$this->model('config')->setConfig('load_barcode', 1);
-					$this->setSession('redirect','purchase&loading=1');
-					$this->redirect('loading');
-					exit();
+					// $this->model('config')->setConfig('load_year', 1);
+					// $this->model('config')->setConfig('load_barcode', 1);
+					// $this->setSession('redirect','purchase&loading=1');
+					// $this->redirect('loading');
+					// exit();
 				}
 			
 	    	if(method_post()){
@@ -83,7 +83,7 @@
 			if ($mapping!=false) {
 				foreach ($mapping as $key => $value) {
 					$barcode_use = $group->getGroupStatus($value['group_code']);
-					$value['status'] = $barcode_use==="1" ? '' : ($barcode_use==="0" ? '<span class="text-danger">Waiting</span>' : '');
+					$value['status'] = $barcode_use==="1" ? '' : ($barcode_use==="0"&&$value->remaining_qty>0 ? '<span class="text-danger">Waiting</span>' : '');
 					$value['status_id'] = $barcode_use;
 					$data['getMapping'][] = $value;
 				}
@@ -151,8 +151,21 @@
 
 		public function ajaxDefaultDate() {
 			$data = array();
-			$data = $this->jsonDefaultYear();
+
+			$purchase      = $this->model('purchase');
+			$config        = $this->model('config');
+			$dayofyear     = $config->getConfig('config_date_year');
+			$beforeusesize = $config->getConfig('config_date_size');
+
+			$year          = $purchase->getStartEndDateOfYearAgo(date('Y-m-d', strtotime('-'.$dayofyear.'day')), date('Y-m-d', strtotime('-'.$beforeusesize.'day')));
+			$data['start'] = $year['date_start'];
+			$data['end']   = $year['date_end'];
+
 			$this->json($data);
+
+			// $data = array();
+			// $data = $this->jsonDefaultYear();
+			// $this->json($data);
 		}
 		public function jsonDefaultYear($header=true) {
 			$json = array();
@@ -198,6 +211,20 @@
 			$data = array();
 			$data = $this->jsonGroupDefaultBarcode();
 			$this->json($data);
+		}
+		public function ajaxSomeGroupDefault() {
+			$config        = $this->model('config');
+			$purchase      = $this->model('purchase');
+
+			$dayofyear     = $config->getConfig('config_date_year');
+			$beforeusesize = $config->getConfig('config_date_size');
+
+			$groupcode     = post("group_code");
+			$datestart     = date('Y-m-d', strtotime('-'.$dayofyear.'day'));
+			$dateend       = date('Y-m-d', strtotime('-'.$beforeusesize.'day'));
+
+			$results       = $purchase->getSomeBarcodeStartEndOfGroup($groupcode, $datestart, $dateend);
+			$this->json($results);
 		}
 		public function jsonGroupDefaultBarcode($header=true) {
 			$json = array();
