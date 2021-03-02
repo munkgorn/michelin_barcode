@@ -66,7 +66,8 @@
 			<div class="brand">
 				<a href="#" class="logo">
 					<span class="text-info">
-						Michelin
+					<!-- <img src="assets/image/logomichelin.png" height="50" alt="logo" class="auth-logo"> -->
+						<b>MICHELIN UNIQUE BARCODE</b>
 					</span>
 				</a>
 			</div>
@@ -81,7 +82,7 @@
 						</a>
 					</li>
 					<li>
-						<a href="<?php echo route('association'); ?>" class="<?php echo $_GET['route'] == 'barcode/association' ? 'active' : ''; ?>">
+						<a href="<?php echo route('association'); ?>" class="<?php echo in_array($_GET['route'],array('association','association/freegroup')) ? 'active' : ''; ?>">
 							<i data-feather="link-2" class="align-self-center menu-icon"></i>
 							<span>Barcode Association<br>จับคู่บาร์โค้ด</span>
 						</a>

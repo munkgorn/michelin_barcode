@@ -125,5 +125,32 @@
             return $this->query($sql);
         }
 
+
+
+        public function createTableHistory()
+        {
+            $sql = "";
+            $sql .= "CREATE TABLE `mb_master_history`  ( ";
+                $sql .= "`id_history` int NOT NULL AUTO_INCREMENT, ";
+                $sql .= "`id_user` int NULL, ";
+                $sql .= "`id_group` int NULL, ";
+                $sql .= "`barcode_start` int NULL, ";
+                $sql .= "`barcode_end` int NULL, ";
+                $sql .= "`barcode_qty` int NULL, ";
+                $sql .= "`date_purchase` date NULL, ";
+                $sql .= "`date_received` date NULL, ";
+                $sql .= "`date_added` datetime(0) NULL, ";
+                $sql .= "`date_modify` datetime(0) NULL, ";
+                $sql .= "PRIMARY KEY (`id_history`), ";
+                $sql .= "INDEX `id_group`(`id_group`) USING BTREE, ";
+                $sql .= "INDEX `barcode_start`(`barcode_start`) USING BTREE, ";
+                $sql .= "INDEX `barcode_end`(`barcode_end`) USING BTREE, ";
+                $sql .= "INDEX `barcode_qty`(`barcode_qty`) USING BTREE, ";
+                $sql .= "INDEX `date_purchase`(`date_purchase`) USING BTREE, ";
+                $sql .= "INDEX `date_received`(`date_received`) USING BTREE ";
+              $sql .= "); ";
+            $this->query($sql);
+        }
+
 	}
 ?>

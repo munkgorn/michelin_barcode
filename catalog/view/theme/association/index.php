@@ -112,10 +112,10 @@
 									<td class="text-center tdid tdsize" data-idproduct="<?php echo $val['id_product'];?>"><?php echo $val['size']; ?></td>
 									<td class="text-center tdid tdsumprod" data-idproduct="<?php echo $val['id_product'];?>"><?php echo number_format($val['sum_prod'], 0); ?></td>
 									<td class="text-center tdid tdlast" data-idproduct="<?php echo $val['id_product'];?>"><span class="last_wk" row="<?php echo $key; ?>"><?php echo $val['last_wk0']; ?></span></td>
-									<td class="text-center tdid tdqty" data-idproduct="<?php echo $val['id_product'];?>"></td>
-									<td class="text-center tdid tdpropose" data-idproduct="<?php echo $val['id_product'];?>"></td>
-									<td class="text-center tdid tdproposeqty" data-idproduct="<?php echo $val['id_product'];?>"></td>
-									<td class="text-center tdid tdmsg" data-idproduct="<?php echo $val['id_product'];?>" data-text="<?php echo $val['plain_message'];?>"></td>
+									<td class="text-center tdid tdqty" data-idproduct="<?php echo $val['id_product'];?>"><i class="fas fa-spinner fa-spin"></i></td>
+									<td class="text-center tdid tdpropose" data-idproduct="<?php echo $val['id_product'];?>"><i class="fas fa-spinner fa-spin"></i></td>
+									<td class="text-center tdid tdproposeqty" data-idproduct="<?php echo $val['id_product'];?>"><i class="fas fa-spinner fa-spin"></i></td>
+									<td class="text-center tdid tdmsg" data-idproduct="<?php echo $val['id_product'];?>" data-text="<?php echo $val['plain_message'];?>"><i class="fas fa-spinner fa-spin"></i></td>
 									<td class="p-0">
 										<input type="hidden" name="propose[<?php echo $val['id_product'];?>]" data-size="<?php echo $val['size'];?>" data-key="<?php echo $val['id_product'];?>" class="txt_propose" value="<?php echo (int)strip_tags($val['propose']);?>" />
 										<input type="text" name="id_group[<?php echo $val['id_product']; ?>]" data-size="<?php echo $val['size'];?>" data-key="<?php echo $val['id_product'];?>" class="form-control form-control-sm txt_group" value="<?php echo $val['save']; ?>" style="height:43px;border-radius:0;" />
@@ -292,6 +292,7 @@ $(document).ready(function () {
 			} 
 			if (oldmsg=='Relationship') {
 				obj.is_relationship = 'Yes';
+				console.log(idgroup);
 				$.ajax({
 					type: "POST",
 					url: "index.php?route=association/ajaxRelation",
@@ -300,60 +301,66 @@ $(document).ready(function () {
 					async: false,
 					cache:true,
 					success: function (data2) {
+						console.log(data2);
 						if (typeof data2.error_message != 'undefined') {
-							console.error('Error Response Relationship : ' + data2.error_message);
+							console.log('Error Response Relationship : ' + data2.error_message);
 							// obj.relationship = 'Error'+data2.error_message;
-						}
-
-						let thisprq_str = data2.propose_remaining_qty;
-						let thisprq = thisprq_str.replace(',','');
-
-						// obj.relationship_propose = {propose:data2.propose, propose_remaining_qty: thisprq};
-						// obj.relationship = data2.propose;
-						obj.relationship_propose = data2.propose;
-						obj.relationship_remaining = data2.propose_remaining_qty;
-						obj.relationship_message = data2.message;
-						
-						if (parseInt(thisprq)>0 && jQuery.inArray(data2.propose, notuse_relation)==-1)  {
-							notuse_relation.push(data2.propose);
-							obj.relationship_canused = 'Yes';
+						} else {
+							let thisprq = 0;
+							if (data2.propose_remaining_qty.length>0) {
+								let thisprq_str = data2.propose_remaining_qty;
+								thisprq = thisprq_str.replace(',','');
+							}
 							
-							if (data2.propose!=null) {
-								
-								$('.tdpropose[data-idproduct='+idproduct+']').html('<span class="text-primary">'+data2.propose+'</span>');
-								$('.txt_propose[data-key='+idproduct+']').val(data2.propose);
-							}
-							if (data2.propose_remaining_qty!=null) {
-								
-								$('.tdproposeqty[data-idproduct='+idproduct+']').html('<span class="text-primary">'+data2.propose_remaining_qty+'</span>');
-							}
-							if (data2.message!=null) {
-								
 
-								$('.tdmsg[data-idproduct='+idproduct+']').html(data2.message);
-								if (data2.message=='Free Group') {
-									$('.tdpropose[data-idproduct='+idproduct+']').addClass('text-danger');
-									$('.tdproposeqty[data-idproduct='+idproduct+']').addClass('text-danger');
-									$('.tdmsg[data-idproduct='+idproduct+']').addClass('text-danger');
+							// obj.relationship_propose = {propose:data2.propose, propose_remaining_qty: thisprq};
+							// obj.relationship = data2.propose;
+							obj.relationship_propose = data2.propose;
+							obj.relationship_remaining = data2.propose_remaining_qty;
+							obj.relationship_message = data2.message;
+
+							if (parseInt(thisprq)>0 && jQuery.inArray(data2.propose, notuse_relation)==-1)  {
+								notuse_relation.push(data2.propose);
+								obj.relationship_canused = 'Yes';
+								
+								if (data2.propose!=null) {
+									
+									$('.tdpropose[data-idproduct='+idproduct+']').html('<span class="text-primary">'+data2.propose+'</span>');
+									$('.txt_propose[data-key='+idproduct+']').val(data2.propose);
 								}
+								if (data2.propose_remaining_qty!=null) {
+									
+									$('.tdproposeqty[data-idproduct='+idproduct+']').html('<span class="text-primary">'+data2.propose_remaining_qty+'</span>');
+								}
+								if (data2.message!=null) {
+									
+
+									$('.tdmsg[data-idproduct='+idproduct+']').html(data2.message);
+									if (data2.message=='Free Group') {
+										$('.tdpropose[data-idproduct='+idproduct+']').addClass('text-danger');
+										$('.tdproposeqty[data-idproduct='+idproduct+']').addClass('text-danger');
+										$('.tdmsg[data-idproduct='+idproduct+']').addClass('text-danger');
+									}
+								}
+							} else {
+								obj.relationship_canused = 'No';
+								$('.tdqty[data-idproduct='+idproduct+']').html('');
+								$('.tdpropose[data-idproduct='+idproduct+']').html('');
+								$('.tdproposeqty[data-idproduct='+idproduct+']').html('');
+								$('.tdmsg[data-idproduct='+idproduct+']').html('<span class="text-primary">Relationship</span>');
 							}
-						} else {
-							obj.relationship_canused = 'No';
-							$('.tdqty[data-idproduct='+idproduct+']').html('');
-							$('.tdpropose[data-idproduct='+idproduct+']').html('');
-							$('.tdproposeqty[data-idproduct='+idproduct+']').html('');
-							$('.tdmsg[data-idproduct='+idproduct+']').html('<span class="text-primary">Relationship</span>');
+
+							// console.log(startcount+' '+counttdqty);
+							if (debug_relation==true) {
+								console.table(obj);
+							}
+							if (startcount==counttdqty) {
+								pasteFreegroup();
+							} else {
+								startcount++;
+							}
 						}
 
-						// console.log(startcount+' '+counttdqty);
-						if (debug_relation==true) {
-							console.table(obj);
-						}
-						if (startcount==counttdqty) {
-							pasteFreegroup();
-						} else {
-							startcount++;
-						}
 					}
 				});
 

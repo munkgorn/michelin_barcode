@@ -118,12 +118,12 @@
 											>
 										</td>
 										<td class="text-center">
-										<button type="button" class="btn load-start-and-end load-start" data-group="<?php echo sprintf('%03d', $val['group_code']);?>"><i class="fas fa-spinner fa-spin"></i></button>
+										<button type="button" class="btn load-start-and-end load-start" data-group="<?php echo sprintf('%03d', $val['group_code']);?>">Update</button>
 										<!-- <span class="load_default_start" data-group="<?php echo sprintf('%03d', $val['group_code']);?>">View</span> -->
 										<!-- <?php echo !empty($val['barcode_start_year']) ? sprintf('%08d', $val['barcode_start_year']) : '';?> -->
 										</td>
 										<td class="text-center">
-										<button type="button" class="btn load-start-and-end load-end" data-group="<?php echo sprintf('%03d', $val['group_code']);?>"><i class="fas fa-spinner fa-spin"></i></button>
+										<button type="button" class="btn load-start-and-end load-end" data-group="<?php echo sprintf('%03d', $val['group_code']);?>">Update</button>
 										<!-- <span class="load_default_end" data-group="<?php echo sprintf('%03d', $val['group_code']);?>">View</span> -->
 										<!-- <?php echo !empty($val['barcode_end_year']) ? sprintf('%08d', $val['barcode_end_year']) : '';?> -->
 										</td>
@@ -331,8 +331,8 @@ let loadBarcode = () => {
 	});
 }
 let loadSomeBarcode = (groupcode) => {
-	$('.load-start-and-end.load-start[data-group="'+groupcode+'"]').html('<i class="fas fa-spinner fa-spin"></i>');
-	$('.load-start-and-end.load-end[data-group="'+groupcode+'"]').html('<i class="fas fa-spinner fa-spin"></i>');
+	$('.load-start-and-end.load-start[data-group="'+groupcode+'"]').html('Update');
+	$('.load-start-and-end.load-end[data-group="'+groupcode+'"]').html('Update');
 	$.ajax({
 		type: "POST",
 		url: "index.php?route=purchase/ajaxSomeGroupDefault",

@@ -150,14 +150,15 @@ class AssociationController extends Controller
                 'plain_message' => strip_tags($message),
             );
         }
-        if (!in_array($relation_group['group'], $config_relation)) {
+        else if (!in_array($relation_group['group'], $config_relation)) {
             $json['error_message'] = 'None in config relation';
         }
-        if (empty($relation_group['group'])) {
+        else if (empty($relation_group['group'])) {
             $json['error_message'] = 'Empty Group';
         }
-        if (in_array($relation_group['group'],$beforeSync)) {
+        else if (in_array($relation_group['group'],$beforeSync)) {
             $json['error_message'] = 'Before sync';
+            $json['before'] = $beforeSync;
         }
         
 
@@ -609,7 +610,27 @@ class AssociationController extends Controller
         // $this->generateJsonFreeGroup();
         $json = $this->jsonFreeGroup(false,true);
         $str = json_decode($json);
-        $data['list'] = json_decode($str[0]);
+        $list = json_decode($str[0]);
+
+        // last validated
+        $lastValidate = $this->model('association')->getLastValidated();
+        
+// print_r($lastValidate);
+// print_r($list);
+        $data['lastValidate'] = $lastValidate;
+        // $data['list']  = array();
+        // foreach ($list as $value) {
+            // if (!in_array((int)$value->group, $lastValidate)) {
+                // $data['list'][] = $value;
+            // }
+        // }
+        // echo '<pre>';
+        // print_r($lastValidate->rows);
+        // echo '</pre>';
+
+        $data['list'] = $list;
+
+
         $this->view('association/freegroup', $data);
     }
     // JSON FILE

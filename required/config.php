@@ -6,13 +6,13 @@ set_time_limit(0);
 date_default_timezone_set("Asia/Bangkok");
 
 	// System.Module.Fixbug +1
-	define('VERSION', '1.1.1'); 
+	define('VERSION', '1.1.3'); 
 	 
-	define('ENVIRONMENT', 'production_lmc');
+	// define('ENVIRONMENT', 'production_lmc');
 	// define('ENVIRONMENT', 'production_ppd');
-	// define('ENVIRONMENT', 'developer');
+	define('ENVIRONMENT', 'developer');
 
-	define('DEBUG_MODE', false);
+	define('DEBUG_MODE', true);
 
 	
 	if (DEBUG_MODE) {
@@ -29,8 +29,8 @@ date_default_timezone_set("Asia/Bangkok");
 	// Config DB localhost
 	define('PREFIX', 'mb_master_');
 	define('DB_HOST','localhost');
-	define('DB_DB','fsoftpro_barcode');
-	// define('DB_DB','fsoftpro_barcode_lmc');
+	// define('DB_DB','fsoftpro_barcode');
+	define('DB_DB','fsoftpro_barcode_lmc');
 	// define('DB_DB','fsoftpro_barcode_ppd');
 
 	$base = str_replace('required', '', __DIR__);
@@ -43,7 +43,7 @@ date_default_timezone_set("Asia/Bangkok");
 		define('DB_PASS','');
 
 	} else if (ENVIRONMENT=='production_lmc') {
-		define('SUBFOLDER','michelin_barcode/');
+		define('SUBFOLDER','');
 		define('MURL','http://10.79.25.200/'.SUBFOLDER);
 		define('DOCUMENT_ROOT',$_SERVER['DOCUMENT_ROOT'].'/'.SUBFOLDER);
 		
@@ -51,8 +51,8 @@ date_default_timezone_set("Asia/Bangkok");
 		define('DB_PASS','');
 
 	} else if (ENVIRONMENT=='production_ppd') {
-		define('SUBFOLDER','michelin_barcode/');
-		define('MURL','http://10.79.25.101/'.SUBFOLDER);
+		define('SUBFOLDER','');
+		define('MURL','http://10.79.29.101/'.SUBFOLDER);
 		define('DOCUMENT_ROOT',$_SERVER['DOCUMENT_ROOT'].'/'.SUBFOLDER);
 
 		define('DB_USER','root');

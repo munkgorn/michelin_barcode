@@ -121,15 +121,15 @@ class ExportController extends Controller {
             $text = $message;
 
             $excel[] = array(
-                // 'id_product' => $value['id_product'],
-                'size' => $value['size'],
-                'sum_prod' => $value['sum_prod'],
-                'last_wk0' => (int)$last_week>0 ? sprintf('%03d', $last_week): '',
-                // 'remaining_qty' => number_format((int)round($remaining_qty,0),0),
-                // 'propose' => $propose,
+                // 'id_product'            => $value['id_product'],
+                'size'                     => $value['size'],
+                'sum_prod'                 => '="'.(int)$value['sum_prod'].'"',
+                'last_wk0'                 => (int)$last_week>0 ? '="'.sprintf('%03d', $last_week).'"' : '',
+                // 'remaining_qty'         => number_format((int)round($remaining_qty,0),0),
+                // 'propose'               => $propose,
                 // 'propose_remaining_qty' => number_format((int)round($propose_remaining_qty,0),0),
-                // 'message' => strip_tags($text),
-                'save' => (int)strip_tags($value['save'])>0 ? sprintf('%03d',strip_tags($value['save'])) : ''
+                // 'message'               => strip_tags($text),
+                'save'                     => (int)strip_tags($value['save'])>0 ? '="'.sprintf('%03d',strip_tags($value['save'])).'"': ''
             );
 
           

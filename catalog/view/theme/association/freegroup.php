@@ -35,7 +35,18 @@
 								</tr>
 							</thead>
 							<tbody>
-                
+								<?php foreach ($list as $value) : ?>
+								<tr>
+									<td class="text-center">
+										<?php echo in_array($value->group, $lastValidate) ? '<s class="text-secondary">': '';?>
+										<?php echo sprintf('%03d',$value->group);?>
+										<?php echo in_array($value->group, $lastValidate) ? '</s>': '';?>
+									</td>
+									<td class="text-center">
+										<?php echo number_format($value->qty,0);?>
+									</td>
+								</tr>
+								<?php endforeach; ?>
 							</tbody>
 						</table>
 					</div>
@@ -66,25 +77,25 @@ $(document).ready(function () {
 		str = str.toString();
 		return str.length < max ? pad("0" + str, max) : str;
 	}
-  $.ajax({
-    type: "POST",
-    url: "index.php?route=association/jsonFreeGroup",
-    dataType: "json",
-    success: function (response) {
+  // $.ajax({
+  //   type: "POST",
+  //   url: "index.php?route=association/jsonFreeGroup",
+  //   dataType: "json",
+  //   success: function (response) {
       
-      let string = response[0];
-      let json = JSON.parse(string);
-      console.log(json);
-      let html = '';
-      $.each(json, function (indexInArray, valueOfElement) { 
-         html += "<tr>";
-         html += "<td class='text-center'>"+pad(valueOfElement.group,3)+"</td>";
-         html += "<td class='text-center'>"+addCommas(valueOfElement.qty)+"</td>";
-         html += "</tr>";
-      });
-      console.log(html);
-      $('#makeEditable tbody').html(html);
-    }
-  });
+  //     let string = response[0];
+  //     let json = JSON.parse(string);
+  //     console.log(json);
+  //     let html = '';
+  //     $.each(json, function (indexInArray, valueOfElement) { 
+  //        html += "<tr>";
+  //        html += "<td class='text-center'>"+pad(valueOfElement.group,3)+"</td>";
+  //        html += "<td class='text-center'>"+addCommas(valueOfElement.qty)+"</td>";
+  //        html += "</tr>";
+  //     });
+  //     console.log(html);
+  //     $('#makeEditable tbody').html(html);
+  //   }
+  // });
 });
 </script>

@@ -10,6 +10,7 @@
 			if ($flag==0||$flag==1) {
 				$this->where('barcode_flag', $flag);
 			}
+			$this->where('group_received', 1);
 			$query = $this->get('barcode');
 
 			// echo $this->last_query();	

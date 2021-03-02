@@ -408,4 +408,13 @@ class AssociationModel extends db
         return $this->query("DELETE FROM mb_master_product WHERE date_wk = '$date'");
     }
 
+    public function getLastValidated() {
+        $query = $this->query("SELECT group_code FROM mb_master_product p LEFT JOIN mb_master_group g ON g.id_group = p.id_group WHERE p.date_wk = (SELECT p2.date_wk FROM mb_master_product p2 ORDER BY p2.date_wk DESC LIMIT 0,1) order by p.size_product_code");
+        $result = array();
+        foreach ($query->rows as $value) {
+            $result[] = $value['group_code'];
+        }
+        return $result;
+    }
+
 }

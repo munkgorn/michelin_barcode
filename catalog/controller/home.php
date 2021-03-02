@@ -7,9 +7,14 @@
 	    	$style = array(
 	    		'assets/home.css'
 	    	);
-			$data['style'] 	= $style;
+				$data['style'] 	= $style;
 
-			$data['skip'] = isset($_GET['skip']) ? get('skip') : '';
+				$data['skip'] = isset($_GET['skip']) ? get('skip') : '';
+
+
+				// $config = $this->model('config');
+				// $$config->getConfig('test');
+				
 
 			// echo md5('fsoftpro88');
 				
