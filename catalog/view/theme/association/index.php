@@ -112,10 +112,10 @@
 									<td class="text-center tdid tdsize" data-idproduct="<?php echo $val['id_product'];?>"><?php echo $val['size']; ?></td>
 									<td class="text-center tdid tdsumprod" data-idproduct="<?php echo $val['id_product'];?>"><?php echo number_format($val['sum_prod'], 0); ?></td>
 									<td class="text-center tdid tdlast" data-idproduct="<?php echo $val['id_product'];?>"><span class="last_wk" row="<?php echo $key; ?>"><?php echo $val['last_wk0']; ?></span></td>
-									<td class="text-center tdid tdqty" data-idproduct="<?php echo $val['id_product'];?>"><i class="fas fa-spinner fa-spin"></i></td>
-									<td class="text-center tdid tdpropose" data-idproduct="<?php echo $val['id_product'];?>"><i class="fas fa-spinner fa-spin"></i></td>
-									<td class="text-center tdid tdproposeqty" data-idproduct="<?php echo $val['id_product'];?>"><i class="fas fa-spinner fa-spin"></i></td>
-									<td class="text-center tdid tdmsg" data-idproduct="<?php echo $val['id_product'];?>" data-text="<?php echo $val['plain_message'];?>"><i class="fas fa-spinner fa-spin"></i></td>
+									<td class="text-center tdid tdqty" data-idproduct="<?php echo $val['id_product'];?>"></td>
+									<td class="text-center tdid tdpropose" data-idproduct="<?php echo $val['id_product'];?>"></td>
+									<td class="text-center tdid tdproposeqty" data-idproduct="<?php echo $val['id_product'];?>"></td>
+									<td class="text-center tdid tdmsg" data-idproduct="<?php echo $val['id_product'];?>" data-text="<?php echo $val['plain_message'];?>"></td>
 									<td class="p-0">
 										<input type="hidden" name="propose[<?php echo $val['id_product'];?>]" data-size="<?php echo $val['size'];?>" data-key="<?php echo $val['id_product'];?>" class="txt_propose" value="<?php echo (int)strip_tags($val['propose']);?>" />
 										<input type="text" name="id_group[<?php echo $val['id_product']; ?>]" data-size="<?php echo $val['size'];?>" data-key="<?php echo $val['id_product'];?>" class="form-control form-control-sm txt_group" value="<?php echo $val['save']; ?>" style="height:43px;border-radius:0;" />
@@ -420,7 +420,7 @@ $(document).ready(function () {
 										}
 
 									} else {
-										
+										$('.tdqty[data-idproduct='+idproduct+']').html('');
 										$('.tdpropose[data-idproduct='+idproduct+']').html('');
 										$('.txt_propose[data-key='+idproduct+']').val('');
 										$('.tdmsg[data-idproduct='+idproduct+']').html('Free Group');

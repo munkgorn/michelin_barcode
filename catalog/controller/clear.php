@@ -20,6 +20,7 @@
 
             $start = null;
             $max = null;
+            $end = null;
             foreach ($config_barcode as $value) {
                 if ($value['group'] < $start || $start == null) {
                     $start = $value['group'];
@@ -137,5 +138,14 @@
             $config = $this->model('config');
             $config->updateTableBarcodeWithGroupCode();
         }
+
+        public function updateDefaultGroup() 
+        {
+            $group = $this->model('group');
+            $group->addDefaultGroup();
+            $group->updateDefaultStart();
+        }
+
+
     }
 ?>

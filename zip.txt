@@ -1,0 +1,2 @@
+rm -rf Archive.zip
+zip -r Archive.zip catalog/ -x '*.DS_Store*' -x '__MACOS' -x '*.git*'

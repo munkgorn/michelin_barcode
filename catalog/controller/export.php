@@ -230,25 +230,38 @@ class ExportController extends Controller {
             'QTY',
             'Status',
             'Purchase Date',
+            'Received Date',
             'Create By',
         );
 
         $group = $this->model('group');
+        $history = $this->model('history');
         $filter = array(
-            'date_modify' => get('date'),
-            'group_code' => get('group'),
-            'barcode_use' => get('status')>=0 ? get('status') : null,
-            'has_remainingqty' => true
+            'date_purchase'    => get('date'),
+            // 'id_group'         => get('group'),
+            // 'barcode_use'      => strlen($_GET['status'])>0 ? (int)$_GET['status'] : null,
         );
-        $datas = $group->getGroups($filter);
+        if (strlen($_GET['group'])>0) { $filter['id_group'] = (int)$_GET['group']; }
+        if (strlen($_GET['status'])>0 && ($_GET['status']==="1"||$_GET['status']==="0")) { $filter['barcode_use'] = (int)$_GET['status']; }
+        // $datas = $group->getGroups($filter);
+        // print_r($filter);
+        // exit();
+        $datas = $history->getHistories($filter);
         foreach ($datas as $val) {
+            if (!empty($val['id_group'])) { $val['group_code'] = $group->findCode($val['id_group']);}
+            if (!empty($val['id_user'])) { 
+                $user_info = $this->model('user')->findUser($val['id_user']);
+                $val['username'] = $user_info['username'];
+            }
+            
             $excel[] = array(
                 '="'.sprintf('%03d', $val['group_code']).'"',
-                '="'.sprintf('%08d', $val['start']-$val['remaining_qty']).'"',
-                '="'.sprintf('%08d', $val['start']-1).'"',
-                $val['remaining_qty'],
+                '="'.sprintf('%08d', $val['barcode_start']).'"',
+                '="'.sprintf('%08d', $val['barcode_end']).'"',
+                (int)$val['barcode_qty'],
                 ($val['barcode_use']==1?'Received':'Waiting'),
-                $val['date_added'],
+                $val['date_purchase'],
+                $val['date_received'],
                 $val['username']
             );
         }

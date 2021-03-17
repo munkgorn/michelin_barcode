@@ -19,7 +19,8 @@
             $this->where('date_purchase is not null','','');
             $this->group_by('date_purchase');
             $this->order_by('date_purchase', 'DESC');
-            $query = $this->get('group');
+            // $query = $this->get('group');
+            $query = $this->get('history');
             return $query->num_rows > 0 ? $query->rows : false;
         }
         public function getGroupStatus($group_code) {
@@ -31,6 +32,33 @@
 			return isset($query->row['barcode_use']) ? $query->row['barcode_use'] : false;
         }
         public function getGroups($filter=array()) {
+            if (isset($filter['date_modify'])&&!empty($filter['date_modify'])) {
+                $this->where('g.date_modify', $filter['date_modify'].'%', 'LIKE');
+            }
+            if (isset($filter['date_purchase'])&&!empty($filter['date_purchase'])) {
+                $this->where('g.date_purchase', $filter['date_purchase']);
+            }
+            if (isset($filter['group_code'])&&!empty($filter['group_code'])) {
+                $this->where('g2.group_code', $filter['group_code']);
+            }
+            // // print_r($filter);
+            if (isset($filter['barcode_use'])&& (!empty($filter['barcode_use']) || $filter['barcode_use']==="0")) {
+                $this->where('g2.barcode_use', $filter['barcode_use']);
+            }
+            if (isset($filter['has_remainingqty'])) {
+                $this->where('g.barcode_qty', '0', '>=');
+            }
+            // $this->where('g.del',0);
+            $this->group_by('g.id_group');
+            $this->join('group g2','g.id_group = g2.id_group','LEFT');
+            $this->join('user u','u.id_user = g.id_user','LEFT');
+            $this->select('g.*, u.username, g2.group_code');
+            $query = $this->get('history g');
+            // echo $this->last_query();
+            // echo '<br>';
+            return $query->rows;
+        }
+        public function getGroupsOld($filter=array()) {
             if (isset($filter['date_modify'])&&!empty($filter['date_modify'])) {
                 $this->where('g.date_modify', $filter['date_modify'].'%', 'LIKE');
             }
@@ -53,7 +81,7 @@
             $this->group_by('g.group_code');
             $this->join('user u','u.id_user = g.id_user','LEFT');
             $this->select('g.*, u.username');
-            $query = $this->get('group g');
+            $query = $this->get('hisoty g');
             // echo $this->last_query();
             // echo '<br>';
             return $query->rows;
@@ -64,13 +92,20 @@
             $query = $this->get('group');
             return $query->row;
         }
-        public function changeStatus($id, $status) {
-            $this->where('id_group', $id);
+        public function changeStatus($idgroup, $status) {
+            $this->where('id_group', $idgroup);
             $this->update('barcode', array('group_received' => 1));
             
-            $this->where('id_group', $id);
+            $this->where('id_group', $idgroup);
             $this->where('del',0);
-            return $this->update('group', array('barcode_use'=>(int)$status, 'id_user'=>$_SESSION['id_user']));
+            $response = $this->update('group', array('barcode_use'=>(int)$status, 'id_user'=>$_SESSION['id_user']));
+
+            // $this->where('id_history', $id);
+            // $this->where('id_group', $idgroup);
+            // $this->update('history', array('barcode_use'=>(int)$status, 'date_modify'=>date('Y-m-d H:i:s')));
+
+
+            return $response;
         }
 
         public function delGroup($id) {
@@ -137,6 +172,7 @@
                 $sql .= "`barcode_start` int NULL, ";
                 $sql .= "`barcode_end` int NULL, ";
                 $sql .= "`barcode_qty` int NULL, ";
+                $sql .= "`barcode_use` int NULL, ";
                 $sql .= "`date_purchase` date NULL, ";
                 $sql .= "`date_received` date NULL, ";
                 $sql .= "`date_added` datetime(0) NULL, ";

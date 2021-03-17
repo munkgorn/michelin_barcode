@@ -15,3 +15,8 @@ log/*.txt
 
 assets/.DS_Store
 Archive.zip
+Archive_*.zip
+log/*.txt
+
+dumpdata/node_modules/*
+uploads/*

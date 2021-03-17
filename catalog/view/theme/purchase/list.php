@@ -15,7 +15,7 @@
 						<div class="input-group">
 							<select name="start_group" class="form-control select2start">
 								<?php foreach ($result_group as $val) { ?>
-								<option value="<?php echo $val['group']; ?>" <?php echo ($start_group==$val['group']?'selected':''); ?>>
+								<option value="<?php echo $val['group']; ?>" <?php echo ($start_group == $val['group'] ? 'selected' : ''); ?>>
 									<?php echo sprintf('%03d', $val['group']); ?>
 								</option>
 								<?php } ?>
@@ -27,7 +27,7 @@
 						<div class="input-group">
 							<select name="end_group" class="form-control select2end">
 								<?php foreach ($result_group as $key => $val) { ?>
-								<option value="<?php echo $val['group']; ?>" <?php echo ($end_group==$val['group']?'selected':''); ?>>
+								<option value="<?php echo $val['group']; ?>" <?php echo ($end_group == $val['group'] ? 'selected' : ''); ?>>
 									<?php echo sprintf('%03d', $val['group']); ?>
 								</option>
 								<?php } ?>
@@ -44,14 +44,14 @@
 			</form>
 		</div>
 	</div>
-	<?php if(!empty($start_group)){ ?>
+	<?php if (!empty($start_group)) { ?>
 	<div class="card">
 	<form action="<?php echo $action; ?>" method="POST" id="formvalidate">
 		<div class="card-header">
 			<div class="row">
 				<div class="col-12"><h4>Today : <?php echo date('Y-m-d'); ?></h4></div>
 				<div class="col-6">
-					<a href="<?php echo $export_excel; ?>" target="new" class="btn btn-outline-success <?php echo !$validated?'disabled':''?>" <?php echo !$validated?'disabled="disabled"':''?>><i class="fas fa-file-excel"></i> Export Excel <?php echo !$validated?'(Please validated)':''?></a>
+					<a href="<?php echo $export_excel; ?>" target="new" class="btn btn-outline-success <?php echo !$validated ? 'disabled' : '' ?>" <?php echo !$validated ? 'disabled="disabled"' : '' ?>><i class="fas fa-file-excel"></i> Export Excel <?php echo !$validated ? '(Please validated)' : '' ?></a>
 				</div>
 				<div class="col-6 text-right">
 					<button type="submit" class="btn btn-outline-primary" id="btnsubmitvalidate"><i class="fas fa-check-double"></i> Validated</button>
@@ -60,12 +60,12 @@
 		</div>
 		<!--end card-header-->
 		<div class="card-body">
-			<?php if($result){ ?>
+			<?php if ($result) { ?>
 				<div class="alert alert-success">
 					<b>Update success</b>
 				</div>
 			<?php } ?>
-			
+
 				<input type="hidden" name="start_group" value="<?php echo $start_group; ?>">
 				<input type="hidden" name="end_group" value="<?php echo $end_group; ?>">
 				<div class="row">
@@ -93,54 +93,56 @@
 									</tr>
 								</thead>
 								<tbody>
-									<?php foreach($getMapping as $key => $val){ ?>
+									<?php foreach ($getMapping as $key => $val) { ?>
 									<tr>
 										<td class="text-center"><?php echo sprintf('%03d', $val['group_code']); ?></td>
 										<td class="text-center"><label for="" class="start"><?php echo sprintf('%08d', $val['barcode_start']); ?></label></td>
 										<td class="text-center"><label for="" class="end"><?php echo sprintf('%08d', $val['barcode_end']); ?></label></td>
 										<td class="text-center">
-											<input 
-												type="text" 
-												class="form-control qty_group <?php echo $val['status_id']==0&&$val['remaining_qty']>0?'is-invalid':'';?>" 
-												placeholder="Loading..." 
-												disabled
-												data-id="<?php echo $val['group_code'];?>"
-												start="<?php echo $val['barcode_start'];?>"
-												end="<?php echo $val['barcode_end'];?>" 
-												default_start="<?php echo $val['default_start'];?>"
-												default_end="<?php echo $val['default_end'];?>"
-												name = "qty[<?php echo $val['group_code']; ?>]"
+											<input
+												type="text"
+												class="form-control qty_group <?php echo $val['status_id'] == 0 && $val['remaining_qty'] > 0 ? 'is-invalid' : ''; ?>"
+												placeholder="Loading..."
+												data-id="<?php echo $val['group_code']; ?>"
+												start="<?php echo $val['barcode_start']; ?>"
+												end="<?php echo $val['barcode_end']; ?>"
+												default_start="<?php echo $val['default_start']; ?>"
+												default_end="<?php echo $val['default_end']; ?>"
+												<?php echo $val['status_id']; ?>
+												<?php if ($val['status_id'] == 1 || $val['remaining_qty'] <= 0): ?>
+												name="qty[<?php echo $val['group_code']; ?>]"
+												<?php endif; ?>
 												maxlength="6"
-												value="<?php echo $val['status_id']==0&&$val['remaining_qty']>0 ? $val['remaining_qty'] : '';?>"
-												<?php echo $val['status_id']==0&&$val['remaining_qty']>0 ? 'disabled="disabled"' : '';?>
+												value="<?php echo $val['status_id'] == 0 && $val['remaining_qty'] > 0 ? $val['remaining_qty'] : ''; ?>"
+												<?php echo $val['status_id'] == 0 && $val['remaining_qty'] > 0 ? 'disabled="disabled"' : ''; ?>
 												autocomplete="off"
 
 											>
 										</td>
 										<td class="text-center">
-										<button type="button" class="btn load-start-and-end load-start" data-group="<?php echo sprintf('%03d', $val['group_code']);?>">Update</button>
-										<!-- <span class="load_default_start" data-group="<?php echo sprintf('%03d', $val['group_code']);?>">View</span> -->
-										<!-- <?php echo !empty($val['barcode_start_year']) ? sprintf('%08d', $val['barcode_start_year']) : '';?> -->
+										<button type="button" class="btn load-start-and-end load-start" data-group="<?php echo sprintf('%03d', $val['group_code']); ?>">Update</button>
+										<!-- <span class="load_default_start" data-group="<?php echo sprintf('%03d', $val['group_code']); ?>">View</span> -->
+										<!-- <?php echo !empty($val['barcode_start_year']) ? sprintf('%08d', $val['barcode_start_year']) : ''; ?> -->
 										</td>
 										<td class="text-center">
-										<button type="button" class="btn load-start-and-end load-end" data-group="<?php echo sprintf('%03d', $val['group_code']);?>">Update</button>
-										<!-- <span class="load_default_end" data-group="<?php echo sprintf('%03d', $val['group_code']);?>">View</span> -->
-										<!-- <?php echo !empty($val['barcode_end_year']) ? sprintf('%08d', $val['barcode_end_year']) : '';?> -->
+										<button type="button" class="btn load-start-and-end load-end" data-group="<?php echo sprintf('%03d', $val['group_code']); ?>">Update</button>
+										<!-- <span class="load_default_end" data-group="<?php echo sprintf('%03d', $val['group_code']); ?>">View</span> -->
+										<!-- <?php echo !empty($val['barcode_end_year']) ? sprintf('%08d', $val['barcode_end_year']) : ''; ?> -->
 										</td>
 										<td class="text-center">
-											
-											<?php echo sprintf('%08d', $val['default_start']);?>
-											<!-- <input type="text" class="form-control default_start" id_group="<?php echo $val['id_group'];?>" value="<?php echo $val['default_start'];?>"> -->
+
+											<?php echo sprintf('%08d', $val['default_start']); ?>
+											<!-- <input type="text" class="form-control default_start" id_group="<?php echo $val['id_group']; ?>" value="<?php echo $val['default_start']; ?>"> -->
 										</td>
 										<td class="text-center">
-											<?php echo sprintf('%08d', $val['default_end']);?>
-											<!-- <input type="text" class="form-control default_end" id_group="<?php echo $val['id_group'];?>" value="<?php echo $val['default_end'];?>"> -->
+											<?php echo sprintf('%08d', $val['default_end']); ?>
+											<!-- <input type="text" class="form-control default_end" id_group="<?php echo $val['id_group']; ?>" value="<?php echo $val['default_end']; ?>"> -->
 										</td>
 										<td class="text-center">
-											<?php echo number_format($val['default_range'], 0);?>
-											<!-- <input type="text" class="form-control default_range" id_group="<?php echo $val['id_group'];?>" value="<?php echo $val['default_range'];?>"> -->
+											<?php echo number_format($val['default_range'], 0); ?>
+											<!-- <input type="text" class="form-control default_range" id_group="<?php echo $val['id_group']; ?>" value="<?php echo $val['default_range']; ?>"> -->
 										</td>
-										<td class="text-center"><?php echo $val['status'];?></td>
+										<td class="text-center"><?php echo $val['status']; ?></td>
 									</tr>
 									<?php } ?>
 								</tbody>
@@ -150,7 +152,7 @@
 				</div>
 				<div class="row">
 					<div class="col-12 text-right">
-						
+
 					</div>
 				</div>
 		</div>
@@ -160,15 +162,15 @@
 	<!--end card-->
 	<?php } ?>
 </div>
-<form 
-	action="<?php echo $action_import_excel;?>" 
-	method="POST" 
-	id="form-import-excel" 
+<form
+	action="<?php echo $action_import_excel; ?>"
+	method="POST"
+	id="form-import-excel"
 	enctype="multipart/form-data"
 	style="display:none;"
 >
 
-	<input type="file" name="file_import" id="import_file" 
+	<input type="file" name="file_import" id="import_file"
 	accept="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet, application/vnd.ms-excel">
 	<input type="text" class="form-control" name="date" value="<?php echo $date; ?>">
 </form>
@@ -181,7 +183,7 @@ $(document).ready(function(){
 </script>
 <script type="text/javascript">
 $(document).ready(function () {
-	
+
 	init();
 
 	$('#btnsubmitvalidate').click(function(e) {
@@ -193,7 +195,7 @@ $(document).ready(function () {
 		let thisgroup = $(this).data('group');
 		loadSomeBarcode(thisgroup);
 	});
-	
+
 	$(document).on('keyup','.qty_group',function(e){
 		var ele = $(this);
 
@@ -207,12 +209,12 @@ $(document).ready(function () {
 
 		// Check calcurate with condition when 'barcode end' is more than 'default end' just reset to 'default start' and calcurate
 		let check = () => {
-			let newend = start + qty - 1;	
+			let newend = start + qty - 1;
 			if (newend > default_end) {
 				let cal = (default_start-1) + (qty - (default_end - start) - 1);
 				newend = cal;
 				console.log('This barcode is running more than default end : ' + default_end);
-			}	
+			}
 			return newend;
 		}
 		// send now 'barcode end' to check in database used? or not? in 'x' day
@@ -252,14 +254,14 @@ $(document).ready(function () {
 			console.log('Barcode End : ' + newstart);
 			sendBarcodeCheck(newstart);
 			if (qty>0 && !barcodeUsed) {
-				sum_end_qty = newstart > 0 ? newstart : (start + qty - 1); // ! Change `End` 
+				sum_end_qty = newstart > 0 ? newstart : (start + qty - 1); // ! Change `End`
 				var end_string = pad(sum_end_qty,8);
 				if (isNaN(end_string)==false) {
 					ele.parents('tr').find('.end').text(end_string);
 				}
 				var dataPost = {
-					start_group: '<?php echo $start_group;?>',
-					end_group: '<?php echo $end_group;?>',
+					start_group: '<?php echo $start_group; ?>',
+					end_group: '<?php echo $end_group; ?>',
 					group_code: groupcode,
 					change_qty: qty,
 					change_end: end_string
@@ -271,10 +273,10 @@ $(document).ready(function () {
 		}
 	});
 
-	
 
 
-	
+
+
 });
 </script>
 <script>
@@ -364,7 +366,7 @@ let loadSomeBarcode = (groupcode) => {
 let saveForExport = (dataPost) => {
 	$.ajax({
 		type: "POST",
-		url: "<?php echo $action_ajax;?>",
+		url: "<?php echo $action_ajax; ?>",
 		data: dataPost,
 		success: function (response) {
 			// console.log(response);

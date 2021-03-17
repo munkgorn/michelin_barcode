@@ -1,5 +1,10 @@
 <?php 
 	class UserModel extends db {
+		public function findUser($id) {
+			$this->where('id_user',$id);
+			$query = $this->get('user');
+			return $query->row;
+		}
 		public function getUser($data=array()){
 			$result = array();
 			$id_user = (int)$data['id_user'];

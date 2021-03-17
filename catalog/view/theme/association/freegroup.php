@@ -38,9 +38,9 @@
 								<?php foreach ($list as $value) : ?>
 								<tr>
 									<td class="text-center">
-										<?php echo in_array($value->group, $lastValidate) ? '<s class="text-secondary">': '';?>
+										<?php echo in_array($value->group, $lastValidate) ? '<span class="text-secondary">': '<span class="text-danger">';?>
 										<?php echo sprintf('%03d',$value->group);?>
-										<?php echo in_array($value->group, $lastValidate) ? '</s>': '';?>
+										<?php echo in_array($value->group, $lastValidate) ? '</span>': '</span>';?>
 									</td>
 									<td class="text-center">
 										<?php echo number_format($value->qty,0);?>

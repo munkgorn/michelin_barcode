@@ -36,7 +36,7 @@
 							<option></option>
 							<!-- <option value="" >-- Search group prefix --</option> -->
                             <?php foreach ($groups as $group) : ?>
-                            <option value="<?php echo $group;?>" <?php echo $filter_group==$group?'selected':'';?>><?php echo sprintf('%03d',$group);?></option>
+                            <option value="<?php echo $group['id_group'];?>" <?php echo $filter_group==$group['id_group']?'selected':'';?>><?php echo sprintf('%03d',$group['group_code']);?></option>
                             <?php endforeach; ?> 
 						</select>
 					</div>
@@ -93,14 +93,15 @@
 							<th class="text-center" width="12%">Start</th>
 							<th class="text-center" width="12%">End</th>
 							<th class="text-center" width="12%">Qty</th>
-							<th class="text-center" width="15%">Status</th>
+							<th class="text-center">Status</th>
 							<th>Purchase date</th>
+							<th>Received date</th>
 							<th>Create by</th>
 							<th width="5%">Remove</th>
 						</tr>
 					</thead>
 					<tbody>
-                    <?php if (count($lists)>0) : ?>
+                    <?php if ($lists!=false&&count($lists)>0) : ?>
 						<?php foreach($lists as $val){ ?>
 						<tr>
 							<th class="text-center">
@@ -112,31 +113,22 @@
 								</div>
 							</th>
 							<td class="text-center"><?php echo sprintf('%03d',$val['group_code']); ?></td>
-							<td class="text-center">
-							<?php 
-							$start = (int)$val['start'] - (int)$val['remaining_qty'];
-							if ($start<$val['default_start']) {
-								$num1 = $val['start'] - $val['default_start'];
-								$num2 = $val['default_end'] - ($val['remaining_qty'] - $num1);
-								$start = $num2 + 1;
-							}
-							echo sprintf('%08d',$start); 
-							?>
-							</td>
-							<td class="text-center"><?php echo sprintf('%08d',($val['start']-1)); ?></td>
-							<td class="text-center"><?php echo number_format($val['remaining_qty'], 0);?></td>
+							<td class="text-center"><?php  echo sprintf('%08d',$val['barcode_start']); ?></td>
+							<td class="text-center"><?php echo sprintf('%08d',($val['barcode_end'])); ?></td>
+							<td class="text-center"><?php echo number_format($val['barcode_qty'], 0);?></td>
 							<td class="text-center">
 								<?php if($val['barcode_use']==1) : ?>
 								<span class="text-primary">Received</span>
 								<?php else: ?>
-								<a href="<?php echo $link_changestatus."&id=$val[id_group]";?>" class="btn btn-outline-info btn-sm">Waiting <i class="fas fa-chevron-right"></i> Receive</a>
+								<a href="<?php echo $link_changestatus."&id=$val[id_history]&idgroup=$val[id_group]";?>" class="btn btn-outline-info btn-sm">Waiting <i class="fas fa-chevron-right"></i> Receive</a>
 								<?php endif; ?>
 							</td>
-							<td><?php echo $val['date_added']; ?></td>
+							<td><?php echo $val['date_purchase']!='0000-00-00' ? $val['date_purchase'] : ''; ?></td>
+							<td><?php echo $val['date_received']!='0000-00-00' ? $val['date_received'] : ''; ?></td>
 							<td><?php echo $val['username']; ?></td>
 							<td class="text-center">
-                                <a href="<?php echo $val['barcode_use']==0?$link_del.'&id='.$val['id_group']:'#';?>" class="btn btn-danger btn-sm <?php echo $val['barcode_use']==1?'disabled':'';?>" onclick="return confirm('Are you sure delete this purchase group?')"><i class="fas fa-trash-alt"></i></a>
-                            </td>
+								<a href="<?php echo $val['barcode_use']==0?$link_del.'&id='.$val['id_history'].'&idgroup='.$val['id_group']:'#';?>" class="btn btn-danger btn-sm <?php echo $val['barcode_use']==1?'disabled':'';?>" onclick="return confirm('Are you sure delete this purchase group?')"><i class="fas fa-trash-alt"></i></a>
+							</td>
 						</tr>
 						<?php } ?>
                     <?php else: ?>
