@@ -61,7 +61,7 @@
 </head>
 
 <body class="dark-sidenav">
-  <?php if (get('route') != 'home' && get('route') != 'loading' && get('route') != 'loading/someone' && get('route') != 'loading/rangeall' && get('route') != 'loading/range_barcode' && get('route') != 'loading/range' && get('route') != '') { ?>
+  <?php if (get('route') != 'home' && get('route') != 'loading' && get('route') != 'api/runDataGroupHistory' && get('route') != 'loading/someone' && get('route') != 'loading/rangeall' && get('route') != 'loading/range_barcode' && get('route') != 'loading/range' && get('route') != '') { ?>
   <!-- Left Sidenav -->
   <div class="left-sidenav">
     <!-- LOGO -->
