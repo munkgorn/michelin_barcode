@@ -117,6 +117,10 @@ class AssociationController extends Controller
         $config = $this->model('config');
         $relation_group = $association->getRelationshipBySize($size, $sumprod, $not);
 
+        if ($remaining_qty==0) {
+            $remaining_qty = $association->getNotUseBarcode($last_week);
+        }
+
         // Config Relationship
         $config_relation = array();
         $temprelation = $config->getRelationship();
@@ -320,6 +324,7 @@ class AssociationController extends Controller
 
         $lists = $association->getProducts($date_wk);
         $notuse = array();
+        
         foreach ($lists as $key => $value) {
             $last_week = $value['last_week'];
             // $remaining_qty = (int)$value['remaining_qty'];
@@ -341,6 +346,51 @@ class AssociationController extends Controller
             //     }
             // }
         }
+
+
+        // Condition 2 size duplicate last week on same config day , use  last wk only
+        /*
+            Week 1 : 2021-02-08
+                Size  | Lastwk
+                212   | 105
+
+            Week 2 : 2021-02-22
+                Size  | Lastwk
+                313   | 105
+
+            Week 3 : 2021-03-02
+                Size  | Lastwk
+                212   | 105 *** false and remove
+                313   | 105 *** true show in this
+        */
+        $seq = array();
+        $lastwklist = array();
+        foreach ($lists as $value) {
+            if (!empty($value['last_week'])) {
+                if (!isset($seq[$value['last_week']])){
+                    $seq[$value['last_week']] = 0;
+                }
+                if ($seq[$value['last_week']] < strtotime($value['last_week_seq'])) {
+                    $seq[$value['last_week']] = strtotime($value['last_week_seq']);  
+                    $lastwklist[$value['last_week']] = $value['size'];
+                }
+            }
+        }
+        /*
+            Result 
+                $seq
+                    array
+                    (
+                        [105] => 1613926800 *** show last timestamp
+                    )
+                $lastwklist
+                    array
+                    (
+                        [105] => 313 *** size can use this lastwk
+                    )
+        */
+        // print_r($seq);
+        // print_r($lastwklist);
 
         foreach ($lists as $key => $value) {
             $last_week = $value['last_week'];
@@ -399,6 +449,13 @@ class AssociationController extends Controller
                 $propose = '';
                 $propose_remaining_qty = '';
                 // $message = '';
+            }
+
+            // Check New Condition LastWk
+            if (!empty($last_week) && array_key_exists($last_week, $lastwklist)) {
+                if ($lastwklist[$last_week]!=$value['size']) {
+                    $last_week = '';
+                }
             }
 
             $text = $message;

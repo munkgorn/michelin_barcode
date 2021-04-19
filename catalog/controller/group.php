@@ -141,9 +141,9 @@ class GroupController extends Controller
     'barcode_use' => 0,
    );
    $historyInfo = $history->getHistories($filter);
-   if ($historyInfo != false && count($historyInfo) == 1) {
+   if ($historyInfo != false && count($historyInfo) >= 1) {
     $historyInfo = $historyInfo[0];
-    $history->editHistory($historyInfo['id_history'], array('barcode_use' => 1));
+    $history->editHistory($historyInfo['id_history'], array('barcode_use' => 1, 'date_received' => date('Y-m-d H:i:s')));
    }
    //   $barcode->editHistory();
    $this->setSession('success', 'Change status to receive success.');
@@ -155,7 +155,7 @@ class GroupController extends Controller
   $url .= !empty($filter_group) ? "&group=$filter_group" : '';
   $url .= !empty($filter_status) ? "&status=$filter_status" : '';
 
-  $group_info = $group->getGroup($id);
+  $group_info = $group->getGroup($idgroup);
 
   // $this->redirect('group'.$url );
   $this->setSession('redirect', 'group');
@@ -204,9 +204,9 @@ class GroupController extends Controller
 
     $historyInfo = $history->getHistories($filter);
 
-    if ($historyInfo != false && count($historyInfo) == 1) {
+    if ($historyInfo != false && count($historyInfo) >= 1) {
      $historyInfo = $historyInfo[0];
-     $history->editHistory($historyInfo['id_history'], array('barcode_use' => 1));
+     $history->editHistory($historyInfo['id_history'], array('barcode_use' => 1, array('barcode_use' => 1, 'date_received' => date('Y-m-d H:i:s'))));
     }
     $success[] = $group->findCode($id);
    } else {

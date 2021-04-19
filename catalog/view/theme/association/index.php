@@ -280,8 +280,6 @@ $(document).ready(function () {
 			let idsumprod =  $('.tdsumprod[data-idproduct='+idproduct+']').html();
 			let oldmsg = $('.tdmsg[data-idproduct='+idproduct+']').data('text');
 
-			
-
 			let obj = {td_size:idsize,td_sumprod:idsumprod,td_lastwk:idgroup,td_msg:oldmsg};
 
 			if (oldmsg!='Relationship') {
@@ -311,7 +309,7 @@ $(document).ready(function () {
 								let thisprq_str = data2.propose_remaining_qty;
 								thisprq = thisprq_str.replace(',','');
 							}
-							
+							$(element).html(data2.remaining_qty);
 
 							// obj.relationship_propose = {propose:data2.propose, propose_remaining_qty: thisprq};
 							// obj.relationship = data2.propose;

@@ -218,10 +218,11 @@ class BarcodeModel extends db
    // $this->where('date_added', date('Y-m-d').'%', 'LIKE');
    $this->where('del', '0');
    $query = $this->get('group');
+   $oldgroup = $query->row;
 
-   // มีค่าเดิม ของวันนี้อยู่แล้ว ให้อัพเดท
+   // มีค่าเดิม อยู่แล้ว ให้อัพเดท
    if ($query->num_rows == 1 && (int)$val > 0) {
-    $oldgroup = $query->row;
+    
 
     $startupdate = (int)$oldgroup['start'] + (int)$val;
     if ($startupdate > $oldgroup['default_end']) {
@@ -323,16 +324,26 @@ class BarcodeModel extends db
    $qty      = $val;
    if (isset($start) && isset($id_group)) {
     for ($i = $start; $i <= ((int)$start + (int)$qty - 1); $i++) {
-     $data_insert_barcode[] = array(
-      'id_user'        => $data['id_user'],
-      'id_group'       => $id_group,
-      'barcode_prefix' => $group_code,
-      'barcode_code'   => $i,
-      'barcode_status' => 0,
-      'barcode_flag'   => 0,
-      'date_added'     => $date_now,
-      'date_modify'    => $date_now,
-     );
+
+        $bc = $i;
+        if ($i > $oldgroup['default_end']) {
+            $cal         = $i - (int)$oldgroup['default_end']; // ส่วนต่างที่เกิน
+            $cal2        = (int)$oldgroup['default_start'] + $cal;
+            $bc = $cal2 - 1;
+        } elseif ($i == (int)$oldgroup['default_end']+1) {
+            $bc = (int)$oldgroup['default_start'];
+        }
+
+        $data_insert_barcode[] = array(
+        'id_user'        => $data['id_user'],
+        'id_group'       => $id_group,
+        'barcode_prefix' => $group_code,
+        'barcode_code'   => $bc,
+        'barcode_status' => 0,
+        'barcode_flag'   => 0,
+        'date_added'     => $date_now,
+        'date_modify'    => $date_now,
+        );
      // $result_insert_barcode = $this->insert('barcode',$data_insert_barcode);
     }
    }
@@ -727,6 +738,7 @@ class BarcodeModel extends db
   $this->select('group_code');
   $this->where('barcode_status', $status);
   $this->group_by('group_code');
+  $this->order_by('group_code','asc');
   $query = $this->get('barcode_range');
   return $query->rows;
  }

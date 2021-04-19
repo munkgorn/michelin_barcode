@@ -20,3 +20,4 @@ log/*.txt
 
 dumpdata/node_modules/*
 uploads/*
+dump/*

@@ -49,6 +49,13 @@
       } else {
         echo 'SUCCESS';
       }
-      
+    }
+
+
+    public function updateProduct() { // Clear all Value in column RemainingQTY table product because it's not used, we can find reamining qty on barcode_range
+      $api = $this->model('api');
+      $result = $api->cleanRemainingQtyProduct();
+      echo $result==1 ? "<p>SUCCESS</p>":"FAIL";
+      echo '<br><a href="index.php?route=clear">back</a>';
     }
   }

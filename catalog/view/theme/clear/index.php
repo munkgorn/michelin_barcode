@@ -96,6 +96,7 @@
                                 <tr>
                                     <th>Title</th>
                                     <th>Desc.</th>
+                                    <th>Date</th>
                                     <th>Link</th>
                                 </tr>
                             </thead>
@@ -103,8 +104,17 @@
                                 <tr>
                                     <td>Update Default Group</td>
                                     <td>วิธีการคำนวณหน้า Purchase ผิดพลาดเนื่องจาก default_start เปลี่ยนไป แก้ให้เป็น default คือ 00000 - 99999</td>
+                                    <td></td>
                                     <td>
                                         <a href="<?php echo route('group/updateDefaultStart');?>" onclick="return confirm('Confirm')" class="btn btn-sm btn-danger" target="new">Update</a><br />
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>Association Clean Saved</td>
+                                    <td>ล้างค่าเก่าที่ Save ไว้ใน Association พวก RemainingQty, Propose, ProposeRemaining</td>
+                                    <td>02/04/2021</td>
+                                    <td>
+                                        <a href="<?php echo route('api/updateProduct');?>" onclick="return confirm('Confirm')" class="btn btn-sm btn-danger" target="new">Update</a><br />
                                     </td>
                                 </tr>
                             </tbody>

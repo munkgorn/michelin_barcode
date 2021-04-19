@@ -191,6 +191,7 @@ class AssociationModel extends db
         $sql .= "p.sum_product AS sum_prod, ";
         // $sql .= "g.group_code AS `last_week`, ";
         $sql .= "(SELECT g.group_code FROM mb_master_product p2 LEFT JOIN mb_master_group g ON g.id_group = p2.id_group WHERE p2.size_product_code = p.size_product_code AND p2.id_product != p.id_product AND p2.id_group is not null AND p2.date_wk >= DATE_ADD( p.date_wk, INTERVAL - $lastweekdate DAY ) AND p2.date_wk <= p.date_wk  ORDER BY p2.id_product DESC LIMIT 0,1 ) as last_week, ";
+        $sql .= "(SELECT p2.date_wk FROM mb_master_product p2 LEFT JOIN mb_master_group g ON g.id_group = p2.id_group  WHERE p2.size_product_code = p.size_product_code  AND p2.id_product != p.id_product  AND p2.id_group IS NOT NULL AND p2.date_wk >= DATE_ADD( p.date_wk, INTERVAL - 30 DAY )  AND p2.date_wk <= p.date_wk  ORDER BY p2.id_product DESC  LIMIT 0,1  ) AS last_week_seq, ";
         // $sql .= "(SELECT count(*) as qty FROM mb_master_barcode b WHERE b.id_group = g.id_group AND b.group_received=1 AND b.barcode_status=0 AND b.barcode_flag=0) as remaining_qty, ";
         $sql .= "(SELECT group_code FROM mb_master_group g2 WHERE g2.id_group = p.id_group) as save ";
         $sql .= "FROM mb_master_product p ";
