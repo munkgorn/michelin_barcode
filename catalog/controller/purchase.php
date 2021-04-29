@@ -54,7 +54,7 @@ class PurchaseController extends Controller
 					'barcode_start' => (int)$group_info['start'],
 					'barcode_end'   => $bce,
 					'barcode_qty'   => (int)$v,
-					'barcode_use'   => 1,
+					'barcode_use'   => 0,
 					'date_purchase' => date('Y-m-d H:i:s'),
 					'date_received' => null,
 					'date_added'    => date('Y-m-d H:i:s'),
