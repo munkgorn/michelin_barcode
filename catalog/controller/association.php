@@ -331,6 +331,7 @@ class AssociationController extends Controller
             $remaining_qty = 0;
 
             $relation_group = $association->getRelationshipBySize($value['size'], $value['sum_prod']);
+            // print_r($relation_group);
             $lists[$key]['relation_group'] = $relation_group;
 
             // if ($value['sum_prod']>0) {

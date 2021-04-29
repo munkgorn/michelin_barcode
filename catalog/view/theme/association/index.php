@@ -299,7 +299,7 @@ $(document).ready(function () {
 					async: false,
 					cache:true,
 					success: function (data2) {
-						console.log(data2);
+						console.log('ajaxrelation', data2);
 						if (typeof data2.error_message != 'undefined') {
 							console.log('Error Response Relationship : ' + data2.error_message);
 							// obj.relationship = 'Error'+data2.error_message;
