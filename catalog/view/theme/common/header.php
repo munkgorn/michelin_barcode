@@ -9,24 +9,6 @@
   <meta content="" name="author">
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
 
-  <!-- <link rel="apple-touch-icon" sizes="57x57" href="assets/michelin_icon/apple-icon-57x57.png">
-		<link rel="apple-touch-icon" sizes="60x60" href="assets/michelin_icon/apple-icon-60x60.png">
-		<link rel="apple-touch-icon" sizes="72x72" href="assets/michelin_icon/apple-icon-72x72.png">
-		<link rel="apple-touch-icon" sizes="76x76" href="assets/michelin_icon/apple-icon-76x76.png">
-		<link rel="apple-touch-icon" sizes="114x114" href="assets/michelin_icon/apple-icon-114x114.png">
-		<link rel="apple-touch-icon" sizes="120x120" href="assets/michelin_icon/apple-icon-120x120.png">
-		<link rel="apple-touch-icon" sizes="144x144" href="assets/michelin_icon/apple-icon-144x144.png">
-		<link rel="apple-touch-icon" sizes="152x152" href="assets/michelin_icon/apple-icon-152x152.png">
-		<link rel="apple-touch-icon" sizes="180x180" href="assets/michelin_icon/apple-icon-180x180.png">
-		<link rel="icon" type="image/png" sizes="192x192"  href="assets/michelin_icon/android-icon-192x192.png">
-		<link rel="icon" type="image/png" sizes="32x32" href="assets/michelin_icon/favicon-32x32.png">
-		<link rel="icon" type="image/png" sizes="96x96" href="assets/michelin_icon/favicon-96x96.png">
-		<link rel="icon" type="image/png" sizes="16x16" href="assets/michelin_icon/favicon-16x16.png">
-		<link rel="manifest" href="assets/michelin_icon/manifest.json">
-		<meta name="msapplication-TileColor" content="#ffffff">
-		<meta name="msapplication-TileImage" content="assets/michelin_icon/ms-icon-144x144.png">
-		<meta name="theme-color" content="#ffffff">
-		<link rel="shortcut icon" href="assets/michelin_icon/favicon.ico"/> -->
 
   <link rel="stylesheet" href="assets/css/bootstrap.min.css" />
   <link rel="stylesheet" href="assets/css/jquery-ui.min.css" />
@@ -77,19 +59,7 @@
     <div class="menu-content h-100" data-simplebar>
       <ul class="metismenu left-sidenav-menu">
         <li class="menu-label mt-0">Main</li>
-        <li>
-          <a href="<?php echo route('dashboard'); ?>">
-            <i data-feather="home" class="align-self-center menu-icon"></i>
-            <span>Dashboard</span>
-          </a>
-        </li>
-        <li>
-          <a href="<?php echo route('association'); ?>"
-            class="<?php echo in_array($_GET['route'], array('association', 'association/freegroup')) ? 'active' : ''; ?>">
-            <i data-feather="link-2" class="align-self-center menu-icon"></i>
-            <span>Barcode Association<br>จับคู่บาร์โค้ด</span>
-          </a>
-        </li>
+        
         <li id="barcode">
           <a href="javascript: void(0);">
             <i data-feather="grid" class="align-self-center menu-icon">
@@ -112,11 +82,6 @@
               </a>
             </li>
 
-            <!-- <li>
-								<a href="<?php echo route('barcode'); ?>" class="<?php echo $_GET['route'] == 'barcode' ? 'active' : ''; ?>">
-									<i class="ti-control-record"></i>Ordering History<br>ประวัติการสั่งซื้อบาร์โค้ด
-								</a>
-							</li> -->
             <li>
               <a href="<?php echo route('barcode'); ?>"
                 class="<?php echo $_GET['route'] == 'barcode' ? 'active' : ''; ?>">
@@ -152,20 +117,6 @@
                 class="<?php echo $_GET['route'] == 'setting' && $_GET['tab'] == 'config_barcode' ? 'active' : ''; ?>">
                 <i class="ti-control-record"></i> List of barcodes that plant can
                 use<br>กลุ่มบาร์โค้ดทั้งหมดที่โรงงานนำมาใช้ได้
-              </a>
-            </li>
-            <li>
-              <a href="<?php echo route('setting&tab=config_relationship'); ?>"
-                class="<?php echo $_GET['route'] == 'setting' && $_GET['tab'] == 'config_relationship' ? 'active' : ''; ?>">
-                <i class="ti-control-record"></i> List of special barcodes for
-                association<br>บาร์โค้ดพิเศษสำหรับใช้ในการจับคู่
-              </a>
-            </li>
-            <li>
-              <a href="<?php echo route('setting&tab=config_default'); ?>"
-                class="<?php echo $_GET['route'] == 'setting' && $_GET['tab'] == 'config_default' ? 'active' : ''; ?>">
-                <i class="ti-control-record"></i> Nb of days that barcode cannot be
-                repeated<br>จำนวนวันที่ไม่อนุญาตให้ใช้เลขบาร์โค้ด
               </a>
             </li>
 

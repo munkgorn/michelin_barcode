@@ -26,7 +26,8 @@ if (DEBUG_MODE) {
 // Config DB localhost
 define('PREFIX', 'mb_master_');
 define('DB_HOST', 'localhost');
-define('DB_DB', 'fsoftpro_barcode');
+define('DB_DB', 'fsoftpro_barcode_p3');
+// define('DB_DB', 'fsoftpro_barcode');
 // define('DB_DB','fsoftpro_barcode_lmc');
 // define('DB_DB', 'fsoftpro_barcode_ppd');
 

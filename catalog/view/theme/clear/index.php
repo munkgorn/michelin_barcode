@@ -2,7 +2,6 @@
 	<div class="card">
 		<div class="card-header">
 			<h4 class="card-title">Clear Data </h4>
-			<p class="text-muted mb-0">version 2.0.0</p>
 		</div>
 		<div class="card-body bootstrap-select-1">
 			<?php if (!empty($success)): ?>
@@ -24,25 +23,6 @@
                                 </div>
                                 <small class="text-danger">เมื่อกดยืนยัน barcode ที่เก่ากว่าวันที่ที่เลือก (เฉพาะที่ใช้ไปแล้วหรือลบไปแล้ว) จะถูกลบทิ้งทั้งหมดไม่สามารถกู้คืนได้</small>
                                 <small class="text-danger">ขั้นตอนการลบอาจจะใช้เวลานาน กรุณารอจนกว่าจะมีสถานะแจ้งเตือนขึ้นมาแสดง</small>
-                            </div>
-                        </form>
-                    </div>
-                    <div class="col-sm-4">
-                        <form action="<?php echo route('clear/removeAssociation');?>" method="POST">
-                            <div class="form-group">
-                                <label for="">Date of association</label>
-                                <div>
-                                    <select name="association" id="" class="form-control">
-                                        <?php if (count($dateass)>0) : ?>
-                                        <option value="all">All</option>
-                                        <?php endif;?>
-                                    <?php foreach ($dateass as $date): ?>
-                                        <option value="<?php echo $date['date_wk'];?>"><?php echo $date['date_wk'];?></option>
-                                    <?php endforeach; ?>
-                                    </select>
-                                    <button type="button" class="btnsubmit btn btn-danger mt-3">ยืนยันการลบ Association</button>
-                                </div>
-                                <small class="text-danger">เมื่อกดยืนยัน ระบบจะลบ association ตามวันที่ที่เลือก ทั้งหมดและไม่สามารถกู้คืนได้</small>
                             </div>
                         </form>
                     </div>
@@ -101,7 +81,7 @@
                                 </tr>
                             </thead>
                             <tbody>
-                                <tr>
+                                <!-- <tr>
                                     <td>Update Default Group</td>
                                     <td>วิธีการคำนวณหน้า Purchase ผิดพลาดเนื่องจาก default_start เปลี่ยนไป แก้ให้เป็น default คือ 00000 - 99999</td>
                                     <td></td>
@@ -116,7 +96,7 @@
                                     <td>
                                         <a href="<?php echo route('api/updateProduct');?>" onclick="return confirm('Confirm')" class="btn btn-sm btn-danger" target="new">Update</a><br />
                                     </td>
-                                </tr>
+                                </tr> -->
                             </tbody>
                         </table>
                         <!-- <a href="<?php echo route('clear/updateTableBarcodeWithGroupCode');?>" onclick="return confirm('Confirm')" target="new">Update Table barcode</a><br /> -->

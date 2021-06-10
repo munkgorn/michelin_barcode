@@ -12,12 +12,7 @@
 			<div class="alert alert-danger" role="alert"><?php echo $error; ?></div>
 			<?php endif; ?>
 			<ul class="nav nav-pills">
-				<li class="nav-item">
-					<a class="nav-link <?php echo $tab=='config_default'?'active':'';?> " data-toggle="tab" href="#config_default" role="tab" aria-controls="config_default" aria-selected="true">Default</a>
-				</li>
-				<li class="nav-item">
-					<a class="nav-link <?php echo $tab=='config_relationship'?'active':'';?> " data-toggle="tab" href="#config_relationship" role="tab" aria-controls="config_relationship" aria-selected="false">Relationship</a>
-				</li>
+				
 				<li class="nav-item">
 					<a class="nav-link <?php echo $tab=='config_barcode'?'active':'';?> " data-toggle="tab" href="#config_barcode" role="tab" aria-controls="config_barcode" aria-selected="false">Barcode</a>
 				</li>
