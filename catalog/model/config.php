@@ -92,8 +92,9 @@
                     $this->where($key, $value);
                 }
             }
-
+            $this->order_by('`group`', 'ASC');
             $query = $this->get('config_barcode');
+            // echo $this->last_query();
             return $query->rows;
         }
         public function getBarcodeByPrefix($prefix) {

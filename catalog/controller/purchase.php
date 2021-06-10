@@ -31,38 +31,38 @@ class PurchaseController extends Controller
   if (method_post()) {
    $id_user = $this->getSession('id_user');
    $qty     = post('qty');
-	 $group   = $this->model('group');
-	 $history = $this->model('history');
+   $group   = $this->model('group');
+   $history = $this->model('history');
    foreach ($qty as $k => $v) {
     if ((int)$v > 0) {
-			$idgroup = $group->findIdGroup($k);
-			if ($idgroup > 0) {
-				$group_info = $group->getGroup($idgroup);
+     $idgroup = $group->findIdGroup($k);
+     if ($idgroup > 0) {
+      $group_info = $group->getGroup($idgroup);
 
-                $bce = (int)$group_info['start'] + (int)$v - 1;
-                if ($bce > (int)$group_info['default_end']) {
-                    $cal         = $bce - (int)$group_info['default_end']; // ส่วนต่างที่เกิน
-                    $cal2        = (int)$group_info['default_start'] + $cal;
-                    $bce = $cal2 - 1;
-                } elseif ($i == (int)$group_info['default_end']+1) {
-                    $bce = (int)$group_info['default_start'];
-                }
+      $bce = (int)$group_info['start'] + (int)$v - 1;
+      if ($bce > (int)$group_info['default_end']) {
+       $cal  = $bce - (int)$group_info['default_end']; // ส่วนต่างที่เกิน
+       $cal2 = (int)$group_info['default_start'] + $cal;
+       $bce  = $cal2 - 1;
+      } elseif ($i == (int)$group_info['default_end'] + 1) {
+       $bce = (int)$group_info['default_start'];
+      }
 
-				$insert  = array(
-					'id_user'       => $id_user,
-					'id_group'      => $idgroup,
-					'barcode_start' => (int)$group_info['start'],
-					'barcode_end'   => $bce,
-					'barcode_qty'   => (int)$v,
-					'barcode_use'   => 0,
-					'date_purchase' => date('Y-m-d H:i:s'),
-					'date_received' => null,
-					'date_added'    => date('Y-m-d H:i:s'),
-					'date_modify'   => null
-				 );
-				 $history->addHistory($insert);
-			}
-		}    
+      $insert = array(
+       'id_user'       => $id_user,
+       'id_group'      => $idgroup,
+       'barcode_start' => (int)$group_info['start'],
+       'barcode_end'   => $bce,
+       'barcode_qty'   => (int)$v,
+       'barcode_use'   => 0,
+       'date_purchase' => date('Y-m-d H:i:s'),
+       'date_received' => null,
+       'date_added'    => date('Y-m-d H:i:s'),
+       'date_modify'   => null,
+      );
+      $history->addHistory($insert);
+     }
+    }
    }
 
    $data_post = array(
@@ -74,12 +74,6 @@ class PurchaseController extends Controller
    $data['end_group']   = post('end_group');
    $this->setSession('success', 'Purchase order successful');
 
-   // $this->redirect('purchase&start_group='.$data['start_group'].'&end_group='.$data['end_group'].'&validated=true');
-
-   // $this->model('config')->setConfig('load_year', 1);
-   // $this->model('config')->setConfig('load_barcode', 1);
-   // $this->setSession('redirect','purchase&loading=1&start_group='.$data['start_group'].'&end_group='.$data['end_group'].'&validated=true');
-   // $this->redirect('loading');
 
    $this->redirect('purchase&loading=1&start_group=' . $data['start_group'] . '&end_group=' . $data['end_group'] . '&validated=true');
   }

@@ -16,7 +16,7 @@
 							<select name="start_group" class="form-control select2start">
 								<?php foreach ($result_group as $val) { ?>
 								<option value="<?php echo $val['group']; ?>" <?php echo ($start_group == $val['group'] ? 'selected' : ''); ?>>
-									<?php echo sprintf('%03d', $val['group']); ?>
+									<?php echo trim($val['group']); ?>
 								</option>
 								<?php } ?>
 							</select>
@@ -28,7 +28,7 @@
 							<select name="end_group" class="form-control select2end">
 								<?php foreach ($result_group as $key => $val) { ?>
 								<option value="<?php echo $val['group']; ?>" <?php echo ($end_group == $val['group'] ? 'selected' : ''); ?>>
-									<?php echo sprintf('%03d', $val['group']); ?>
+									<?php echo trim($val['group']); ?>
 								</option>
 								<?php } ?>
 							</select>
@@ -95,9 +95,9 @@
 								<tbody>
 									<?php foreach ($getMapping as $key => $val) { ?>
 									<tr>
-										<td class="text-center"><?php echo sprintf('%03d', $val['group_code']); ?></td>
-										<td class="text-center"><label for="" class="start"><?php echo sprintf('%08d', $val['barcode_start']); ?></label></td>
-										<td class="text-center"><label for="" class="end"><?php echo sprintf('%08d', $val['barcode_end']); ?></label></td>
+										<td class="text-center"><?php echo trim($val['group_code']); ?></td>
+										<td class="text-center"><label for="" class="start"><?php echo trim($val['barcode_start']); ?></label></td>
+										<td class="text-center"><label for="" class="end"><?php echo trim($val['barcode_end']); ?></label></td>
 										<td class="text-center">
 											<input
 												type="text"
@@ -120,22 +120,22 @@
 											>
 										</td>
 										<td class="text-center">
-										<button type="button" class="btn load-start-and-end load-start" data-group="<?php echo sprintf('%03d', $val['group_code']); ?>">Update</button>
-										<!-- <span class="load_default_start" data-group="<?php echo sprintf('%03d', $val['group_code']); ?>">View</span> -->
+										<button type="button" class="btn load-start-and-end load-start" data-group="<?php echo trim($val['group_code']); ?>">Update</button>
+										<!-- <span class="load_default_start" data-group="<?php echo trim($val['group_code']); ?>">View</span> -->
 										<!-- <?php echo !empty($val['barcode_start_year']) ? sprintf('%08d', $val['barcode_start_year']) : ''; ?> -->
 										</td>
 										<td class="text-center">
-										<button type="button" class="btn load-start-and-end load-end" data-group="<?php echo sprintf('%03d', $val['group_code']); ?>">Update</button>
-										<!-- <span class="load_default_end" data-group="<?php echo sprintf('%03d', $val['group_code']); ?>">View</span> -->
+										<button type="button" class="btn load-start-and-end load-end" data-group="<?php echo trim($val['group_code']); ?>">Update</button>
+										<!-- <span class="load_default_end" data-group="<?php echo trim($val['group_code']); ?>">View</span> -->
 										<!-- <?php echo !empty($val['barcode_end_year']) ? sprintf('%08d', $val['barcode_end_year']) : ''; ?> -->
 										</td>
 										<td class="text-center">
 
-											<?php echo sprintf('%08d', $val['default_start']); ?>
+											<?php echo trim($val['default_start']); ?>
 											<!-- <input type="text" class="form-control default_start" id_group="<?php echo $val['id_group']; ?>" value="<?php echo $val['default_start']; ?>"> -->
 										</td>
 										<td class="text-center">
-											<?php echo sprintf('%08d', $val['default_end']); ?>
+											<?php echo trim($val['default_end']); ?>
 											<!-- <input type="text" class="form-control default_end" id_group="<?php echo $val['id_group']; ?>" value="<?php echo $val['default_end']; ?>"> -->
 										</td>
 										<td class="text-center">
@@ -200,10 +200,14 @@ $(document).ready(function () {
 		var ele = $(this);
 
 		var qty = parseInt(ele.val());
-		var start = parseInt(ele.attr('start'));
-		var end = parseInt(ele.parent('td').prev('td').children('.end').html());
-		var default_start = parseInt(ele.attr('default_start'));
-		var default_end = parseInt(ele.attr('default_end'));
+		let scode = ele.attr('start');
+		var start = parseInt(scode.substr(3,5));
+		let ecode = ele.parent('td').prev('td').children('.end').html();
+		var end = parseInt(ecode.substr(3,5));
+		let ds = ele.attr('default_start');
+		var default_start = parseInt(ds.substr(3,5));
+		let de = ele.attr('default_end');
+		var default_end = parseInt(de.substr(3,5));
 		var groupcode = ele.data('id');
 
 
@@ -226,12 +230,12 @@ $(document).ready(function () {
 				dataType: "json",
 				success: function (response) {
 					var obj = JSON.parse(response);
-					console.log(obj);
+					console.log('obj', obj);
 					if (obj.id_barcode > 0) {
 						console.log('Found barcode is cannot use');
 						ele.val('');
-						ele.parents('tr').find('.end').text('00000000');
-						alert('ไม่สามารถใช้ barcode '+pad(num1, 8)+' ได้ เนื่องจากอยู่ภายใต้เงื่อนไขใช้ซ้ำภายในจำนวน x วัน');
+						ele.parents('tr').find('.end').text(ecode+'00000');
+						alert('ไม่สามารถใช้ barcode '+scode.substr(0,3)+pad(num1, 5)+' ได้ เนื่องจากอยู่ภายใต้เงื่อนไขใช้ซ้ำภายในจำนวน x วัน');
 						barcodeUsed = true;
 					} else {
 						console.log('Can use');
@@ -247,7 +251,7 @@ $(document).ready(function () {
 			console.log('Alert bug input qty is more than 100,000')
 			alert('This barcode is more than limit input, please key in maximum 100,000. ');
 			ele.val('');
-			ele.parents('tr').find('.end').text('00000000');
+			ele.parents('tr').find('.end').text(scode.substr(0,3)+'00000');
 			return 0;
 		} else {
 			newstart = check();
@@ -255,9 +259,11 @@ $(document).ready(function () {
 			sendBarcodeCheck(newstart);
 			if (qty>0 && !barcodeUsed) {
 				sum_end_qty = newstart > 0 ? newstart : (start + qty - 1); // ! Change `End`
-				var end_string = pad(sum_end_qty,8);
+				var end_string = pad(sum_end_qty,5);
+				
 				if (isNaN(end_string)==false) {
-					ele.parents('tr').find('.end').text(end_string);
+					console.log(scode);
+					ele.parents('tr').find('.end').text(scode.substr(0,3)+end_string);
 				}
 				var dataPost = {
 					start_group: '<?php echo $start_group; ?>',
@@ -268,7 +274,7 @@ $(document).ready(function () {
 				}
 				saveForExport(dataPost);
 			} else {
-				ele.parents('tr').find('.end').text('000000');
+				ele.parents('tr').find('.end').text(scode.substr(0,3)+'00000');
 			}
 		}
 	});
