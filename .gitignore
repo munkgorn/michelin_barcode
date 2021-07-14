@@ -19,5 +19,12 @@ Archive_*.zip
 log/*.txt
 
 dumpdata/node_modules/*
-uploads/*
+uploads/association/*
+uploads/config/*
+uploads/export/*
+uploads/import/*
+uploads/import_barcode_csv/*
+uploads/import_cutbarcode/*
+uploads/mockupdata/*
+uploads/PPDOrder/*
 dump/*
