@@ -40,9 +40,10 @@
 		public function findAllByGroup($group, $status=1) {
             $this->where('barcode_status', $status);
             if ($group!='all') {
-                $this->where('group_code', (int)$group);
+                $this->where('group_code', $group);
             }
             $query = $this->get('barcode_range');
+            // echo $this->last_query();
 			return $query->rows;
         }
 

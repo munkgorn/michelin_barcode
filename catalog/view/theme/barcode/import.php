@@ -159,17 +159,21 @@ $(document).ready(function () {
 			success: function (response) {
 					
 				result.barcode = [];
+
 				if (response.length>0) {
 					let rows = response.split(/\r\n|\n/);
 					rows.forEach((value,index) => {
-						let cols = value.split(";");
-						if (typeof cols[9] != 'undefined') {
-							let str = cols[9].replace(/"/g,"");
-							let thisbarcode = parseInt(str);
-							if (isNaN(thisbarcode)==false) {
-								result.barcode.push(thisbarcode);
+						if (index>0) {
+							let cols = value.split(";");
+							if (typeof cols[9] != 'undefined') {
+								let str = cols[9].replace(/"/g,"");
+								let thisbarcode = (str);
+								// if (isNaN(thisbarcode)==false) {
+									result.barcode.push(thisbarcode);
+								// }
 							}
 						}
+						
 					});
 					console.log('%c Found '+result.barcode.length+' barcode in file ', 'color: #198754'); // success 198754 | danger dc3545
 				} else {
@@ -190,17 +194,36 @@ $(document).ready(function () {
 
 	let loop_group = (response) => {
 		let realgroup = [];
+		let realgroupid = [];
 		let barcode = [];
+
 
 		let percent = 10 / parseInt(response.barcode.length);
 		let nowpercent = 10;
 		response.barcode.forEach(value => {
-			let thisbarcode = pad(value, 8);
+			let thisbarcode = value;
 			barcode.push(thisbarcode);
 
-			let groupcode = parseInt(thisbarcode.substr(0,3));
+			let groupcode = thisbarcode.substr(0,3);
 			if (jQuery.inArray(groupcode, realgroup) == -1) {
-				realgroup.push(groupcode);
+				// Check id this group
+				setTimeout(() => {
+					$.ajax({
+						type: "POST",
+						url: "index.php?route=barcode/ajaxGetGroupByGroupCode",
+						data: {group: groupcode},
+						dataType: "json",
+						cache: false,
+						async:false,
+						success: function(response) {
+							if (response){
+								realgroupid.push(response);
+								realgroup.push(groupcode);
+							}
+						}
+					});
+				},100);
+				
 			}
 			nowpercent += percent;
 			loading(nowpercent);
@@ -208,16 +231,19 @@ $(document).ready(function () {
 		loading(20);
 		// console.log('Found group in file');
 		// console.log(realgroup);
+		// console.log(realgroupid);
 		$('#result_submit_form').html('Loop get group in file successfull');
 
 
 
 		setTimeout(() => {
-			get_group(realgroup,barcode);
+			console.log(realgroup);
+			console.log(realgroupid);
+			get_group(realgroup,realgroupid,barcode);
 		},100);
 	}
 
-	let get_group = (filegroup,barcode) => {
+	let get_group = (filegroup,filegroupid,barcode) => {
 		let dbgroup = [];
 		$.ajax({
 			type: "POST",
@@ -226,22 +252,24 @@ $(document).ready(function () {
 			cache:false,
 			async:false,
 			success: function (response) {
+				console.log(response);
 				$.each(response, (index,value) => {
-					dbgroup.push(parseInt(value.group_code));
+					dbgroup.push(value.group_code);
 				});
 				loading(25);
 				// console.log('Get group in db');
-				// console.log(dbgroup);
+				console.log(dbgroup);
 				$('#result_submit_form').html('Get group in db successfull.');
 				setTimeout(() => {
-					check_group(filegroup, dbgroup, barcode);
+					check_group(filegroup, filegroupid, dbgroup, barcode);
 				},100);
 			}
 		});
 	}
 	
-	let check_group = (filegroup, dbgroup, barcode) => {
+	let check_group = (filegroup, filegroupid, dbgroup, barcode) => {
 		let realgroup = [];
+		let realgroupid = [];
 		console.log('========== CHECK ==========');
 		console.log('CHECK FILE GROUP');
 		console.log(filegroup);
@@ -250,36 +278,41 @@ $(document).ready(function () {
 		// loop db condition with in file
 		dbgroup.forEach((value,index) => {
 			if (jQuery.inArray(value,filegroup)!==-1 && jQuery.inArray(value, dbgroup)!==-1) {
-				realgroup.push(parseInt(value));
+				realgroup.push(value);
+				realgroupid.push(filegroupid[index]);
 			}
 		});
 		realgroup.sort();
+		// console.log('readlid',realgroupid);
 
 		// localStorage.setItem('savegroup', realgroup);
 
 		// loop barcode only in real group for ready to check db
 		let barcode_forupdate = [];
+		// console.log('barcode',barcode);
 		barcode.forEach((value,index) => {
 		// $.each(barcode, (index,value) => {
-			let str = pad(value, 8);
+			let str = value;
+			// console.log(str);
 			let prefix = str.substr(0,3);
-			if (jQuery.inArray(prefix, realgroup)) {
+			console.log(prefix, realgroup, jQuery.inArray(prefix, realgroup));
+			if (jQuery.inArray(prefix, realgroup)>=0) {
 				barcode_forupdate.push(value);
 			}
 		});
 
-		// console.log(barcode_forupdate);
+		// console.log('barcode_forupdate', barcode_forupdate);
 
 		loading(30);
 		$('#result_submit_form').html('Compere dbgroup and filegroup successfull.');
 		console.log('%c SUCCESS marge group ', 'color: #198754'); // success 198754 | danger dc3545
-		console.log(realgroup);
+		// console.log(realgroup);
 		// console.log(barcode_forupdate);
 		// console.log(realgroup[0]);
 		// console.log(realgroup[realgroup.length-1]);
 
 		setTimeout(() => {
-			sendToUpdate(barcode_forupdate, realgroup[0], realgroup[realgroup.length-1]);
+			sendToUpdate(barcode_forupdate, realgroupid[0], realgroupid[realgroupid.length-1]);
 		},100);
 
 	}
@@ -289,6 +322,7 @@ $(document).ready(function () {
 		let nowpercent = 30;
 		loading(nowpercent);
 		console.log('========== CHECK LOOP SEND BARCODE TO USED ==========');
+		console.log(barcodes, start, max);
 		$.each(barcodes, (index,value) => {
 			setTimeout(() => {
 				$.ajax({

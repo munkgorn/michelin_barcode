@@ -2,10 +2,27 @@
 class BarcodeModel extends db
 {
 
+ public function getBarcodeWithIDGroup($idgroup, $status = null, $flag = null)
+ {
+  $this->select('id_group, barcode_prefix, barcode_code, barcode_status, barcode_flag, date_added');
+  $this->where('id_group', (int)$idgroup);
+  if ($status == 0 || $status == 1) {
+   $this->where('barcode_status', (int)$status);
+  }
+  if ($flag == 0 || $flag == 1) {
+   $this->where('barcode_flag', $flag);
+  }
+  $this->where('group_received', 1);
+  $query = $this->get('barcode');
+
+  // echo $this->last_query();
+
+  return $query->rows;
+ }
  public function getBarcodeWithGroup($group, $status = null, $flag = null)
  {
   $this->select('id_group, barcode_prefix, barcode_code, barcode_status, barcode_flag, date_added');
-  $this->where('barcode_prefix', (int)$group);
+  $this->where('barcode_prefix', $group);
   if ($status == 0 || $status == 1) {
    $this->where('barcode_status', (int)$status);
   }
@@ -32,7 +49,8 @@ class BarcodeModel extends db
  }
  public function findAndUpdateBarcode($group, $barcode, $date = '')
  {
-  $sql = "UPDATE mb_master_barcode SET barcode_status = 1, date_modify = '" . date('Y-m-d') . "' WHERE barcode_prefix = $group AND barcode_code = $barcode;";
+    $barcode = (int)substr($barcode, 3,5);
+  $sql = "UPDATE mb_master_barcode SET barcode_status = 1, date_modify = '" . date('Y-m-d') . "' WHERE barcode_prefix = '$group' AND barcode_code = $barcode;";
   return $this->query($sql);
  }
  public function UpdateMultipleBarcode($barcode)
@@ -47,7 +65,10 @@ class BarcodeModel extends db
   $query  = $this->get('config');
   $config = $query->row['config_value'];
 
-  $sql   = "SELECT * FROM mb_master_barcode WHERE date_modify > DATE_ADD(CURDATE(),INTERVAL-" . $config . " DAY)   AND  barcode_code = '$barcode'  ORDER BY date_modify DESC";
+  $prefix = substr(trim($barcode), 0,3);
+  $barcode = (int)substr(trim($barcode), 3,5);
+
+  $sql   = "SELECT * FROM mb_master_barcode WHERE date_modify > DATE_ADD(CURDATE(),INTERVAL-" . $config . " DAY)   AND barcode_prefix = '$prefix' AND barcode_code = '$barcode'  ORDER BY date_modify DESC";
   $query = $this->query($sql);
   return $query->row;
  }
@@ -220,6 +241,11 @@ class BarcodeModel extends db
    $query = $this->get('group');
    $oldgroup = $query->row;
 
+   $oldgroup['start'] = (int)substr($oldgroup['start'], 3,5);
+   $oldgroup['default_start'] = (int)$oldgroup['default_start'];
+   $oldgroup['default_end'] = (int)$oldgroup['default_end'];
+   
+
    // มีค่าเดิม อยู่แล้ว ให้อัพเดท
    if ($query->num_rows == 1 && (int)$val > 0) {
     
@@ -242,7 +268,7 @@ class BarcodeModel extends db
     $update = array(
      'id_user'       => isset($data['id_user']) ? $data['id_user'] : 0,
      'remaining_qty' => $val,
-     'start'         => $startupdate,
+     'start'         => $oldgroup['group_code'].sprintf('%05d',$startupdate),
      'date_purchase' => $datePurchase,
      'date_modify'   => date('Y-m-d H:i:s'),
      'barcode_use'   => "0",
@@ -320,6 +346,7 @@ class BarcodeModel extends db
 
    }
 
+   
    $date_now = date('Y-m-d H:i:s');
    $qty      = $val;
    if (isset($start) && isset($id_group)) {
@@ -351,16 +378,16 @@ class BarcodeModel extends db
   }
 
 
-  // save to csv and insert barcode
-  $path_file = DOCUMENT_ROOT . 'uploads/import_barcode_csv/';
-  $file_name = date('YmdHis') . '.csv';
-  $full_name = $path_file . $file_name;
+      // save to csv and insert barcode
+    $path_file = DOCUMENT_ROOT . 'uploads/import_barcode_csv/';
+    $file_name = date('YmdHis') . '.csv';
+    $full_name = $path_file . $file_name;
 
-  $fp = fopen($full_name, 'w');
-  foreach ($data_insert_barcode as $fields) {
-   fputcsv($fp, $fields);
-  }
-  fclose($fp);
+    $fp = fopen($full_name, 'w');
+    foreach ($data_insert_barcode as $fields) {
+    fputcsv($fp, $fields);
+    }
+    fclose($fp);
 
   $sql = "LOAD DATA LOCAL INFILE '" . $full_name . "' INTO TABLE " . PREFIX . "barcode FIELDS TERMINATED BY ','
 			LINES TERMINATED BY '\n'  ( id_user,id_group,barcode_prefix,barcode_code,barcode_status,barcode_flag,date_added,date_modify);";
@@ -740,6 +767,8 @@ class BarcodeModel extends db
   $this->group_by('group_code');
   $this->order_by('group_code','asc');
   $query = $this->get('barcode_range');
+  echo $this->last_query();
+  
   return $query->rows;
  }
  public function getGroupOnDate($date = '')

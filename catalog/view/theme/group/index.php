@@ -36,7 +36,7 @@
 							<option></option>
 							<!-- <option value="" >-- Search group prefix --</option> -->
                             <?php foreach ($groups as $group) : ?>
-                            <option value="<?php echo $group['id_group'];?>" <?php echo $filter_group==$group['id_group']?'selected':'';?>><?php echo sprintf('%03d',$group['group_code']);?></option>
+                            <option value="<?php echo $group['id_group'];?>" <?php echo $filter_group==$group['id_group']?'selected':'';?>><?php echo $group['group_code'];?></option>
                             <?php endforeach; ?> 
 						</select>
 					</div>
@@ -84,7 +84,7 @@
 							<th class="text-center" width="5%">
 								<div class="checkbox">
 									<div class="custom-control custom-checkbox">
-										<input type="checkbox" class="custom-control-input" id="checkall" data-parsley-multiple="groups" data-parsley-mincheck="2" />
+										<input type="checkbox" class="custom-control-input" id="checkall" data-parsley-multiple="groups" data-parsley-mincheck="2" style="width:100% !important;" />
 										<label class="custom-control-label" for=""></label>
 									</div>
 								</div>
@@ -107,14 +107,14 @@
 							<th class="text-center">
 								<div class="checkbox">
 									<div class="custom-control custom-checkbox">
-										<input type="checkbox" class="custom-control-input check cb" name="checkbox[]" data-parsley-multiple="groups" data-parsley-mincheck="2" value="<?php echo $val['id_group'];?>" <?php echo $val['barcode_use']==1?'disabled="disabled"':'';?> />
+										<input type="checkbox" class="custom-control-input check cb" name="checkbox[]" data-parsley-multiple="groups" data-parsley-mincheck="2" value="<?php echo $val['id_group'];?>" <?php echo $val['barcode_use']==1?'disabled="disabled"':'';?> style="width:100% !important;" />
 										<label class="custom-control-label" for=""></label>
 									</div>
 								</div>
 							</th>
-							<td class="text-center"><?php echo sprintf('%03d',$val['group_code']); ?></td>
-							<td class="text-center"><?php  echo sprintf('%08d',$val['barcode_start']); ?></td>
-							<td class="text-center"><?php echo sprintf('%08d',($val['barcode_end'])); ?></td>
+							<td class="text-center"><?php echo $val['group_code']; ?></td>
+							<td class="text-center"><?php  echo $val['group_code'].sprintf('%05d',$val['barcode_start']); ?></td>
+							<td class="text-center"><?php echo $val['group_code'].sprintf('%05d',($val['barcode_end'])); ?></td>
 							<td class="text-center"><?php echo number_format($val['barcode_qty'], 0);?></td>
 							<td class="text-center">
 								<?php if($val['barcode_use']==1) : ?>

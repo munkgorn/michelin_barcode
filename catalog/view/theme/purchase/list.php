@@ -68,6 +68,11 @@
 
 				<input type="hidden" name="start_group" value="<?php echo $start_group; ?>">
 				<input type="hidden" name="end_group" value="<?php echo $end_group; ?>">
+				<pre>
+				<?php 
+				// print_r($getMapping);
+				?>
+				</pre>
 				<div class="row">
 					<div class="col-12">
 						<div class="table-responsive">
@@ -102,22 +107,20 @@
 											<input
 												type="text"
 												class="form-control qty_group <?php echo $val['status_id'] == 0 && $val['remaining_qty'] > 0 ? 'is-invalid' : ''; ?>"
-												placeholder="Loading..."
+												placeholder=""
 												data-id="<?php echo $val['group_code']; ?>"
 												start="<?php echo $val['barcode_start']; ?>"
 												end="<?php echo $val['barcode_end']; ?>"
 												default_start="<?php echo $val['default_start']; ?>"
 												default_end="<?php echo $val['default_end']; ?>"
-												<?php echo $val['status_id']; ?>
 												<?php if ($val['status_id'] == 1 || $val['remaining_qty'] <= 0): ?>
 												name="qty[<?php echo $val['group_code']; ?>]"
 												<?php endif; ?>
 												maxlength="6"
-												value="<?php echo $val['status_id'] == 0 && $val['remaining_qty'] > 0 ? $val['remaining_qty'] : ''; ?>"
-												<?php echo $val['status_id'] == 0 && $val['remaining_qty'] > 0 ? 'disabled="disabled"' : ''; ?>
+												value="<?php echo (int)trim($val['status_id']) == 0 && (int)$val['remaining_qty'] > 0 ? $val['remaining_qty'] : ''; ?>"
+												<?php echo (int)trim($val['status_id']) == 0 && (int)$val['remaining_qty'] > 0 ? 'disabled="disabled"' : ''; ?>
 												autocomplete="off"
-
-											>
+											/>
 										</td>
 										<td class="text-center">
 										<button type="button" class="btn load-start-and-end load-start" data-group="<?php echo trim($val['group_code']); ?>">Update</button>
@@ -292,7 +295,7 @@ let init = () => {
 		placeholder: "Select group barcode"
 	});
 	$('.load-start,.load-end').html('<i class="fas fa-eye"></i>');
-	$('.qty_group').removeAttr('disabled').attr('placeholder','QTY');
+	// $('.qty_group').removeAttr('disabled').attr('placeholder','QTY');
 	loadYear();
 	// loadBarcode();
 }
@@ -351,12 +354,12 @@ let loadSomeBarcode = (groupcode) => {
 			// const obj = JSON.parseJSON(res);
 			let obj = res;
 			if (obj.barcode_start!=null) {
-				$('.load-start-and-end.load-start[data-group="'+groupcode+'"]').html(pad(obj.barcode_start,8));
+				$('.load-start-and-end.load-start[data-group="'+groupcode+'"]').html(groupcode+pad(obj.barcode_start,5));
 			} else {
 				$('.load-start-and-end.load-start[data-group="'+groupcode+'"]').html('-');
 			}
 			if (obj.barcode_end!=null) {
-				$('.load-start-and-end.load-end[data-group="'+groupcode+'"]').html(pad(obj.barcode_end,8));
+				$('.load-start-and-end.load-end[data-group="'+groupcode+'"]').html(groupcode+pad(obj.barcode_end,5));
 			} else {
 				$('.load-start-and-end.load-end[data-group="'+groupcode+'"]').html('-');
 			}

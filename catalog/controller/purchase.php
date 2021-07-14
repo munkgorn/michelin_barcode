@@ -35,18 +35,29 @@ class PurchaseController extends Controller
    $history = $this->model('history');
    foreach ($qty as $k => $v) {
     if ((int)$v > 0) {
+        
      $idgroup = $group->findIdGroup($k);
+     
      if ($idgroup > 0) {
       $group_info = $group->getGroup($idgroup);
 
+      $group_info['start'] = (int)substr($group_info['start'], 3,5);
+      $group_info['default_start'] = (int)$group_info['default_start'];
+      $group_info['default_end'] = (int)$group_info['default_end'];
+
       $bce = (int)$group_info['start'] + (int)$v - 1;
+      // echo $group_info['default_end'];exit();
       if ($bce > (int)$group_info['default_end']) {
+        echo 'case more default';
        $cal  = $bce - (int)$group_info['default_end']; // ส่วนต่างที่เกิน
        $cal2 = (int)$group_info['default_start'] + $cal;
        $bce  = $cal2 - 1;
-      } elseif ($i == (int)$group_info['default_end'] + 1) {
+      } elseif ($v == (int)$group_info['default_end'] + 1) {
+        echo 'case equa default';
        $bce = (int)$group_info['default_start'];
       }
+      // echo 'case normal '.$bce;
+      // exit();
 
       $insert = array(
        'id_user'       => $id_user,
@@ -94,7 +105,7 @@ class PurchaseController extends Controller
   $data['result_group'] = $config->getBarcodes();
   $data['end_group']    = isset($_GET['end_group']) ? get('end_group') : end($data['result_group'])['group'];
   $data['action']       = route('purchase', '&loading=1');
-  // $data['action_import_excel'] = route('listGroup');
+  $data['action_import_excel'] = route('listGroup');
   $data['export_excel'] = route('export/pattern&start_group=' . $data['start_group'] . '&end_group=' . $data['end_group']);
   $data['action_ajax']  = route('purchase/ajax&start_group=' . $data['start_group'] . '&end_group=' . $data['end_group']);
   $data['date']         = (get('date') ? get('date') : '');
@@ -110,9 +121,12 @@ class PurchaseController extends Controller
   $data['getMapping'] = array();
   if ($mapping != false) {
    foreach ($mapping as $key => $value) {
+
     $barcode_use          = $group->getGroupStatus($value['group_code']);
-    $value['status']      = $barcode_use === "1" ? '' : ($barcode_use === "0" && isset($value->remaining_qty) && $value->remaining_qty > 0 ? '<span class="text-danger">Waiting</span>' : '');
-    $value['status_id']   = $barcode_use;
+
+    $value['status']      = (int)$barcode_use === 1 ? '' : ((int)$barcode_use === 0 && isset($value['remaining_qty']) && (int)$value['remaining_qty'] > 0 ? '<span class="text-danger">Waiting</span>' : '');
+    $value['status_id']   = (int)$barcode_use;
+    // $value['barcode_end'] = (isset($value['remaining_qty']) && (int)$value['remaining_qty']) ? $value['group_code'].sprintf('%05d', (int)substr($value['barcode_start'], 3,5)+(int)$value['remaining_qty']) : '';
     $data['getMapping'][] = $value;
    }
   }
@@ -177,7 +191,7 @@ class PurchaseController extends Controller
   $data = array();
 
   $barcode = $this->model('barcode');
-  $data    = $barcode->checkBarcode(post('barcode'));
+    $data = $barcode->checkBarcode($_POST['barcode']);
   $data    = json_encode($data);
 
   $this->json($data);

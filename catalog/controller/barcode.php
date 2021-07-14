@@ -66,7 +66,7 @@
 			foreach ($_POST['data'] as $value) {
 				$data[] = array(
 					'round' => $value['round'],
-					'group_code' => (int)$value['group'],
+					'group_code' => $value['group'],
 					'barcode_start' => $value['start'],
 					'barcode_end' => $value['end'],
 					'barcode_qty' => $value['qty'],
@@ -141,8 +141,9 @@
 		public function ajaxGroupReceived() {
 			$data = array();
 			$barcode = $this->model('barcode');
-			$status = $_POST['status'];
+			$status = (int)$_POST['status'];
 			$data = $barcode->getGroupOfRange($status);
+			// print_r($data);
 			$this->json($data);
 		}
 
@@ -150,6 +151,12 @@
 			$barcode = $this->model('barcode');
 			$barcode_info = $barcode->getgroup();
 			$this->json($barcode_info);
+		}
+
+		public function ajaxGetGroupByGroupCode() {
+			$group = $this->model('group');
+			$group_info = $group->findIdGroup($_POST['group']);
+			$this->json($group_info);
 		}
 		
 		public function ajaxCheckGroup() {
@@ -240,9 +247,11 @@
 			$data = false;
 			if(method_post()){
 				$thisbarcode = $_POST['barcode'];
-				$groupcode = substr(sprintf('%08d',$thisbarcode), 0, 3);
+				$groupcode = substr($thisbarcode, 0, 3);
 
 				$barcode = $this->model('barcode');
+				// echo $groupcode.' '.$thisbarcode;
+
 				$data = $barcode->findAndUpdateBarcode($groupcode, $thisbarcode);
 				// $data = array('group'=>'');
 				// $groups = $_POST['group'];
@@ -280,9 +289,9 @@
 				while (($line = fgetcsv($file)) !== FALSE) {
 					if ($row>0) {
 						$col = explode(';', $line[0]);
-						$thisbarcode = (int)sprintf('%08d', str_replace('"','',$col[9]));
-						$groupcode = substr(sprintf('%08d',$thisbarcode), 0, 3);
-						$findgroup = $group->findIdGroup((int)$groupcode);
+						$thisbarcode = trim(str_replace('"','',$col[9]));
+						$groupcode = substr($thisbarcode, 0, 3);
+						$findgroup = $group->findIdGroup($groupcode);
 						if (!empty($findgroup)) {
 							if (!isset($save[$i])) {
 								$save[$i] = array();

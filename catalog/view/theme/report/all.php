@@ -86,7 +86,7 @@ $(document).ready(function(){
 			if (data.length > 0) {
 				$.each(data, function(i, v){
 					tr += '<tr class="trgroup'+v.group_code+'">';
-						tr += '<td class="text-center">'+pad(v.group_code,3)+'</td>';
+						tr += '<td class="text-center">'+v.group_code+'</td>';
 						tr += '<td class="text-center"><span class="loadrange" data-group="'+v.group_code+'">'+loading+'</span></td>';
 						tr += '<td class="text-center"><span class="loadqty" data-group="'+v.group_code+'">'+loading+'</span></td>';
 					tr += '</tr>';
@@ -129,7 +129,7 @@ $(document).ready(function(){
 
 						// console.log(v);
 						group[v.group_code].push({
-							range: pad(v.barcode_start,8)+' - '+pad(v.barcode_end,8),
+							range: v.group_code+pad(v.barcode_start,5)+' - '+v.group_code+pad(v.barcode_end,5),
 							qty: v.barcode_qty
 						});
 

@@ -22,7 +22,7 @@
 							<div class="col-3">
 									<label for="">Group Prefix</label>
 									<select name="" id="groupFilter" class="form-control select2group">
-										<option value="">Please select date</option>
+										<option value="">Please select Group</option>
 									</select>
 							</div>
 							<div class="col-3">
@@ -240,8 +240,15 @@ $(document).ready(function(){
 	// 	},
 	// 	"json"
 	// );
-	$.post("index.php?route=barcode/ajaxGroupReceived", {status: 1},
-		function (data, textStatus, jqXHR) {
+
+	$.ajax({
+		url: 'index.php?route=barcode/ajaxGroupReceived',
+		cache: false,
+		type: 'POST',
+		dataType: 'json',
+		data: {status:1},
+		success: function(data) {
+			console.log('ajaxdata',data);
 			// let tr = '';
 			let option = '<option></option>';
 			let option2 = '<option></option>';
@@ -249,7 +256,7 @@ $(document).ready(function(){
 				option += '<option value="all">All</option>';
 				option2 += '';
 				$.each(data, function(i, v){
-					let html = '<option value="'+v.group_code+'">'+pad(v.group_code,3)+'</option>';
+					let html = '<option value="'+v.group_code+'">'+v.group_code+'</option>';
 					option += html;
 					option2 += html;
 					// tr += '<tr class="trgroup'+v.group_code+'">';
@@ -270,17 +277,22 @@ $(document).ready(function(){
 				console.log(option);
 				console.log(option2);
 			}
-		},
-		"json"
-	);
+		}
+	})
 
-	$.post("index.php?route=barcode/ajaxGroupReceived", {status: 0},
-		function (data, textStatus, jqXHR) {
+	$.ajax({
+		url: 'index.php?route=barcode/ajaxGroupReceived',
+		cache: false,
+		type: 'POST',
+		dataType: 'json',
+		data: {status:0},
+		success: function(data) {
+			console.log('status0', data);
 			let option2 = '<option></option>';
 			if (data.length > 0) {
 				option2 += '';
 				$.each(data, function(i, v){
-					let html = '<option value="'+v.group_code+'">'+pad(v.group_code,3)+'</option>';
+					let html = '<option value="'+v.group_code+'">'+v.group_code+'</option>';
 					option2 += html;
 					
 				});
@@ -288,9 +300,9 @@ $(document).ready(function(){
 				$('#ModalAddMenual [name="barcode_prefix"]').select2({placeholder: "Please select group"});
 				$('#btnsearch').removeAttr('disabled');
 			}
-		},
-		"json"
-	);
+		}
+	})
+
 
 	table.html(trnotfound);
 	$('#btnsearch').click(function(){
@@ -304,8 +316,8 @@ $(document).ready(function(){
 				let sum = 0;
 				$.each(data, (i,v) => {
 					html += '<tr>';
-					html += '<td class="text-center">'+pad(v.group_code,3)+'</td>';
-					html += '<td class="text-center">'+pad(v.barcode_start,8)+' - '+pad(v.barcode_end,8)+'</td>';
+					html += '<td class="text-center">'+v.group_code+'</td>';
+					html += '<td class="text-center">'+v.group_code+pad(v.barcode_start,5)+' - '+v.group_code+pad(v.barcode_end,5)+'</td>';
 					html += '<td class="text-center">'+addCommas(v.barcode_qty)+'</td>';
 					html += '</tr>';
 					sum += parseInt(v.barcode_qty);

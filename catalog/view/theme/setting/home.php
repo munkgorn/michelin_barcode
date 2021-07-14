@@ -21,6 +21,7 @@
 				</li> -->
 			</ul>
 			<div class="tab-content pt-5" id="myTabContent">
+				<?php /*
 				<div class="tab-pane fade <?php echo $tab=='config_default' ? 'show active' : '';?>" id="config_default" role="tabpanel" aria-labelledby="config_default">
 					<!-- Default -->
 					<form method="post" action="<?php echo $action_default; ?>">
@@ -58,6 +59,7 @@
 						</div>
 					</form>
 				</div>
+				*/ ?>
 				<div class="tab-pane fade <?php echo $tab=='config_barcode' ? 'show active' : '';?>" id="config_barcode" role="tabpanel" aria-labelledby="config_barcode">
 					<!-- Barcode -->
 					<form action="<?php echo $action_barcode; ?>" method="post" enctype="multipart/form-data">
@@ -98,9 +100,9 @@
 							<?php if (count($barcodes) > 0): ?>
 							<?php foreach ($barcodes as $barcode): ?>
 							<tr>
-								<td><?php echo sprintf('%03d',$barcode['group']); ?></td>
-								<td><?php echo sprintf('%08d',$barcode['start']);?></td>
-								<td><?php echo sprintf('%08d',$barcode['end']); ?></td>
+								<td><?php echo $barcode['group']; ?></td>
+								<td><?php echo $barcode['start'];?></td>
+								<td><?php echo $barcode['end']; ?></td>
 								<td><?php echo $barcode['total']; ?></td>
 							</tr>
 							<?php endforeach; ?>
@@ -109,6 +111,7 @@
 					</table>
 
 				</div>
+				<? /*
 				<div class="tab-pane fade <?php echo $tab=='config_relationship' ? 'show active' : '';?>" id="config_relationship" role="tabpanel" aria-labelledby="config_relationship">
 					<!-- Relationship-->
 					<form action="<?php echo $action_importrelationship; ?>" method="post" enctype="multipart/form-data">
@@ -174,6 +177,7 @@
 					</form>
 
 				</div>
+				
 				<div class="tab-pane fade <?php echo $tab=='config_status' ? 'show active' : '';?>" id="config_status" role="tabpanel" aria-labelledby="config_status">
 					<!-- Value -->
 					<table class="table table-bordered">
@@ -202,6 +206,7 @@
 						</tfoot>
 					</table>
 				</div>
+				*/ ?>
 			</div>
 		</div>
 	</div>

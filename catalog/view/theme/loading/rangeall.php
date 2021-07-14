@@ -26,7 +26,10 @@
 </style>
 <script>
 $(document).ready(function () {
-   
+    let pad = (str, max) => {
+		str = str.toString();
+		return str.length < max ? pad("0" + str, max) : str;
+	}
 
     let showmsg = (message='', tab=false, status=true) => {
         const elemsg = $('#msg')
@@ -50,15 +53,16 @@ $(document).ready(function () {
         console.log('process split');
         let indexofarray = 0;
         let result = {};
-        // console.log(list);
+        console.log(list);
 
         let olddate = null;
         
         $.each(list, (index,val) => {
-            let group = parseInt(val.barcode_prefix);
+            let group = (val.barcode_prefix);
             let barcodecode = parseInt(val.barcode_code);
             let valuedate = val.date_added.replace(/-/g, '').toString();
             let textgroup = group+'_'+valuedate;
+
 
             let prev = (typeof list[index-1] !== 'undefined') ? parseInt(list[index-1].barcode_code) : '';
             let more = (typeof list[index] !== 'undefined') ? parseInt(list[index].barcode_code) : '';
@@ -124,17 +128,19 @@ $(document).ready(function () {
     let process_pattern = (result, round) => {
         console.log('process pattern');
         let output = [];
+        console.log(result);
         $.each(result, function (index, date) { // loop group
+        console.log(date);
             $.each(date, function (idate, vgroup) { // loop date in group
                 $.each(vgroup, function (i, v) { // loop date in group
-                // console.log(v);
+                console.log(v);
                     let start = v[0];
                     let end = v[v.length-1];
                     let qty = end - start + 1;
                     let newdate = idate.substr(0,4)+'-'+idate.substr(4,2)+'-'+idate.substr(6,2);
                     
                     if (typeof start !== 'undefined' && typeof end !== 'undefined') {
-                        showmsg('GroupRange ('+(newdate)+') '+start+'-'+end+' = '+qty);      
+                        showmsg('GroupRange ('+(newdate)+') '+index+pad(start,5)+'-'+index+pad(end,5)+' = '+qty);      
                         output.push({
                             round: round,
                             group: index,
@@ -157,7 +163,7 @@ $(document).ready(function () {
 
     let process_db = (output, status) => {
         console.log('Process DB');
-        // console.log(output);
+        console.log(output);
 
         const clearGroup = (output, status) => {
             let groupForClear = [];
@@ -177,8 +183,8 @@ $(document).ready(function () {
                     cache: false,
                     success: function (response) {
                         console.log("Response clear range main");
-                        console.log(v);
-                        console.log(status);
+                        // console.log(v);
+                        // console.log(status);
                         if (response) {
                             console.log('Success Clear barcode_range '+v);
                         } else {
@@ -210,7 +216,7 @@ $(document).ready(function () {
             let groupForFlagRemove = [];
             let groupForAdd = [];
             $.each(output, function (i, v) { 
-                 if (parseInt(v.qty) >= parseInt(maximum)) {
+                 if (parseInt(v.qty) >= parseInt(maximum) || status == 1) {
                     groupForAdd.push(v);
                  } else if (parseInt(v.qty) > 0 && parseInt(v.qty) < parseInt(maximum)) {
                     for (let index = parseInt(v.start); index <= parseInt(v.end); index++) {
@@ -220,6 +226,9 @@ $(document).ready(function () {
                     }
                  }
             });
+
+            console.log('groupForFlagRemove',groupForFlagRemove);
+            console.log('groupForAdd',groupForAdd);
 
             if (groupForFlagRemove.length>0) {
                 $.ajax({
@@ -358,10 +367,10 @@ $(document).ready(function () {
     let result = process_split(list);
     setTimeout(() => {
         let output = process_pattern(result,round);
+        console.log(output);
         setTimeout(() => {
             showmsg('Process someone change in DB', false);
             if (list.length > 0) {
-
                 clearData(nowgroup, status);
                 let query = process_db(output, status);
             } else {

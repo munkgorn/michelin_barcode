@@ -13,7 +13,7 @@
             
 
                 <div class="row">
-                    <div class="col-sm-4">
+                    <!-- <div class="col-sm-4">
                         <form action="<?php echo route('clear/removeBarcode');?>" method="POST">
                             <div class="form-group">
                                 <label for="">Date of barcode</label>
@@ -25,7 +25,7 @@
                                 <small class="text-danger">ขั้นตอนการลบอาจจะใช้เวลานาน กรุณารอจนกว่าจะมีสถานะแจ้งเตือนขึ้นมาแสดง</small>
                             </div>
                         </form>
-                    </div>
+                    </div> -->
                     <div class="col-sm-4">
                         <form action="<?php echo route('clear/removeFile');?>" method="POST">
                             <div class="form-group">
@@ -55,7 +55,7 @@
                             </div>
                         </form>
                     </div>
-                    <div class="col-sm-4">
+                    <!-- <div class="col-sm-4">
                         <form action="index.php?route=clear/updateConfig" method="post">
                             <?php foreach ($configm as $kt=> $t) : ?>
                             <div class="form-check">
@@ -66,7 +66,7 @@
                             <input type="text" class="form-control" name="numvalue" value="1" />
                             <input type="submit" class="btn btn-danger mt-2" value="update" />
                         </form>
-                    </div>
+                    </div> -->
                     
                 </div>
                 <div class="row">
@@ -81,7 +81,15 @@
                                 </tr>
                             </thead>
                             <tbody>
-                                <!-- <tr>
+                                <tr>
+                                    <td>Add Default Group</td>
+                                    <td>เพิ่ม Default Group 00000 - 99999</td>
+                                    <td></td>
+                                    <td>
+                                        <a href="<?php echo route('group/addDefaultGroup');?>" onclick="return confirm('Confirm')" class="btn btn-sm btn-danger" target="new">Update</a><br />
+                                    </td>
+                                </tr>
+                                <tr>
                                     <td>Update Default Group</td>
                                     <td>วิธีการคำนวณหน้า Purchase ผิดพลาดเนื่องจาก default_start เปลี่ยนไป แก้ให้เป็น default คือ 00000 - 99999</td>
                                     <td></td>
@@ -89,6 +97,7 @@
                                         <a href="<?php echo route('group/updateDefaultStart');?>" onclick="return confirm('Confirm')" class="btn btn-sm btn-danger" target="new">Update</a><br />
                                     </td>
                                 </tr>
+                                <!--
                                 <tr>
                                     <td>Association Clean Saved</td>
                                     <td>ล้างค่าเก่าที่ Save ไว้ใน Association พวก RemainingQty, Propose, ProposeRemaining</td>

@@ -48,15 +48,15 @@
 			$data['config_lastweek'] = $config->getCOnfig('config_lastweek')!==false ? $config->getConfig('config_lastweek') : 0;
 
 			// tab relationship
-			$data['relationships'] = $config->getRelationship();
-			$data['lastupdate_relationship'] = $config->getLastupdateRelationship();
+			// $data['relationships'] = $config->getRelationship();
+			// $data['lastupdate_relationship'] = $config->getLastupdateRelationship();
 			
 			// tab barcode
 			$data['barcodes'] = $config->getBarcodes();
 			$data['lastupdate_barcode'] = $config->getLastupdateBarcode();
 
 			// tab status
-			$data['status'] = $config->getStatus();
+			// $data['status'] = $config->getStatus();
 
 			
 			$data['success'] = $this->hasSession('success') ? $this->getSession('success') : ''; $this->rmSession('success');
@@ -200,11 +200,11 @@
 						$fp = fopen($csv_file, 'w');
 						foreach ($results as $key => $result) {
 							$rowcsv = array(
-								sprintf('%03d',$result[0]),
-								sprintf('%08d',$result[1]),
-								sprintf('%08d',$result[2]),
-								$result[3],
-								$result[3],
+								trim($result[0]),
+								trim($result[1]),
+								trim($result[2]),
+								trim($result[3]),
+								trim($result[3]),
 								(int)$result[1],
 							);
 							fputcsv($fp, $rowcsv);

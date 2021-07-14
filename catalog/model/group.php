@@ -29,7 +29,7 @@
             $this->where('remaining_qty', 0, '>=');
             $this->where('date_purchase', '0000-00-00', '!=');
 			$query = $this->get('group');
-			return isset($query->row['barcode_use']) ? $query->row['barcode_use'] : false;
+			return isset($query->row['barcode_use']) ? (int)$query->row['barcode_use'] : false;
         }
         public function getGroups($filter=array()) {
             if (isset($filter['date_modify'])&&!empty($filter['date_modify'])) {
@@ -89,6 +89,7 @@
         public function getGroup($id) {
             $this->where('id_group', $id);
             $this->where('del', 0);
+            $this->order_by('id_group', 'ASC');
             $query = $this->get('group');
             return $query->row;
         }
@@ -113,36 +114,30 @@
             $query = $this->get('group');
             $group = $query->row;
 
+            $group['start'] = (int)substr($group['start'], 3, 5);
+            $group['default_start'] = (int)substr($group['default_start'], 3, 5);
+            $group['default_end'] = (int)substr($group['default_end'], 3, 5);
+
             $num1 = $group['start'] - $group['remaining_qty'] + 1;
             if ($num1<$group['default_start']) {
                 $num2 = $group['start'] - $group['default_start'];
                 $num3 = $group['default_end'] - ($group['remaining_qty'] - $num2);
                 $start = $num3 + 1;
-                // echo 'con1';
             } else {
                 $start = $group['start'] - $group['remaining_qty']; // find start number this purchase
                 $end = $start + $group['remaining_qty'] - 1;
-                // echo 'con2';
             }
 
-            // echo $start.' '.$end;
-            // exit();
-            
-            // $end = $group['remaining_qty'] - 1 ; // -1 because this number for next purcharse
-
             $update = array(
-                // 'del'=>1  // เอาออกเพราะว่า group เกิดมาตั้งแต่ association แล้ว ดังนั้นใช้วิธีคืนค่าแทน
-                'start' => $start,
+                'start' => $group['group_code'].sprintf('%05d',$start),
                 'remaining_qty' => 0,
                 'date_purchase' => NULL,
             );
+            
             $this->where('id_group', $id);
             $result = $this->update('group', $update);
- 
-            // echo "DELETE FROM ".PREFIX."barcode WHERE id_group = '".$id."' AND barcode_code >= '".$start."' AND barcode_code <= '".$end."'";
-            // if ($result) {
-                $this->query("DELETE FROM ".PREFIX."barcode WHERE id_group = '".$id."' AND barcode_code >= '".$start."' AND barcode_code <= '".$end."'");
-            // }
+            
+            $this->query("DELETE FROM ".PREFIX."barcode WHERE id_group = '".$id."' AND barcode_code >= '".$start."' AND barcode_code <= '".$end."'");
 
         }
 
@@ -156,7 +151,7 @@
         }
 
         public function updateDefaultStart() {
-            $sql = 'UPDATE mb_master_group SET default_start = concat(group_code,"00000"), default_end = concat(group_code,"99999"), default_range = 10000;';
+            $sql = 'UPDATE mb_master_group SET default_start = "00000", default_end = "99999", default_range = 10000;';
             return $this->query($sql);
         }
 

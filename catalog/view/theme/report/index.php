@@ -129,8 +129,8 @@ $(document).ready(function(){
 							prefix = value.group_code;
 							end = value.barcode_end;
 							html += '<tr>';
-							html += '<td class="text-center">'+pad(value.group_code,3)+'</td>';
-							html += '<td class="text-center">'+pad(value.barcode_start,8)+' - '+pad(value.barcode_end,8)+'</td>';
+							html += '<td class="text-center">'+value.group_code+'</td>';
+							html += '<td class="text-center">'+value.group_code+pad(value.barcode_start,5)+' - '+value.group_code+pad(value.barcode_end,5)+'</td>';
 							html += '<td class="text-center">'+(value.barcode_qty)+'</td>';
 							html += '</tr>';
 							sum += parseInt(value.barcode_qty);

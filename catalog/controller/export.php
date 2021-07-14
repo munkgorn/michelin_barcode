@@ -255,9 +255,9 @@ class ExportController extends Controller {
             }
             
             $excel[] = array(
-                '="'.sprintf('%03d', $val['group_code']).'"',
-                '="'.sprintf('%08d', $val['barcode_start']).'"',
-                '="'.sprintf('%08d', $val['barcode_end']).'"',
+                $val['group_code'],
+                '="'.$val['group_code'].sprintf('%05d', $val['barcode_start']).'"',
+                '="'.$val['group_code'].sprintf('%05d', $val['barcode_end']).'"',
                 (int)$val['barcode_qty'],
                 ($val['barcode_use']==1?'Received':'Waiting'),
                 $val['date_purchase'],
@@ -348,7 +348,13 @@ class ExportController extends Controller {
         );
         $i=1;
         $mapping = $purchase->getPurchases($filter);
+
+
         foreach ($mapping as $key => $value) {
+            $value['barcode_start'] = (int)substr($value['barcode_start'], 3,5);
+            $value['default_start'] = (int)$value['default_start'];
+            $value['default_end'] = (int)$value['default_end'];
+
             $value['barcode_start_year'] = $json[$value['group_code']]['start'];
             $value['barcode_end_year'] = $json[$value['group_code']]['end'];
             // $value['barcode_start_year'] = $purchase->getStartBarcodeOfYearAgo($value['group_code']);
@@ -365,8 +371,8 @@ class ExportController extends Controller {
                     $excel[] = array(
                         '',
                         $i++,
-                        '="'.sprintf('%08d', $value['default_end'] - ($value['remaining_qty']-($value['barcode_start']-$value['default_start']))+1).'"',
-                        '="'.sprintf('%08d', $value['default_end']).'"',
+                        $value['group_code'].sprintf('%05d',$value['default_end'] - ($value['remaining_qty']-($value['barcode_start']-$value['default_start']))+1),
+                        $value['group_code'].sprintf('%05d',$value['default_end']),
                         '="'.number_format(($value['default_end']-($value['default_end'] - ($value['remaining_qty']-($value['barcode_start']-$value['default_start']))+1)+1),0).'"',
                        
                     );
@@ -374,8 +380,8 @@ class ExportController extends Controller {
                     $excel[] = array(
                         '',
                         $i++,
-                        '="'.sprintf('%08d', $value['default_start']).'"',
-                        '="'.sprintf('%08d', $value['barcode_start']-1).'"',
+                        $value['group_code'].sprintf('%05d',$value['default_start']),
+                        $value['group_code'].sprintf('%05d',$value['barcode_start']-1),
                         '="'.number_format((int)$value['barcode_start']-1-$value['default_start']+1,0).'"',
                        
                     );
@@ -385,8 +391,8 @@ class ExportController extends Controller {
                     $excel[] = array(
                         '',
                         $i++,
-                        sprintf('%08d', $value['barcode_start']-$value['remaining_qty']),
-                        '="'.sprintf('%08d', $value['barcode_start']-1).'"',
+                        $value['group_code'].sprintf('%05d',$value['barcode_start']-$value['remaining_qty']),
+                        $value['group_code'].sprintf('%05d',$value['barcode_start']-1),
                         '="'.number_format((int)$value['remaining_qty'],0).'"',
                     );
                 }
@@ -558,18 +564,18 @@ class ExportController extends Controller {
             $temp[$val['group_code']]['qty'] += (int)$val['barcode_qty'];
 
             $excel[] = array(
-                sprintf('%03d',$val['group_code']),
-                sprintf('%08d',$val['barcode_start']),
-                sprintf('%08d',$val['barcode_end']),
+                $val['group_code'],
+                $val['group_code'].sprintf('%05d',$val['barcode_start']),
+                $val['group_code'].sprintf('%05d',$val['barcode_end']),
                 $val['barcode_qty'],
             );
         }
 
         foreach ($temp as $key => $val) {
             $excel2[] = array(
-                sprintf('%03d',$key),
-                sprintf('%08d',$val['start']),
-                sprintf('%08d',$val['end']),
+                $key,
+                $key.sprintf('%05d',$val['start']),
+                $key.sprintf('%05d',$val['end']),
                 $val['qty']
             );
         }
@@ -687,9 +693,9 @@ class ExportController extends Controller {
                     $temp[$value['group_code']]['qty'] += $value['barcode_qty'];
 
                     $excel[] = array(
-                        '="'.sprintf('%03d',$value['group_code']).'"',
-                        '="'.sprintf('%08d',trim($value['barcode_start'])).'"',
-                        '="'.sprintf('%08d',trim($value['barcode_end'])).'"',
+                        $value['group_code'],
+                        '="'.$value['group_code'].sprintf('%05d',trim($value['barcode_start'])).'"',
+                        '="'.$value['group_code'].sprintf('%05d',trim($value['barcode_end'])).'"',
                         $value['barcode_qty']
                     ); 
                 // }
@@ -699,9 +705,9 @@ class ExportController extends Controller {
         
         foreach ($temp as $key => $val) {
             $excel2[] = array(
-                sprintf('%03d',$key),
-                sprintf('%08d',$val['start']),
-                sprintf('%08d',$val['end']),
+                $key,
+                $key.sprintf('%05d',$val['start']),
+                $key.sprintf('%05d',$val['end']),
                 $val['qty']
             );
         }
@@ -790,9 +796,9 @@ class ExportController extends Controller {
         $results = $config->getBarcodes();
         foreach ($results as $value) {
             $excel[] = array(
-                '="'.sprintf('%03d',$value['group']).'"',
-                '="'.sprintf('%08d',$value['start']).'"',
-                '="'.sprintf('%08d',$value['end']).'"',
+                $value['group'],
+                $value['start'],
+                $value['end'],
                 $value['total']
             );
         }

@@ -160,7 +160,7 @@ class GroupController extends Controller
   // $this->redirect('group'.$url );
   $this->setSession('redirect', 'group');
   $this->model('config')->getConfig('load_freegroup', 1);
-  $this->redirect('loading/rangeall&round=1&status=1&flag=0&group=' . $group_info['group_code'] . '&max=' . $group_info['group_code'] . '&redirect=loading');
+  $this->redirect('loading/rangeall&round=1&status=1&flag=0&group=' . $group_info['id_group'] . '&max=' . $group_info['id_group'] . '&redirect=loading');
  }
 
  public function checkall()
@@ -190,8 +190,8 @@ class GroupController extends Controller
 
    $group      = $this->model('group');
    $group_info = $group->getGroup($id);
-   if (!in_array($group_info['group_code'], $link_group)) {
-    $link_group[] = $group_info['group_code'];
+   if (!in_array($group_info['id_group'], $link_group)) {
+    $link_group[] = $group_info['id_group'];
    }
 
    $result = $group->changeStatus($id, $status);
@@ -206,7 +206,7 @@ class GroupController extends Controller
 
     if ($historyInfo != false && count($historyInfo) >= 1) {
      $historyInfo = $historyInfo[0];
-     $history->editHistory($historyInfo['id_history'], array('barcode_use' => 1, array('barcode_use' => 1, 'date_received' => date('Y-m-d H:i:s'))));
+     $history->editHistory($historyInfo['id_history'], array('barcode_use' => 1, 'date_received' => date('Y-m-d H:i:s')) );
     }
     $success[] = $group->findCode($id);
    } else {
@@ -235,31 +235,36 @@ class GroupController extends Controller
  public function delGroup()
  {
 
-  $filter_date           = (get('date') ? get('date') : '');
-  $data['filter_date']   = $filter_date;
-  $filter_group          = get('group');
-  $data['filter_group']  = $filter_group;
-  $filter_status         = get('status');
-  $data['filter_status'] = $filter_status;
+    $filter_date           = (get('date') ? get('date') : '');
+    $data['filter_date']   = $filter_date;
+    $filter_group          = get('group');
+    $data['filter_group']  = $filter_group;
+    $filter_status         = get('status');
+    $data['filter_status'] = $filter_status;
 
-  $group = $this->model('group');
-  $group->delGroup($_GET['idgroup']);
+    $group = $this->model('group');
+    $group->delGroup($_GET['idgroup']);
 
-  $history = $this->model('history');
-  $history->delHistory($_GET['id']);
+    $history = $this->model('history');
+    $history->delHistory($_GET['id']);
 
-  $url = '';
-  $url .= !empty($filter_date) ? "&date=$filter_date" : '';
-  $url .= !empty($filter_group) ? "&group=$filter_group" : '';
-  $url .= !empty($filter_status) ? "&status=$filter_status" : '';
+    $url = '';
+    $url .= !empty($filter_date) ? "&date=$filter_date" : '';
+    $url .= !empty($filter_group) ? "&group=$filter_group" : '';
+    $url .= !empty($filter_status) ? "&status=$filter_status" : '';
 
-  $this->redirect('group' . $url);
+    $this->redirect('group' . $url);
  }
 
  public function updateDefaultStart()
  {
   $group = $this->model('group');
   echo $group->updateDefaultStart();
+ }
+ public function addDefaultGroup()
+ {
+  $group = $this->model('group');
+  echo $group->addDefaultGroup();
  }
 
 }

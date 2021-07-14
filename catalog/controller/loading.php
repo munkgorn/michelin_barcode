@@ -247,18 +247,23 @@ class LoadingController extends Controller
         $config = $this->model('config');
         $bs = $config->getBarcodes();
 
-        $start_barcode = (int)$bs[0]['group'];
+        $start_barcode = (int)$bs[0]['id'];
+        
         $now_barcode = (int)$group;
-        $max_barcode = (int)$bs[count($bs)-1]['group'];
-
+        
+        $max_barcode = (int)$bs[count($bs)-1]['id'];
+        
+        
         $data['percent'] = (($now_barcode-$start_barcode) / ($max_barcode - $start_barcode)) * 100;
+        
 
         $barcode = $this->model('barcode');
-        $list = $barcode->getBarcodeWithGroup($group, $status, 0);
+        $list = $barcode->getBarcodeWithIDGroup($group, $status, 0);
+        
         $data['list'] = json_encode($list);
 
         $config = $this->model('config');
-        $config->setConfig('load_freegroup', 1);
+        // $config->setConfig('load_freegroup', 1);
         $config->setConfig('load_year', 1);
         // $config->setConfig('load_barcode', 1);
         $this->setSession('redirect', 'loading');
