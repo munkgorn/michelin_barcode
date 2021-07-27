@@ -84,7 +84,7 @@
 							<th class="text-center" width="5%">
 								<div class="checkbox">
 									<div class="custom-control custom-checkbox">
-										<input type="checkbox" class="custom-control-input" id="checkall" data-parsley-multiple="groups" data-parsley-mincheck="2" />
+										<input type="checkbox" class="custom-control-input" id="checkall" data-parsley-multiple="groups" data-parsley-mincheck="2" style="width:100%" />
 										<label class="custom-control-label" for=""></label>
 									</div>
 								</div>
@@ -107,7 +107,7 @@
 							<th class="text-center">
 								<div class="checkbox">
 									<div class="custom-control custom-checkbox">
-										<input type="checkbox" class="custom-control-input check cb" name="checkbox[]" data-parsley-multiple="groups" data-parsley-mincheck="2" value="<?php echo $val['id_group'];?>" <?php echo $val['barcode_use']==1?'disabled="disabled"':'';?> />
+										<input type="checkbox" class="custom-control-input check cb" name="checkbox[]" data-parsley-multiple="groups" data-parsley-mincheck="2" value="<?php echo $val['id_group'];?>" <?php echo $val['barcode_use']==1?'disabled="disabled"':'';?> style="width:100%" />
 										<label class="custom-control-label" for=""></label>
 									</div>
 								</div>
