@@ -284,6 +284,7 @@ class AssociationModel extends db
     public function getNotUseBarcode($group_code) {
         // $sql = "SELECT count(*) as qty  FROM mb_master_barcode WHERE barcode_prefix = $group_code AND barcode_flag = 0 AND group_received = 1 AND barcode_status = 0 ";
         $sql = "SELECT sum(barcode_qty) as qty FROM mb_master_barcode_range WHERE group_code = '".$group_code."' AND barcode_status = 0;";
+        // echo $sql;
         $query = $this->query($sql);
         return $query->row['qty'];
     }
@@ -340,7 +341,8 @@ class AssociationModel extends db
         $sql = "SELECT * FROM  ";
         $sql .= "(  ";
         $sql .= "SELECT p.date_modify as date_of_association, cr.size, cr.`group`, ";
-        $sql .= "(SELECT count(b.id_barcode) as qty FROM mb_master_barcode b WHERE b.barcode_prefix = cr.`group` AND b.group_received = 1 AND b.barcode_status = 0 AND b.date_modify BETWEEN '$day2' AND '$day1' GROUP BY b.id_group, b.barcode_prefix ORDER BY b.id_barcode ASC,b.id_group ASC,b.date_modify DESC) as qty  ";
+        // $sql .= "(SELECT count(b.id_barcode) as qty FROM mb_master_barcode b WHERE b.barcode_prefix = cr.`group` AND b.group_received = 1 AND b.barcode_status = 0 AND b.date_modify BETWEEN '$day2' AND '$day1' GROUP BY b.id_group, b.barcode_prefix ORDER BY b.id_barcode ASC,b.id_group ASC,b.date_modify DESC) as qty  ";
+        $sql .= "(SELECT SUM(br.barcode_qty) as qty FROM mb_master_barcode_range br WHERE br.group_code = cr.`group` and br.barcode_status = 0 AND br.date_modify BETWEEN '2018-07-29' AND '2021-07-07') as qty ";
         $sql .= "FROM mb_master_config_relationship cr ";
         $sql .= "LEFT JOIN mb_master_group g ON g.group_code = cr.`group` ";
         $sql .= "LEFT JOIN mb_master_product p ON p.id_group = g.id_group ";
@@ -351,6 +353,23 @@ class AssociationModel extends db
         $sql .= "WHERE 1 ORDER BY date_of_association DESC LIMIT 0,1";
         // echo $sql;
         // echo '<br>';
+        // exit();
+        
+        // $sql = "SELECT ";
+        // $sql .= "p.date_modify AS date_of_association, ";
+        // $sql .= "cr.size, ";
+        // $sql .= "cr.`group`, ";
+        // $sql .= "(SELECT count(b.id_barcode) as qty FROM mb_master_barcode b WHERE b.barcode_prefix = cr.`group` AND b.group_received = 1 AND b.barcode_status = 0 AND b.date_modify BETWEEN '$day2' AND '$day1' GROUP BY b.id_group, b.barcode_prefix ORDER BY b.id_barcode ASC,b.id_group ASC,b.date_modify DESC) as qty  ";
+        // $sql .= "FROM ";
+        // $sql .= "mb_master_config_relationship cr ";
+        // $sql .= "LEFT JOIN mb_master_group g ON g.group_code = cr.`group` ";
+        // $sql .= "LEFT JOIN mb_master_product p ON p.id_group = g.id_group ";
+        // $sql .= "WHERE ";
+        // $sql .= "cr.size = '".$size."' ";
+        // $sql .= !empty($notnow) ? "AND cr.`group` NOT IN (".$notnow.") " : "";
+        // $sql .= "ORDER BY ";
+        // $sql .= "date_of_association DESC ";
+        // $sql .= "LIMIT 0,1; ";
 
         $query = $this->query($sql);
         return $query->row;

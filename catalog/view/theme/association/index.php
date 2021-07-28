@@ -267,10 +267,12 @@ $(document).ready(function () {
 		let notuse_relation = [];
 		let notuse_again = [];
 
-		showMsg('Start Condition');
+		// showMsg('Start Condition');
 
 		let counttdqty = $('.tdqty').length;
 		let startcount = 1;
+
+		let lists = new Array();
 		
 		$('.tdqty').each(function (index, element) {
 
@@ -281,6 +283,9 @@ $(document).ready(function () {
 			let oldmsg = $('.tdmsg[data-idproduct='+idproduct+']').data('text');
 
 			let obj = {td_size:idsize,td_sumprod:idsumprod,td_lastwk:idgroup,td_msg:oldmsg};
+			// console.log(obj);
+			
+
 
 			if (oldmsg!='Relationship') {
 				$('.tdpropose[data-idproduct='+idproduct+']').html(loading);
@@ -290,7 +295,7 @@ $(document).ready(function () {
 			} 
 			if (oldmsg=='Relationship') {
 				obj.is_relationship = 'Yes';
-				console.log(idgroup);
+				// console.log(idgroup);
 				$.ajax({
 					type: "POST",
 					url: "index.php?route=association/ajaxRelation",
@@ -299,10 +304,10 @@ $(document).ready(function () {
 					async: false,
 					cache:true,
 					success: function (data2) {
-						console.log('ajaxrelation', data2);
+						// console.log('ajaxrelation', data2);
 						if (typeof data2.error_message != 'undefined') {
-							console.log('Error Response Relationship : ' + data2.error_message);
-							// obj.relationship = 'Error'+data2.error_message;
+							// console.log('Error Response Relationship : ' + data2.error_message);
+							obj.relationship = 'Error'+data2.error_message;
 						} else {
 							let thisprq = 0;
 							if (data2.propose_remaining_qty.length>0) {
@@ -349,21 +354,21 @@ $(document).ready(function () {
 							}
 
 							// console.log(startcount+' '+counttdqty);
-							if (debug_relation==true) {
-								console.table(obj);
-							}
-							if (startcount==counttdqty) {
-								pasteFreegroup();
-							} else {
-								startcount++;
-							}
+							// if (debug_relation==true) {
+								// console.table(obj);
+							// }
+							// if (startcount==counttdqty) {
+							// 	pasteFreegroup();
+							// } else {
+							// 	startcount++;
+							// }
 						}
 
 					}
 				});
 
 			} else {
-				obj.is_relationship = 'No';
+				obj.is_relationship = 'No'; 
 				if (idgroup>0) {
 					obj.has_lastwk = 'Yes';
 					$.ajax({
@@ -374,6 +379,7 @@ $(document).ready(function () {
 						async: false,
 						cache: false,
 						success: function (data) {
+							// console.log('association/ajaxCountBarcodeNotuse', {group:idgroup, product:idproduct, response:data});
 
 							obj.response_barcodenotuse = addCommas(data);
 							
@@ -391,6 +397,8 @@ $(document).ready(function () {
 								async: false,
 								cache: false,
 								success: function (data2) {
+									// console.log('association/ajaxCondition', data2);
+									// console.log('notuseagain', idgroup, notuse_again)
 									
 									if (jQuery.inArray(idgroup, notuse_again)==-1) {
 										notuse_again.push(idgroup);
@@ -433,11 +441,11 @@ $(document).ready(function () {
 									if (debug_lastweek==true&&data2.propose.length>0) {
 										// console.table(obj);
 									}
-									if (startcount==counttdqty) {
-										pasteFreegroup();
-									} else {
-										startcount++;
-									}
+									// if (startcount==counttdqty) {
+										// pasteFreegroup();
+									// } else {
+										// startcount++;
+									// }
 									
 
 								}
@@ -462,19 +470,26 @@ $(document).ready(function () {
 					}
 					// console.log(startcount+' '+counttdqty);
 
-					if (debug_lastweek==true) {
+					// if (debug_lastweek==true) {
 							// console.table(obj);
-						}
-					if (startcount==counttdqty) {
-						pasteFreegroup();
-					} else {
-						startcount++;
-					}
+						// }
+					// if (startcount==counttdqty) {
+						obj.use = 'freegroup';
+						// pasteFreegroup();
+					// } else {
+						// startcount++;
+					// }
 				}
 			}
-			
+
+			// console.log(obj);
+			lists.push(obj);
+			pasteFreegroup();
 			
 		});
+
+
+		console.log(lists);
 	}
 
 	const pasteFreegroup = () => {
@@ -525,7 +540,7 @@ $(document).ready(function () {
 			return notuse;
 		}
 		
-		console.log('Start Free Group');
+		// console.log('Start Free Group');
 		$.ajax({
 			type: "GET",
 			url: "index.php?route=barcode/jsonFreeGroup",
@@ -558,7 +573,7 @@ $(document).ready(function () {
 			if (debug_freegroup==true) {
 				// console.table(obj);
 			}
-			console.log('Loop td for set free group');
+			// console.log('Loop td for set free group');
 
 			var i = 0;
 			$('.tdpropose').each(function(index,value){
@@ -640,7 +655,7 @@ $(document).ready(function () {
 				}
 				
 				if (obj.condition_confirm_propose_null==true&&debug_freegroup==true) {
-					console.table(obj);
+					// console.table(obj);
 				}
 				
 			});
@@ -655,6 +670,8 @@ $(document).ready(function () {
 	let debug_lastweek = true;
 	let debug_freegroup = true;
 	pasteLastwk();
+
+
 	
 
 
