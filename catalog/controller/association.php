@@ -138,7 +138,9 @@ class AssociationController extends Controller
 
         $json = array();
         
-        if (in_array($relation_group['group'], $config_relation) && !in_array($relation_group['group'],$beforeSync) && !empty($relation_group['group'])) {
+        if (in_array($relation_group['group'], $config_relation) 
+        // && !in_array($relation_group['group'], $beforeSync) 
+        && !empty($relation_group['group'])) {
             $propose = $relation_group['group'];
             $propose_remaining_qty = $relation_group['qty'];
             $message = '<span class="text-primary">Relationship</span>';
@@ -408,19 +410,19 @@ class AssociationController extends Controller
             }
 
             if ($value['sum_prod']>0) {
-                if (!empty($relation_group['group'])) {
+                if ($remaining_qty >= $value['sum_prod']) {
+                    $propose = $last_week;
+                    $propose_remaining_qty = $remaining_qty;
+                    $message = 'Last Weeek';
+                    unset($freegroup[$last_week]);
+                } 
+                else if (!empty($relation_group['group'])) {
                     if (!empty($relation_group['qty'])) {
                         $propose = $relation_group['group'];
                         $propose_remaining_qty = $relation_group['qty'];
                         $message = '<span class="text-primary">Relationship</span>';
                         unset($freegroup[(int)$relation_group['group']]);
                     }
-                } 
-                else if ($remaining_qty >= $value['sum_prod']) {
-                    $propose = $last_week;
-                    $propose_remaining_qty = $remaining_qty;
-                    $message = 'Last Weeek';
-                    unset($freegroup[$last_week]);
                 } 
                 else {
                     $free = '';
