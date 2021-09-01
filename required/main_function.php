@@ -1183,7 +1183,6 @@
 	   $address = array();
 	   for ($row = $first_row; $row <= $highestRow; ++$row) {
 	    $dataRow = $objWorksheet->rangeToArray('A'.$row.':'.$highestColumn.$row,null, true, true, true);
-	    // var_dump($dataRow);
 	    if ((isset($dataRow[$row]['A'])) && ($dataRow[$row]['A'] > '')) {
 	     ++$r;
 	     foreach($headingsArray as $columnKey => $columnHeading) {
