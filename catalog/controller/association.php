@@ -151,7 +151,7 @@ class AssociationController extends Controller
                 'last_wk0' => !empty($last_week) ? sprintf('%03d', $last_week) : '',
                 'remaining_qty' => number_format((int) round($remaining_qty,0), 0),
                 'propose' => !empty(strip_tags($propose)) ? ($propose!=$last_week?''.sprintf('%03d', $propose).'':sprintf('%03d', $propose)) : '',
-                'propose_remaining_qty' => round($propose_remaining_qty,0) > 0 ? ($propose!=$last_week?''.number_format((int) round($propose_remaining_qty,0), 0).'':number_format((int) round($propose_remaining_qty,0), 0)) : '',
+                'propose_remaining_qty' => round($propose_remaining_qty,0) > 0 ? ( $propose!=$last_week ? ''.number_format((int) round($propose_remaining_qty,0), 0).'' : number_format((int) round($propose_remaining_qty,0), 0)) : '',
                 'message' => $message,
                 'plain_message' => strip_tags($message),
             );

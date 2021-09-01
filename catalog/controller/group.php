@@ -206,7 +206,7 @@ class GroupController extends Controller
 
     if ($historyInfo != false && count($historyInfo) >= 1) {
      $historyInfo = $historyInfo[0];
-     $history->editHistory($historyInfo['id_history'], array('barcode_use' => 1, array('barcode_use' => 1, 'date_received' => date('Y-m-d H:i:s'))));
+     $history->editHistory($historyInfo['id_history'], array('barcode_use' => 1, 'date_received' => date('Y-m-d H:i:s')));
     }
     $success[] = $group->findCode($id);
    } else {
