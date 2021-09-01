@@ -112,8 +112,8 @@
                 //     $this->where("cb.`group` BETWEEN ".(int)$filter['start_group']." AND ".(int)$filter['end_group']."",'','');
                 // } else {
                     foreach ($filter as $key => $value) {
-                        if ($key=='start_group'&&isset($filter['end_group'])) {
-                            $this->where("cb.`group` BETWEEN ".(int)$value." AND ".(int)$filter['end_group']."",'','');
+                        if ($key=='start_group' && isset($filter['end_group'])) {
+                            $this->where("cb.`id` BETWEEN ".(int)$value." AND ".(int)$filter['end_group']."",'','');
                         } else if ($key!='end_group') {
                             $this->where($key, $value);
                         }

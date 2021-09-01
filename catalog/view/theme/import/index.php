@@ -310,14 +310,14 @@ $(document).ready(function () {
                     }
                 })
                 .fail(function(a,b,c) {
-                    console.log(a);
+                    console.log(a, a.responseText);
                     console.log(b);
                     console.log(c);
                 });
             }
         })
         .fail(function(a,b,c) {
-            console.log(a);
+            console.log(a, a.responseText);
             console.log(b);
             console.log(c);
         });

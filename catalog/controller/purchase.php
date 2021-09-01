@@ -45,8 +45,8 @@ class PurchaseController extends Controller
       $group_info['default_start'] = (int)$group_info['default_start'];
       $group_info['default_end'] = (int)$group_info['default_end'];
 
-      $bce = (int)$group_info['start'] + (int)$v - 1;
-      // echo $group_info['default_end'];exit();
+      $bce = (int)$group_info['start'] + (int)$v;
+      // echo $group_info['default_end'];
       if ($bce > (int)$group_info['default_end']) {
         echo 'case more default';
        $cal  = $bce - (int)$group_info['default_end']; // ส่วนต่างที่เกิน
@@ -58,6 +58,11 @@ class PurchaseController extends Controller
       }
       // echo 'case normal '.$bce;
       // exit();
+
+      if ($group_info['start']==-1) {
+        $group_info['start'] = 0; // fix
+        $bce++;
+      }
 
       $insert = array(
        'id_user'       => $id_user,
@@ -103,7 +108,7 @@ class PurchaseController extends Controller
   );
   $data['result_group'] = array();
   $data['result_group'] = $config->getBarcodes();
-  $data['end_group']    = isset($_GET['end_group']) ? get('end_group') : end($data['result_group'])['group'];
+  $data['end_group']    = isset($_GET['end_group']) ? get('end_group') : $data['result_group'][count($data['result_group'])-1]['id'];
   $data['action']       = route('purchase', '&loading=1');
   $data['action_import_excel'] = route('listGroup');
   $data['export_excel'] = route('export/pattern&start_group=' . $data['start_group'] . '&end_group=' . $data['end_group']);
@@ -127,6 +132,8 @@ class PurchaseController extends Controller
     $value['status']      = (int)$barcode_use === 1 ? '' : ((int)$barcode_use === 0 && isset($value['remaining_qty']) && (int)$value['remaining_qty'] > 0 ? '<span class="text-danger">Waiting</span>' : '');
     $value['status_id']   = (int)$barcode_use;
     // $value['barcode_end'] = (isset($value['remaining_qty']) && (int)$value['remaining_qty']) ? $value['group_code'].sprintf('%05d', (int)substr($value['barcode_start'], 3,5)+(int)$value['remaining_qty']) : '';
+
+    $value['barcode_start'] = $value['group_code'].sprintf('%05d', $value['barcode_start']);
     $data['getMapping'][] = $value;
    }
   }

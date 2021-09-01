@@ -15,7 +15,7 @@
 						<div class="input-group">
 							<select name="start_group" class="form-control select2start">
 								<?php foreach ($result_group as $val) { ?>
-								<option value="<?php echo $val['group']; ?>" <?php echo ($start_group == $val['group'] ? 'selected' : ''); ?>>
+								<option value="<?php echo $val['id']; ?>" <?php echo ($start_group == $val['id'] ? 'selected' : ''); ?>>
 									<?php echo trim($val['group']); ?>
 								</option>
 								<?php } ?>
@@ -27,7 +27,7 @@
 						<div class="input-group">
 							<select name="end_group" class="form-control select2end">
 								<?php foreach ($result_group as $key => $val) { ?>
-								<option value="<?php echo $val['group']; ?>" <?php echo ($end_group == $val['group'] ? 'selected' : ''); ?>>
+								<option value="<?php echo $val['id']; ?>" <?php echo ($end_group == $val['id'] ? 'selected' : ''); ?>>
 									<?php echo trim($val['group']); ?>
 								</option>
 								<?php } ?>

@@ -71,8 +71,9 @@
         }
 
         public function loadCSVGroup($path) {
+            
 			$sql = "LOAD DATA LOCAL INFILE '" . $path . "' INTO TABLE ".PREFIX."group FIELDS TERMINATED BY ',' 
-			LINES TERMINATED BY '\n' ( id_user, group_code, start, date_purchase, date_added, date_modify, barcode_use, remaining_qty);";
+			LINES TERMINATED BY '\n' ( id_user, group_code, start, date_wk, date_purchase, date_added, date_modify, barcode_use, remaining_qty);";
             $result = $this->query($sql);
             
             // update default start default end in group table for speed query
@@ -86,9 +87,9 @@
             $this->query($sql);
 
             // update barcode now for ready next purchase condition is standby start+1 
-            $sql = "UPDATE mb_master_group g ";
-            $sql .= "SET g.`start` = (CASE WHEN g.`start` + 1 > g.default_end THEN g.default_start ELSE g.`start`+1 END) ";
-            $this->query($sql);
+            // $sql = "UPDATE mb_master_group g ";
+            // $sql .= "SET g.`start` = (CASE WHEN g.`start` + 1 > g.default_end THEN g.default_start ELSE g.`start`+1 END) ";
+            // $this->query($sql);
 
             return $result;
         }

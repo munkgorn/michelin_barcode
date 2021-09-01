@@ -146,7 +146,11 @@
             $config_barcode = $query->rows;
 
             foreach ($config_barcode as $value) {
-                $this->query("INSERT INTO mb_master_group SET id_user = 1, group_code = '".$value['group']."', start = '".$value['start']."', end = '0', remaining_qty = '0', default_start = '".$value['start']."', default_end = '".$value['end']."', default_range = '".$value['total']."', barcode_use = '0', config_remaining = '', del = '0', date_added = '".date('Y-m-d')."', date_modify = '".date('Y-m-d')."' ");
+                $query2 = $this->query("SELECT * FROM mb_master_group WHERE group_code = '".$value['group']."' ");
+                if ($query2->num_rows == 0) {
+                    $value['start'] = (int)substr($value['start'], 3,5);
+                    $this->query("INSERT INTO mb_master_group SET id_user = 1, group_code = '".$value['group']."', start = '".$value['start']."', end = '0', remaining_qty = '0', default_start = '".$value['start']."', default_end = '".$value['end']."', default_range = '".$value['total']."', barcode_use = '0', config_remaining = '', del = '0', date_added = '".date('Y-m-d')."', date_modify = '".date('Y-m-d')."' ");
+                }
             }
         }
 

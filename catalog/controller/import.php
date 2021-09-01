@@ -369,10 +369,12 @@ class ImportController extends Controller
                     $fp = fopen($csv_file, 'w');
                     foreach ($results as $value) {
                         if ($row > 0) {
+                            $value[1] = (int)substr($value[1], 3, 5)+1;
                             $insert = array(
                                 $this->getSession('id_user'),
                                 $value[0],
                                 $value[1],
+                                $value[2],
                                 $value[2],
                                 $value[2],
                                 $value[2],
@@ -385,6 +387,7 @@ class ImportController extends Controller
                     }
                     fclose($fp);
                     $result = $import->loadCSVGroup($csv_file);
+                    
                     // echo 'Load table group : '.($result==1?'success':'fail').'<br>';
 
                     $col = array();
@@ -405,7 +408,8 @@ class ImportController extends Controller
                         'csv_file' => $csv_file,
                         'Load table group' => ($result==1?'success':'fail'),
                         'Upload file' => ($resultupload==1?'success':'fail'),
-                        'xlsx' => $excel_file_name
+                        'xlsx' => $excel_file_name,
+                        'temp' => $insert
                     );
                    
                 }else{
@@ -443,18 +447,21 @@ class ImportController extends Controller
         $count_file = 1;
         foreach ($results2 as $value) {
             if ($row > 0) {
+                $value[1] = (int)substr($value[1], 3,5);
+                $value[2] = (int)substr($value[2], 3,5);
+
                 $csv_file = $path_csv.$count_file.'.csv';
                 $fp = fopen($csv_file, 'w');
                 $id_group = $group->findIdGroup($value[0]);
 
-                for ($i = (int) $value[1]; $i <= $value[2]; $i++) {
+                for ($i = $value[1]; $i <= $value[2]; $i++) {
                     $insert = array(
                         $this->getSession('id_user'),
                         $id_group,
                         $value[0],
                         $i,
-                        (int)$value[6],
-                        (int)$value[5],
+                        $value[6],
+                        $value[5],
                         $value[4],
                         $value[4],
                         // date('Y-m-d H:i:s', strtotime($value[4].' 00:00:00')),
