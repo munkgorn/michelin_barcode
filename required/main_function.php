@@ -1,4 +1,6 @@
 <?php
+require_once DOCUMENT_ROOT.'/system/lib/PHPExcel/Classes/PHPExcel.php';
+
 	function id_admin(){
 		$result 	= '';
 		$id_admin 		= (isset($_SESSION['id_admin'])?$_SESSION['id_admin']:'');
@@ -1122,6 +1124,7 @@
 
 	}
 	function whiteExcel($data=array(), $pathSave, $name = 'Export.xlsx') {
+		require_once DOCUMENT_ROOT.'/system/lib/PHPExcel/Classes/PHPExcel.php';
 		$objPHPExcel = new PHPExcel();
         $objPHPExcel->getProperties()->setCreator("Admin")
                                      ->setLastModifiedBy("Admin")
@@ -1160,7 +1163,8 @@
 		return $filename;
 	}
 	function readExcel($path,$first_row=2,$index=0){
-		require_once(DOCUMENT_ROOT.'system/lib/PHPExcel/vendor/autoload.php');
+		// require_once(DOCUMENT_ROOT.'system/lib/PHPExcel/vendor/autoload.php');
+		require_once DOCUMENT_ROOT.'/system/lib/PHPExcel/Classes/PHPExcel.php';
 		$objPHPExcel = new PHPExcel();
 
 		$inputFileName = DOCUMENT_ROOT.$path; 

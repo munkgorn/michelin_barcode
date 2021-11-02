@@ -1,5 +1,5 @@
 <?php 
-require_once DOCUMENT_ROOT.'/system/lib/PHPExcel/Classes/PHPExcel.php';
+
 class ExportController extends Controller {
 
     public function association() {
@@ -794,6 +794,8 @@ class ExportController extends Controller {
 
         $config = $this->model('config');
         $results = $config->getBarcodes();
+        
+
         foreach ($results as $value) {
             $excel[] = array(
                 $value['group'],
@@ -802,6 +804,7 @@ class ExportController extends Controller {
                 $value['total']
             );
         }
+        
 
         $doc = DOCUMENT_ROOT . 'uploads/export/';
         if (!file_exists($doc)) {

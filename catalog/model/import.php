@@ -75,6 +75,9 @@
 			$sql = "LOAD DATA LOCAL INFILE '" . $path . "' INTO TABLE ".PREFIX."group FIELDS TERMINATED BY ',' 
 			LINES TERMINATED BY '\n' ( id_user, group_code, start, date_wk, date_purchase, date_added, date_modify, barcode_use, remaining_qty);";
             $result = $this->query($sql);
+
+            $sql = "UPDATE mb_master_group g SET config_remaining = '10000' and `round` = 0";
+            $result = $this->query($sql);
             
             // update default start default end in group table for speed query
             $sql = "UPDATE mb_master_group g ";

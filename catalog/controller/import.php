@@ -210,15 +210,19 @@ class ImportController extends Controller
                     foreach ($results as $value) {
                         if ($row > 0) {
                             $insert = array(
-                                $this->getSession('id_user'),
-                                $value[0],
-                                $value[1],
-                                $value[2],
-                                $value[2],
-                                $value[2],
-                                $value[3],
-                                (int) $value[4],
+                                $this->getSession('id_user'),  //id_user,
+                                $value[0], // group_code,
+                                $value[1], // start,
+                                $value[2], // date_wk,
+                                $value[2], // date_purchase,
+                                $value[2], // date_added,
+                                $value[3], // date_modify,
+                                (int) $value[4], // barcode_use,
+                                // remaining_qty,
                             );
+                            // echo '<pre>';
+                            // print_r($insert);
+                            // echo '</pre>';
                             fputcsv($fp, $insert, ',', chr(0));
                         }
                         $row++;
@@ -268,7 +272,7 @@ class ImportController extends Controller
                     $config = $this->model('config');
                     $group = $this->model('group');
 
-                    $results2 = readExcel($dir . $newname, 0, 1);
+                    $results2 = readExcel($dir . $newname, 0, 0);
 
                     $col = array();
                     $row = 0;
@@ -288,7 +292,10 @@ class ImportController extends Controller
                         if ($row > 0) {
                             $id_group = $group->findIdGroup($value[0]);
 
-                            for ($i = (int) $value[1]; $i <= $value[2]; $i++) {
+                            $v1 = substr($value[1], 3, 5);
+                            $v2 = substr($value[2], 3, 5);
+
+                            for ($i = (int)$v1; $i <= $v2; $i++) {
                                 $insert = array(
                                     $this->getSession('id_user'),
                                     $id_group,

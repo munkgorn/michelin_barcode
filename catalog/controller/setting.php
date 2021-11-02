@@ -1,4 +1,5 @@
 <?php 
+require_once DOCUMENT_ROOT.'/system/lib/PHPExcel/Classes/PHPExcel.php';
 	class SettingController extends Controller {
 		public function __construct() {
 			if ($this->hasSession('id_user')==false) {
