@@ -9,7 +9,8 @@ date_default_timezone_set("Asia/Bangkok");
 
 // define('ENVIRONMENT', 'production_lmc');
 // define('ENVIRONMENT', 'production_ppd');
-define('ENVIRONMENT', 'developer');
+// define('ENVIRONMENT', 'developer');
+define('ENVIRONMENT', 'preproduction');
 
 define('DEBUG_MODE', true);
 
@@ -39,6 +40,14 @@ if (ENVIRONMENT == 'developer') {
 
  define('DB_USER', 'root');
  define('DB_PASS', '');
+
+} elseif (ENVIRONMENT == 'preproduction') { 
+    define('SUBFOLDER', 'production/michelin_barcode_prefix/');
+    define('MURL', 'https://www.fsoftpro.com/' . SUBFOLDER);
+    define('DOCUMENT_ROOT', $_SERVER['DOCUMENT_ROOT'] . '/' . SUBFOLDER);
+   
+    define('DB_USER', 'fsoftpro_prefix');
+    define('DB_PASS', 'fvfV78MtIp');
 
 } elseif (ENVIRONMENT == 'production_lmc') {
  define('SUBFOLDER', '');
