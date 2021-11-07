@@ -86,17 +86,7 @@ class GroupController extends Controller
    default:$status = false;
     break;
   }
-//   // echo $status;
-  //   $filter = array(
-  //    'date_purchase'    => !empty(get('date')) ? get('date') : '',
-  //    'group_code'       => get('group'),
-  //    // 'barcode_use' => $status,
-  //     'has_remainingqty' => true,
-  //   );
-  //   if ($status !== false) {
-  //    $filter['barcode_use'] = "$status";
-  //   }
-  //   $data = $group->getGroups($filter);
+  
   $history = $this->model('history');
   $filter  = array();
   if (!empty($_GET['date'])) {$filter['date_purchase'] = trim($_GET['date']);}

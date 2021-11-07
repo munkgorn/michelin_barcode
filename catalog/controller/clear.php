@@ -22,17 +22,20 @@
             $max = null;
             $end = null;
             foreach ($config_barcode as $value) {
-                if ($value['group'] < $start || $start == null) {
-                    $start = $value['group'];
+                if ($value['id_group'] < $start || $start == null) {
+                    $start = $value['id_group'];
                 }
-                if ($value['group'] > $end) {
-                    $end = $value['group'];
+                if ($value['id_group'] > $end) {
+                    $end = $value['id_group'];
                 }
             }
 
 
             $data['group_start'] = $start;
             $data['group_end'] = $end;
+
+            $data['group_start'] = 1;
+            $data['group_end'] = 2621;
 
             $data['success'] = $this->hasSession('success') ? $this->getSession('success') : ''; $this->rmSession('success');
             $data['error'] = $this->hasSession('error') ? $this->getSession('error') : ''; $this->rmSession('error');

@@ -314,8 +314,8 @@ class ImportController extends Controller
                         $row++;
                     }
                     fclose($fp);
-                    $import->loadCSVBarcode($csv_file);
-                    echo 'Load table barcode : '.($result==1?'success':'fail').'<br>';
+                    $resultloadcsv = $import->loadCSVBarcode($csv_file);
+                    echo 'Load table barcode : '.($resultloadcsv==1?'success':'fail').'<br>';
                     echo $this->linkIndex();
                     exit();
                 }

@@ -1,4 +1,9 @@
-<?php 
+<?php
+
+    /*
+	* php.ini in ./db/php.ini
+	* default structure /db/structure_default...
+	*/
 
 	header('Access-Control-Allow-Origin: *');  
 	header('Content-Type: text/html; charset=utf-8');

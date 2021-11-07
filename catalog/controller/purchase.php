@@ -133,7 +133,7 @@ class PurchaseController extends Controller
     $value['status_id']   = (int)$barcode_use;
     // $value['barcode_end'] = (isset($value['remaining_qty']) && (int)$value['remaining_qty']) ? $value['group_code'].sprintf('%05d', (int)substr($value['barcode_start'], 3,5)+(int)$value['remaining_qty']) : '';
 
-    $value['barcode_start'] = $value['group_code'].sprintf('%05d', $value['barcode_start']);
+    $value['barcode_start'] = $value['group_code'].sprintf('%05d', substr($value['barcode_start'], 3,5)+1);
     $data['getMapping'][] = $value;
    }
   }
