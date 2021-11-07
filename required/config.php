@@ -11,7 +11,6 @@ date_default_timezone_set("Asia/Bangkok");
 // define('ENVIRONMENT', 'production_ppd');
 // define('ENVIRONMENT', 'developer');
 define('ENVIRONMENT', 'preproduction');
-
 define('DEBUG_MODE', true);
 
 if (DEBUG_MODE) {
@@ -27,7 +26,8 @@ if (DEBUG_MODE) {
 // Config DB localhost
 define('PREFIX', 'mb_master_');
 define('DB_HOST', 'localhost');
-define('DB_DB', 'fsoftpro_barcode_p3');
+// define('DB_DB', 'fsoftpro_barcode_p3');
+
 // define('DB_DB', 'fsoftpro_barcode');
 // define('DB_DB','fsoftpro_barcode_lmc');
 // define('DB_DB', 'fsoftpro_barcode_ppd');
@@ -40,6 +40,7 @@ if (ENVIRONMENT == 'developer') {
 
  define('DB_USER', 'root');
  define('DB_PASS', '');
+define('DB_DB', 'fsoftpro_barcode_p3');
 
 } elseif (ENVIRONMENT == 'preproduction') { 
     define('SUBFOLDER', 'production/michelin_barcode_prefix/');
@@ -48,6 +49,7 @@ if (ENVIRONMENT == 'developer') {
    
     define('DB_USER', 'fsoftpro_prefix');
     define('DB_PASS', 'fvfV78MtIp');
+    define('DB_DB', 'fsoftpro_prefix');
 
 } elseif (ENVIRONMENT == 'production_lmc') {
  define('SUBFOLDER', '');
