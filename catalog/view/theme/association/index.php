@@ -484,15 +484,18 @@ $(document).ready(function () {
 
 			// console.log(obj);
 			lists.push(obj);
-			pasteFreegroup();
 			
 		});
 
 
-		console.log(lists);
+		pasteFreegroup();
+
+
+		// console.log(lists);
 	}
 
 	const pasteFreegroup = () => {
+		console.log('Start Paste Freegroup!')
 
 		let findgroup_infreegroup = (data) => {
 			let jsonfreeuse = [];
@@ -548,119 +551,126 @@ $(document).ready(function () {
 			cache:false,
 			success: function (data) {
 		// $.get('index.php?route=barcode/jsonFreeGroup', function(data){
-			var json = JSON.parse(data);
-			var temp = json;
-			let obj = {};
-			// In response json is [{group:xxx, qty:000}, ... ]
-			// Freegroup
-			// Get only `group` in json 
-			let jsonfreeuse = findgroup_infreegroup(temp);
-			obj.found_freegroup = jsonfreeuse.length;
-
-			// Get `group` in DB on condition `old association <= config day`
-			let oldsync = get_group_oldassociation();
-			obj.found_oldsync = jsonfreeuse.length;
-
-			// Find different group from 2 array `jsonfreeuse` and `oldsync`
-			// Response freegroup can used
-			let indexFree = get_index_freegroup_canuse(jsonfreeuse, oldsync);
-			obj.found_indexfreegroup = indexFree.length;
-
-			// Loop group last week on <td> save to not use free group in td
-			let notuse = get_group_in_td();
-			obj.found_groupintd = notuse.length;
-
-			if (debug_freegroup==true) {
-				// console.table(obj);
-			}
-			// console.log('Loop td for set free group');
-
-			var i = 0;
-			$('.tdpropose').each(function(index,value){
+				var json = JSON.parse(data);
+				var temp = json;
 				let obj = {};
-				var thishtml = parseInt($(this).html());
-				
-				var idproduct = $(this).data('idproduct');
-				var thissize = $('.tdsize[data-idproduct='+idproduct+']').html();
-				var thisqtylk_str = $('.tdqty[data-idproduct='+idproduct+']').html();
-				var thisqtylk = parseInt(thisqtylk_str.replace(',', ''));
-				var thismsg = $('.tdmsg[data-idproduct='+idproduct+']').data('text');
+				// In response json is [{group:xxx, qty:000}, ... ]
+				// Freegroup
+				// Get only `group` in json 
+				let jsonfreeuse = findgroup_infreegroup(temp);
+				obj.found_freegroup = jsonfreeuse.length;
 
-				var thissumpod_str = $('.tdsumprod[data-idproduct='+idproduct+']').html();
-				var thissumpod = parseInt(thissumpod_str.replace(',',''));
-				
-				var row = $(this).attr('row');
-				var last_wk = parseInt($('.tdlast[data-idproduct='+idproduct+'] .last_wk').html());
-				var thissave = $('.txt_group[data-key='+idproduct+']').val();
+				// Get `group` in DB on condition `old association <= config day`
+				let oldsync = get_group_oldassociation();
+				obj.found_oldsync = jsonfreeuse.length;
 
-				obj = {td_size:thissize,td_sumprod:thissumpod_str,td_lastwk:last_wk,td_qty:thisqtylk_str,groupsave:thissave,td_msg:thismsg};
+				// Find different group from 2 array `jsonfreeuse` and `oldsync`
+				// Response freegroup can used
+				let indexFree = get_index_freegroup_canuse(jsonfreeuse, oldsync);
+				obj.found_indexfreegroup = indexFree.length;
 
-				// Change color message to red
-				if (last_wk!=$(this).html()&&thismsg!='Relationship') {
-					$(this).addClass('text-danger');
-					$('.tdproposeqty[data-idproduct='+idproduct+']').addClass('text-danger');
-					$('.tdmsg[data-idproduct='+idproduct+']').addClass('text-danger');
-				}
-				
-				obj.condition_confirm_propose_null = isNaN(thishtml);
+				// Loop group last week on <td> save to not use free group in td
+				let notuse = get_group_in_td();
+				obj.found_groupintd = notuse.length;
 
-				if (
-					isNaN(thishtml)
-					&& thissave.length==0 
-					&& typeof temp[indexFree[i]] != 'undefined' 
-					&& typeof temp[indexFree[i]].group != 'undefined' 
-					&& thissumpod > 0 
-					&& thismsg!='Relationship' 
-				) {
-
-					let thisgroup = pad(temp[indexFree[i]].group, 3); 
-					let thisqty_str = temp[indexFree[i]].qty;
-					let thisqty = parseInt(thisqty_str.replace(',',''));
-
-					let loopcondition = (jQuery.inArray(parseInt(thisgroup), notuse) !== -1 || thisqty <= thissumpod);
-
-					while (loopcondition) {
-						i++;
-						thisgroup = pad(temp[indexFree[i]].group, 3); 
-						thisqty_str = temp[indexFree[i]].qty;
-						thisqty = parseInt(thisqty_str.replace(',',''));
-						loopcondition = (jQuery.inArray(parseInt(thisgroup), notuse) !== -1 || thisqty <= thissumpod);
-					}
-					obj.freegroup_group = thisgroup;
-					obj.freegroup_qty = addCommas(thisqty);
-			
-					if (jQuery.inArray(parseInt(thisgroup), notuse) == -1 && thisqty >= thissumpod) {
-						obj.freegroup_set = true;
-						$(this).html(thisgroup);
-						$('.txt_propose[data-key='+idproduct+']').val(thisgroup);
-						$('.tdproposeqty[data-idproduct='+idproduct+']').html(addCommas(thisqty));
-						$('.tdmsg[data-idproduct='+idproduct+']').html('Free Group');
-					} else {
-						obj.freegroup_set = false;
-					}
-					
-					if (last_wk!=thisgroup) { // free group is not save 
-						// $.ajax({
-						// 	type: "POST",
-						// 	url: "index.php?route=association/ajaxSavePropose",
-						// 	data: {id_product: idproduct, remaining_qty: thisqtylk, propose: thisgroup, propose_remaining_qty: thisqty, message: 'Free Group'},
-						// 	dataType: "json",
-						// 	async: false,
-						// 	success: function (response) {
-						// 		console.log(response);
-						// 	}
-						// });
-					}
-					i++;
-				}
-				
-				if (obj.condition_confirm_propose_null==true&&debug_freegroup==true) {
+				if (debug_freegroup==true) {
 					// console.table(obj);
 				}
+				// console.log('Loop td for set free group');
 				
-			});
+				notuse.sort();
+				console.log('Freegroup', temp);
+				console.log('Notuse', notuse);
+				
+				
 
-			// console.table(obj);
+				var i = 0;
+				$('.tdpropose').each(function(index,value){
+					let obj = {};
+					var thishtml = parseInt($(this).html());
+					
+					var idproduct = $(this).data('idproduct');
+					var thissize = $('.tdsize[data-idproduct='+idproduct+']').html();
+					var thisqtylk_str = $('.tdqty[data-idproduct='+idproduct+']').html();
+					var thisqtylk = parseInt(thisqtylk_str.replace(',', ''));
+					var thismsg = $('.tdmsg[data-idproduct='+idproduct+']').data('text');
+
+					var thissumpod_str = $('.tdsumprod[data-idproduct='+idproduct+']').html();
+					var thissumpod = parseInt(thissumpod_str.replace(',',''));
+					
+					var row = $(this).attr('row');
+					var last_wk = parseInt($('.tdlast[data-idproduct='+idproduct+'] .last_wk').html());
+					var thissave = $('.txt_group[data-key='+idproduct+']').val();
+
+					obj = {td_size:thissize,td_sumprod:thissumpod_str,td_lastwk:last_wk,td_qty:thisqtylk_str,groupsave:thissave,td_msg:thismsg};
+					
+
+					// Change color message to red
+					if (last_wk!=$(this).html()&&thismsg!='Relationship') {
+						$(this).addClass('text-danger');
+						$('.tdproposeqty[data-idproduct='+idproduct+']').addClass('text-danger');
+						$('.tdmsg[data-idproduct='+idproduct+']').addClass('text-danger');
+					}
+					
+					obj.condition_confirm_propose_null = isNaN(thishtml);
+					
+
+					if (
+						isNaN(thishtml)
+						&& thissave.length==0 
+						&& typeof temp[indexFree[i]] != 'undefined' 
+						&& typeof temp[indexFree[i]].group != 'undefined' 
+						&& thissumpod > 0 
+						&& thismsg!='Relationship' 
+					) {
+
+
+// if (thissize=='344') {
+						
+// }
+
+						let filter = temp
+										.filter(f => !notuse.includes(parseInt(f.group)) ) 
+										.sort((a,b) => parseInt(a.qty) > parseInt(b.qty) ? 1 : -1)
+										.filter(f => parseInt(thissumpod) <= parseInt(f.qty));
+							
+						console.log( 
+							thissize,
+							thissumpod,
+							filter
+						);
+						
+						if (filter.length > 0) {
+							let thisgroup = pad(filter[0].group, 3); 
+							let thisqty_str = filter[0].qty;
+							let thisqty = parseInt(thisqty_str.replace(',',''));
+
+							obj.freegroup_group = thisgroup;
+							obj.freegroup_qty = addCommas(thisqty);
+							
+							$(this).html(thisgroup);
+							$('.txt_propose[data-key='+idproduct+']').val(thisgroup);
+							$('.tdproposeqty[data-idproduct='+idproduct+']').html(addCommas(thisqty));
+							$('.tdmsg[data-idproduct='+idproduct+']').html('Free Group');
+
+							// Add Not Use
+							notuse.push(parseInt(filter[0].group));
+							notuse.sort();
+							console.log('Notuse อัพเดท', notuse);
+						} else {
+							console.log(thissize,thissumpod,'ไม่พบ Freegroup ในจำนวนที่ใช้ได้')
+						}
+
+					
+					}
+					
+					if (obj.condition_confirm_propose_null==true&&debug_freegroup==true) {
+						// console.table(obj);
+					}
+					
+				});
+
+				// console.table(obj);
 			
 			} // end loop ajax
 		});
