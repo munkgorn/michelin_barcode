@@ -9,8 +9,8 @@ date_default_timezone_set("Asia/Bangkok");
 
 // define('ENVIRONMENT', 'production_lmc');
 // define('ENVIRONMENT', 'production_ppd');
-// define('ENVIRONMENT', 'developer');
-define('ENVIRONMENT', 'preproduction');
+define('ENVIRONMENT', 'developer');
+// define('ENVIRONMENT', 'preproduction');
 define('DEBUG_MODE', true);
 
 if (DEBUG_MODE) {

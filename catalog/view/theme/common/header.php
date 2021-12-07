@@ -119,6 +119,13 @@
                 use<br>กลุ่มบาร์โค้ดทั้งหมดที่โรงงานนำมาใช้ได้
               </a>
             </li>
+            <li>
+              <a href="<?php echo route('setting&tab=config_default'); ?>"
+                class="<?php echo $_GET['route'] == 'setting' && $_GET['tab'] == 'config_default' ? 'active' : ''; ?>">
+                <i class="ti-control-record"></i> Nb of days that barcode cannot be
+                repeated<br>จำนวนวันที่ไม่อนุญาตให้ใช้เลขบาร์โค้ด
+              </a>
+            </li>
 
           </ul>
         </li>

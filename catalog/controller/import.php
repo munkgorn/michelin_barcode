@@ -212,7 +212,7 @@ class ImportController extends Controller
                             $insert = array(
                                 $this->getSession('id_user'),  //id_user,
                                 $value[0], // group_code,
-                                $value[1], // start,
+                                substr($value[1], 0, 3).sprintf('%05d', (int)substr($value[1], 3, 5)+1 ), // start
                                 $value[2], // date_wk,
                                 $value[2], // date_purchase,
                                 $value[2], // date_added,

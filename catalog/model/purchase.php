@@ -112,8 +112,8 @@
                 //     $this->where("cb.`group` BETWEEN ".(int)$filter['start_group']." AND ".(int)$filter['end_group']."",'','');
                 // } else {
                     foreach ($filter as $key => $value) {
-                        if ($key=='start_group' && isset($filter['end_group'])) {
-                            $this->where("cb.`id` BETWEEN ".(int)$value." AND ".(int)$filter['end_group']."",'','');
+                        if ($key=='start_group'&&isset($filter['end_group'])) {
+                            $this->where("cb.`id` BETWEEN ".$value." AND ".$filter['end_group']."",'','');
                         } else if ($key!='end_group') {
                             $this->where($key, $value);
                         }
@@ -124,7 +124,6 @@
             // $this->select("group_code, `start` as barcode_start, '' as barcode_end, default_start, default_end, default_range, remaining_qty ");
             $this->select("cb.`group` AS group_code,IF (g.`start` IS NULL,cb.`start`,g.`start`) AS barcode_start,'' AS barcode_end,cb.`start` AS default_start,cb.`end` AS default_end,cb.total AS default_range,g.remaining_qty,g.change_end,g.change_qty");
             // $this->order_by('group_code','ASC');
-            // $this->order_by('ABS(cb.`group`)','ASC');
             $this->order_by('cb.`group`','ASC');
             $this->join('group g', 'g.group_code = cb.`group`', 'LEFT');
             $query = $this->get('config_barcode cb');

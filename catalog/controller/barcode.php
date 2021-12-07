@@ -1523,6 +1523,7 @@
 			// $data = $barcode->getGroupOnDate($date);
 			$status = (int)$_POST['status'];
 			$data = $barcode->getGroupOfRange($status);
+			// print_r($data);
 			$this->json($data);
 		}
 

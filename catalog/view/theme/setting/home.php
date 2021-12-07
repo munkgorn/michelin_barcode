@@ -12,26 +12,18 @@
 			<div class="alert alert-danger" role="alert"><?php echo $error; ?></div>
 			<?php endif; ?>
 			<ul class="nav nav-pills">
-				
+				<li class="nav-item">
+					<a class="nav-link <?php echo $tab=='config_default'?'active':'';?> " data-toggle="tab" href="#config_default" role="tab" aria-controls="config_default" aria-selected="false">Default</a>
+				</li>
 				<li class="nav-item">
 					<a class="nav-link <?php echo $tab=='config_barcode'?'active':'';?> " data-toggle="tab" href="#config_barcode" role="tab" aria-controls="config_barcode" aria-selected="false">Barcode</a>
 				</li>
-				<!-- <li class="nav-item">
-					<a class="nav-link <?php echo $tab=='config_status'?'active':'';?> " data-toggle="tab" href="#config_status" role="tab" aria-controls="config_status" aria-selected="false">Status</a>
-				</li> -->
+				
 			</ul>
 			<div class="tab-content pt-5" id="myTabContent">
-				<?php /*
 				<div class="tab-pane fade <?php echo $tab=='config_default' ? 'show active' : '';?>" id="config_default" role="tabpanel" aria-labelledby="config_default">
 					<!-- Default -->
 					<form method="post" action="<?php echo $action_default; ?>">
-						<div class="form-group row">
-							<label for="" class="col-sm-3 col-md-4 col-form-label text-left">Nb of days that barcode prefix cannot be used with the new size association<br>จำนวนวันที่ไม่อนุญาตให้ใช้กลุ่มบาร์โค้ดเดิมกับไซส์ใหม่</label>
-							<div class="col-sm-9 col-md-8">
-								<input type="number" name="config_date_size" class="form-control" min="0" value="<?php echo $config_date_size; ?>" required/>
-								<small>เช่น ถ้า 105xxxxx เคยใช้กับไซส์ A ไปแล้ว ต้องรออีก X วันถึงจะกลับมาใช้กับไซส์ B ได้</small>
-							</div>
-						</div>
 						<div class="form-group row">
 							<label for="" class="col-sm-3 col-md-4 col-form-label text-left">Nb of days that barcode cannot be repeated<br>จำนวนวันที่ไม่อนุญาตให้ใช้เลขบาร์โค้ดซ้ำ</label>
 							<div class="col-sm-9 col-md-8">
@@ -46,12 +38,6 @@
 							</div>
 						</div>
 						<div class="form-group row">
-							<label for="" class="col-sm-3 col-md-4 col-form-label text-left">วันที่กำหนด ระยะเวลาค้นหา lastweek ล่าสุดของ association</label>
-							<div class="col-sm-9 col-md-8">
-								<input type="number" name="config_lastweek" class="form-control" min="0" value="<?php echo $config_lastweek; ?>" required/>
-							</div>
-						</div>
-						<div class="form-group row">
 							<div class="col-sm-12">
 								<hr />
 								<button type="submit" class="btn btn-primary float-right">Save</button>
@@ -59,7 +45,6 @@
 						</div>
 					</form>
 				</div>
-				*/ ?>
 				<div class="tab-pane fade <?php echo $tab=='config_barcode' ? 'show active' : '';?>" id="config_barcode" role="tabpanel" aria-labelledby="config_barcode">
 					<!-- Barcode -->
 					<form action="<?php echo $action_barcode; ?>" method="post" enctype="multipart/form-data">

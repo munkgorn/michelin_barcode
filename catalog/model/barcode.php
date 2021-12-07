@@ -361,7 +361,7 @@ class BarcodeModel extends db
             $bc = (int)$oldgroup['default_start'];
         }
 
-        $data_insert_barcode[] = array(
+        $data_insert_barcode = array(
         'id_user'        => $data['id_user'],
         'id_group'       => $id_group,
         'barcode_prefix' => $group_code,
@@ -371,7 +371,7 @@ class BarcodeModel extends db
         'date_added'     => $date_now,
         'date_modify'    => $date_now,
         );
-     // $result_insert_barcode = $this->insert('barcode',$data_insert_barcode);
+     $result_insert_barcode = $this->insert('barcode', $data_insert_barcode);
     }
    }
 
@@ -767,7 +767,7 @@ class BarcodeModel extends db
   $this->group_by('group_code');
   $this->order_by('group_code','asc');
   $query = $this->get('barcode_range');
-  echo $this->last_query();
+  // echo $this->last_query();
   
   return $query->rows;
  }

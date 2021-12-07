@@ -45,7 +45,7 @@ class PurchaseController extends Controller
       $group_info['default_start'] = (int)$group_info['default_start'];
       $group_info['default_end'] = (int)$group_info['default_end'];
 
-      $bce = (int)$group_info['start'] + (int)$v;
+      $bce = (int)$group_info['start']-1 + (int)$v;
       // echo $group_info['default_end'];
       if ($bce > (int)$group_info['default_end']) {
         echo 'case more default';
@@ -54,14 +54,14 @@ class PurchaseController extends Controller
        $bce  = $cal2 - 1;
       } elseif ($v == (int)$group_info['default_end'] + 1) {
         echo 'case equa default';
-       $bce = (int)$group_info['default_start'];
+        $bce = (int)$group_info['default_start'];
       }
       // echo 'case normal '.$bce;
       // exit();
 
       if ($group_info['start']==-1) {
         $group_info['start'] = 0; // fix
-        $bce++;
+        // $bce++;
       }
 
       $insert = array(
@@ -133,7 +133,8 @@ class PurchaseController extends Controller
     $value['status_id']   = (int)$barcode_use;
     // $value['barcode_end'] = (isset($value['remaining_qty']) && (int)$value['remaining_qty']) ? $value['group_code'].sprintf('%05d', (int)substr($value['barcode_start'], 3,5)+(int)$value['remaining_qty']) : '';
 
-    $value['barcode_start'] = $value['group_code'].sprintf('%05d', substr($value['barcode_start'], 3,5)+1);
+    
+    $value['barcode_start'] = $value['group_code'].sprintf('%05d', substr($value['barcode_start'], 3,5));
     $data['getMapping'][] = $value;
    }
   }
