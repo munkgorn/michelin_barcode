@@ -1,5 +1,5 @@
 <?php
-require_once DOCUMENT_ROOT.'/system/lib/PHPExcel/Classes/PHPExcel.php';
+require_once DOCUMENT_ROOT.'system/lib/PHPExcel/Classes/PHPExcel.php';
 
 	function id_admin(){
 		$result 	= '';

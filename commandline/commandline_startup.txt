@@ -1,0 +1,17 @@
+mkdir uploads/association/
+mkdir uploads/config/
+mkdir uploads/export/
+mkdir uploads/import/
+mkdir uploads/import_barcode_csv/
+mkdir uploads/import_cutbarcode/
+mkdir uploads/mockupdata/
+mkdir uploads/PPDOrder/
+chmod 777 uploads/
+chmod 777 uploads/association/
+chmod 777 uploads/config/
+chmod 777 uploads/export/
+chmod 777 uploads/import/
+chmod 777 uploads/import_barcode_csv/
+chmod 777 uploads/import_cutbarcode/
+chmod 777 uploads/mockupdata/
+chmod 777 uploads/PPDOrder/

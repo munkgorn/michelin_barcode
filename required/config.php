@@ -7,6 +7,7 @@ date_default_timezone_set("Asia/Bangkok");
 
 // System.Module.Fixbug +1
 
+
 // define('ENVIRONMENT', 'production_lmc');
 // define('ENVIRONMENT', 'production_ppd');
 define('ENVIRONMENT', 'developer');
@@ -34,7 +35,7 @@ define('DB_HOST', 'localhost');
 
 $base = str_replace('required', '', __DIR__);
 if (ENVIRONMENT == 'developer') {
- define('SUBFOLDER', 'michelin_barcode/');
+ define('SUBFOLDER', 'michelin_barcode_prefix/');
  define('MURL', 'http://localhost/' . SUBFOLDER);
  define('DOCUMENT_ROOT', $_SERVER['DOCUMENT_ROOT'] . '/' . SUBFOLDER);
 

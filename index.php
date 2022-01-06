@@ -1,21 +1,10 @@
 <?php
 
-    /*
-	* php.ini in ./db/php.ini
-	* default structure /db/structure_default...
-	*/
-
 	header('Access-Control-Allow-Origin: *');  
 	header('Content-Type: text/html; charset=utf-8');
 	date_default_timezone_set('Asia/Bangkok');
-	ob_start();
 	session_start();
-
-	// define('VERSION', '1.1.3'); 
-	// // define('ENVIRONMENT', 'production_lmc');
-	// // define('ENVIRONMENT', 'production_ppd');
-	// define('ENVIRONMENT', 'developer');
-
+	
 	require_once('required/config.php'); 
 	require_once('required/main_function.php');
 	require_once('catalog/setup.php'); 
