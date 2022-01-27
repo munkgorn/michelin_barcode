@@ -109,7 +109,7 @@
             return $response;
         }
 
-        public function delGroup($id) {
+        public function delGroup($id, $date) {
             $this->where('id_group', $id);
             $query = $this->get('group');
             $group = $query->row;
@@ -117,27 +117,47 @@
             $group['start'] = (int)substr($group['start'], 3, 5);
             $group['default_start'] = (int)substr($group['default_start'], 3, 5);
             $group['default_end'] = (int)substr($group['default_end'], 3, 5);
+            $group['remaining_qty'] = (int)$group['remaining_qty'];
 
-            $num1 = $group['start'] - $group['remaining_qty'] + 1;
-            if ($num1<$group['default_start']) {
-                $num2 = $group['start'] - $group['default_start'];
-                $num3 = $group['default_end'] - ($group['remaining_qty'] - $num2);
-                $start = $num3 + 1;
+            // echo $num1 = ($group['start'] - $group['remaining_qty'])<0 ? (100000-($group['remaining_qty']-$group['start'])) : $group['start'] - $group['remaining_qty'] + 1;
+            // echo '<br>/';
+            // echo '<pre>';
+            // print_r($group);
+            // echo '</pre>';
+            // if ($num1 < $group['default_start']) {
+            //     $num2 = $group['start'] - $group['default_start'];
+            //     $num3 = $group['default_end'] - ($group['remaining_qty'] - $num2);
+            //     $start = $num3 + 1;
+            // } else {
+            //     $start = $group['start'] - $group['remaining_qty']; // find start number this purchase
+            //     $end = $start + $group['remaining_qty'] - 1;
+            // }
+            if ($group['remaining_qty'] > $group['start']) {
+                $start = (100000-($group['remaining_qty']-$group['start']));
+                $end = 99999;
+                $this->query("DELETE FROM ".PREFIX."barcode WHERE id_group = '".$id."' AND group_received = 0 AND barcode_code >= '".$start."' AND barcode_code <= '".$end."' AND date_added = '".$date."'");
+
+                $tend = (($start + $group['remaining_qty']) - 100000) - 1;
+                $tstart = 0;
+                $this->query("DELETE FROM ".PREFIX."barcode WHERE id_group = '".$id."' AND group_received = 0 AND barcode_code >= '".$tstart."' AND barcode_code <= '".$tend."' AND date_added = '".$date."'");
             } else {
-                $start = $group['start'] - $group['remaining_qty']; // find start number this purchase
+                $start = $group['start'] - $group['remaining_qty'];
                 $end = $start + $group['remaining_qty'] - 1;
+                $this->query("DELETE FROM ".PREFIX."barcode WHERE id_group = '".$id."' AND group_received = 0 AND barcode_code >= '".$start."' AND barcode_code <= '".$end."' AND date_added = '".$date."'");
             }
 
             $update = array(
                 'start' => $group['group_code'].sprintf('%05d',$start),
-                'remaining_qty' => 0,
+                'remaining_qty' => (int)0,
                 'date_purchase' => NULL,
             );
+            // print_r($update);
+            // exit();
             
             $this->where('id_group', $id);
             $result = $this->update('group', $update);
             
-            $this->query("DELETE FROM ".PREFIX."barcode WHERE id_group = '".$id."' AND barcode_code >= '".$start."' AND barcode_code <= '".$end."'");
+            // $this->query("DELETE FROM ".PREFIX."barcode WHERE id_group = '".$id."' AND group_received = 0 AND barcode_code >= '".$start."' AND barcode_code <= '".$end."'");
 
         }
 

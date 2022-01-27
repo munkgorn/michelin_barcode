@@ -1,0 +1,20 @@
+{
+  "name": "michelin_barcode_prefix",
+  "version": "1.0.0",
+  "description": "Project Michelin Barcode",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/munkgorn/michelin_barcode.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/munkgorn/michelin_barcode/issues"
+  },
+  "homepage": "https://github.com/munkgorn/michelin_barcode#readme"
+}

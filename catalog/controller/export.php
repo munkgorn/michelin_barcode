@@ -348,12 +348,14 @@ class ExportController extends Controller {
         );
         $i=1;
         $mapping = $purchase->getPurchases($filter);
-
+        // echo '<pre>';
+        // print_r($mapping);
+        // echo '</pre>';
 
         foreach ($mapping as $key => $value) {
             $value['barcode_start'] = (int)substr($value['barcode_start'], 3,5);
-            $value['default_start'] = (int)$value['default_start'];
-            $value['default_end'] = (int)$value['default_end'];
+            $value['default_start'] = (int)substr($value['default_start'],3,5);
+            $value['default_end'] = (int)substr($value['default_end'],3,5);
 
             $value['barcode_start_year'] = $json[$value['group_code']]['start'];
             $value['barcode_end_year'] = $json[$value['group_code']]['end'];
@@ -364,9 +366,11 @@ class ExportController extends Controller {
             $value['status_id'] = $barcode_use;
 
             if (!empty($value['remaining_qty'])) {
-
+                // echo "DEBUG<br><pre>";
+                // print_r($value);
+                // echo '</pre>';
                 $temp = (int)$value['barcode_start'] - (int)$value['remaining_qty'];
-                if ($temp< $value['default_start']) {
+                if ($temp < $value['default_start']) {
 
                     $excel[] = array(
                         '',
@@ -381,8 +385,12 @@ class ExportController extends Controller {
                         '',
                         $i++,
                         $value['group_code'].sprintf('%05d',$value['default_start']),
-                        $value['group_code'].sprintf('%05d',$value['barcode_start']-1),
-                        '="'.number_format((int)$value['barcode_start']-1-$value['default_start']+1,0).'"',
+                        $value['group_code'].sprintf('%05d', ($value['barcode_start']-1 > 0 ? $value['barcode_start']-1 : $value['barcode_start']) ), // fixbug case ถ้าวนมาเริ่ม 0 พอดี
+                        '="'.number_format(
+                            $value['barcode_start']-1 > 0 
+                            ? (int)$value['barcode_start']-1-$value['default_start']+1
+                            : (int)$value['barcode_start']+1
+                        ,0).'"',
                        
                     );
 
@@ -400,6 +408,11 @@ class ExportController extends Controller {
                 
             }
         }
+
+        // echo '<pre>';
+        // print_r($excel);
+        // echo '</pre>';
+        // exit();
 
         $purchase = $this->model('purchase');
         $purchase->clearAjaxPurchase(); // clear data ajax

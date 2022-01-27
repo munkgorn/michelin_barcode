@@ -1,4 +1,7 @@
 <?php
+
+use phpDocumentor\Reflection\Types\Object_;
+
 class BarcodeModel extends db
 {
 
@@ -69,6 +72,7 @@ class BarcodeModel extends db
   $barcode = (int)substr(trim($barcode), 3,5);
 
   $sql   = "SELECT * FROM mb_master_barcode WHERE date_modify > DATE_ADD(CURDATE(),INTERVAL-" . $config . " DAY)   AND barcode_prefix = '$prefix' AND barcode_code = '$barcode'  ORDER BY date_modify DESC";
+  
   $query = $this->query($sql);
   return $query->row;
  }

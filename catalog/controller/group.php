@@ -233,7 +233,7 @@ class GroupController extends Controller
     $data['filter_status'] = $filter_status;
 
     $group = $this->model('group');
-    $group->delGroup($_GET['idgroup']);
+    $group->delGroup($_GET['idgroup'], $data['filter_date']);
 
     $history = $this->model('history');
     $history->delHistory($_GET['id']);

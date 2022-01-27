@@ -199,7 +199,9 @@ $(document).ready(function () {
 		loadSomeBarcode(thisgroup);
 	});
 
+	// Event key QTY
 	$(document).on('keyup','.qty_group',function(e){
+		e.preventDefault();
 		var ele = $(this);
 
 		var qty = parseInt(ele.val());
@@ -214,34 +216,44 @@ $(document).ready(function () {
 		var groupcode = ele.data('id');
 
 
-		// Check calcurate with condition when 'barcode end' is more than 'default end' just reset to 'default start' and calcurate
+		/**
+		 * เคสกรอกเกิน 99,999 
+		 * 1. จำนวนเริ่มจาก 0 กรอกไป 100,000 ดักที่ตัวกรอก
+		 * 2. จำนวนไม่ได้เริ่มจาก 0 กรอกแล้วเกิน 99,999 ตัวเลขจะวนมาเริ่ม 0 ใหม่อีกครั้ง 
+		 */
 		let check = () => {
 			let newend = start + qty - 1;
+			console.log(newend, default_end)
 			if (newend > default_end) {
 				let cal = (default_start-1) + (qty - (default_end - start) - 1);
-				newend = cal;
-				console.log('This barcode is running more than default end : ' + default_end);
+				return cal
+			} else {
+				return newend;	
 			}
-			return newend;
 		}
-		// send now 'barcode end' to check in database used? or not? in 'x' day
-		let sendBarcodeCheck = (num1) => {
+
+		
+		/**
+		 * send now 'barcode end' to check in database used? or not? in 'x' day
+		 * เอาตัวเลข barcode ตัวสุดท้ายไปเช็คว่ามีในเงื่อนไข ห้ามใช้ ภายใน x วันหรือไม่
+		 * ในที่นี้เป็นการห้ามใช้ barcode ซ้ำภายใน 1095 วัน (3 ปี)  
+		 * ใน query จะเป็นการ เช็คจากตัวสุดท้ายอย่างเดียว เพราะตัวเลขที่ซื้อจะไล่ตัวเลขไปเรื่อยๆ
+		 */
+		let sendBarcodeCheck = (number_barcode_end) => {
+			let etemp = ele.parent('td').prev('td').children('.end').html();
+			console.log('Barcode End Checking (3year)', number_barcode_end);
 			$.ajax({
 				type: "POST",
 				url: "index.php?route=purchase/checkBarcodeUsed",
-				data: {barcode: num1},
+				data: {barcode: number_barcode_end},
 				dataType: "json",
 				success: function (response) {
 					var obj = JSON.parse(response);
-					console.log('obj', obj);
 					if (obj.id_barcode > 0) {
-						console.log('Found barcode is cannot use');
 						ele.val('');
-						ele.parents('tr').find('.end').text(ecode+'00000');
-						alert('ไม่สามารถใช้ barcode '+scode.substr(0,3)+pad(num1, 5)+' ได้ เนื่องจากอยู่ภายใต้เงื่อนไขใช้ซ้ำภายในจำนวน x วัน');
+						ele.parents('tr').find('.end').text("");
+						alert('ไม่สามารถใช้ barcode '+number_barcode_end+' ได้ เนื่องจากอยู่ภายใต้เงื่อนไขใช้ซ้ำภายในจำนวน x วัน');
 						barcodeUsed = true;
-					} else {
-						console.log('Can use');
 					}
 				}
 			});
@@ -250,22 +262,29 @@ $(document).ready(function () {
 		let barcodeUsed = false;
 		let newstart = 0;
 		let sum_end_qty = 0;
-		if (qty>100000) {
-			console.log('Alert bug input qty is more than 100,000')
-			alert('This barcode is more than limit input, please key in maximum 100,000. ');
+		// console.log('qty',qty);
+		if (qty>=100000) { // จำนวนเริ่มจาก 0 กรอกไป 100,000 ดักที่ตัวเลขที่กรอก
+			// console.log('Alert bug input qty is more than 100,000')
+			alert('This barcode is more than limit input, please key in maximum 100,000');
 			ele.val('');
-			ele.parents('tr').find('.end').text(scode.substr(0,3)+'00000');
+			ele.parents('tr').find('.end').text("");
 			return 0;
 		} else {
-			newstart = check();
-			console.log('Barcode End : ' + newstart);
-			sendBarcodeCheck(newstart);
+			newstart = check(); // ตัวเลข barcode end 
+			console.log('newstart',newstart);
+			let tempcode = (start+parseInt(qty)-1);
+			tempcode = parseInt(tempcode)>=100000 ? parseInt(tempcode)-100000 : tempcode;
+			tempcode = scode.substr(0,3) + pad(tempcode,5);
+			sendBarcodeCheck(tempcode);
+
 			if (qty>0 && !barcodeUsed) {
-				sum_end_qty = newstart > 0 ? newstart : (start + qty - 1); // ! Change `End`
-				var end_string = pad(sum_end_qty,5);
+				// console.log('case else ', (start+qty-1))
+				// sum_end_qty = newstart > 0 ? newstart : (start + qty - 1); // ! fixbug case กรณีมันวนเริ่ม 0 ใหม่ 
+				// var end_string = pad(sum_end_qty,5);
+				var end_string = tempcode.substr(3,5);
 				
 				if (isNaN(end_string)==false) {
-					console.log(scode);
+					// console.log(scode);
 					ele.parents('tr').find('.end').text(scode.substr(0,3)+end_string);
 				}
 				var dataPost = {
@@ -275,7 +294,7 @@ $(document).ready(function () {
 					change_qty: qty,
 					change_end: end_string
 				}
-				saveForExport(dataPost);
+				saveForExport(dataPost); // ajax เพื่อ เก็บไว้ รอ export FLAG ไว้สัก coulmn จำไม่ได้
 			} else {
 				ele.parents('tr').find('.end').text(scode.substr(0,3)+'00000');
 			}
@@ -290,6 +309,7 @@ $(document).ready(function () {
 </script>
 <script>
 const loading = '<img src="assets/loading.gif" height="30" /> Loading...';
+
 let init = () => {
 	$('.select2start, .select2end').select2({
 		placeholder: "Select group barcode"
@@ -351,6 +371,7 @@ let loadSomeBarcode = (groupcode) => {
 		// dataType: "json",
 		success: function (res) {
 			console.log("Load group barcode "+groupcode+" success");
+			console.log(res);
 			// const obj = JSON.parseJSON(res);
 			let obj = res;
 			if (obj.barcode_start!=null) {

@@ -25,10 +25,11 @@
         public function getSomeBarcodeStartEndOfGroup($group, $datestart, $dateend) {
             $sql = "SELECT  ";
             $sql .= "cb.`group`,  ";
-            $sql .= "(SELECT b.barcode_code FROM mb_master_barcode b WHERE b.barcode_prefix = '".$group."' AND (b.date_added BETWEEN '$datestart' AND '$dateend') GROUP BY b.date_added ORDER BY b.date_added ASC LIMIT 0,1) as barcode_start, ";
-            $sql .= "(SELECT MAX(b.barcode_code) as barcode_code FROM mb_master_barcode b WHERE b.barcode_prefix = '".$group."' AND (b.date_added BETWEEN '$datestart' AND '$dateend') GROUP BY b.date_added ORDER BY b.date_added DESC LIMIT 0,1) as barcode_end ";
-            $sql .= "FROM mb_master_config_barcode cb ";
+            $sql .= "(SELECT ABS(b.barcode_code) FROM mb_master_barcode b WHERE b.barcode_prefix = '".$group."' AND (b.date_added BETWEEN '$datestart' AND '$dateend') GROUP BY b.date_added ORDER BY b.date_added ASC LIMIT 0,1) as barcode_start, ";
+            $sql .= "(SELECT MAX(ABS(b.barcode_code)) as barcode_code FROM mb_master_barcode b WHERE b.barcode_prefix = '".$group."' AND (b.date_added BETWEEN '$datestart' AND '$dateend') GROUP BY b.date_added ORDER BY b.date_added DESC LIMIT 0,1) as barcode_end ";
+            $sql .= "FROM mb_master_config_barcode cb WHERE cb.`group` = '".$group."'";
             $query = $this->query($sql);
+            // return array($query->row, $sql);
             return $query->row;
         }
         
@@ -128,6 +129,7 @@
             $this->join('group g', 'g.group_code = cb.`group`', 'LEFT');
             $query = $this->get('config_barcode cb');
             // echo $this->last_query();
+            // exit();
             return $query->num_rows > 0 ? $query->rows : false;
         }
 

@@ -4,5 +4,5 @@
 	define('BASE_CATALOG', $base.'catalog/');
 	define('THEME','theme');
 	define('BASE_ASSET', MURL.'assets/'.THEME.'/');
-	define('VERSION', 'Prefix 1.3.0'); 
+	define('VERSION', 'Prefix 1.3.3'); 
 ?>

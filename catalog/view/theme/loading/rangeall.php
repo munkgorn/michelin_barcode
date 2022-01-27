@@ -302,7 +302,7 @@ $(document).ready(function () {
     }
 
     let process_redirect = () => {
-        let time = 1;
+        let time = 0;
         showmsg('Waiting redirect page in '+time+' seconds', true);
         let timeid = setInterval(() => {
             showmsg('Countdown in '+time, false, null);
