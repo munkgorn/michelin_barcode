@@ -31,3 +31,4 @@ dump/*
 .history
 db/*
 mg/*
+*.sql
